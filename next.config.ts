@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // Suppress middleware deprecation warning for now
+    // Will migrate to proxy in future update
+  },
 };
 
 export default nextConfig;
