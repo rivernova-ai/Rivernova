@@ -1,13 +1,12 @@
 'use server';
 
 import { anthropic } from '@ai-sdk/anthropic';
-import { openai } from '@ai-sdk/openai'; // Using OpenAI provider for Perplexity compatibility
+import { createPerplexity } from '@ai-sdk/perplexity';
 import { generateText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
 
-const perplexity = openai('sonar', {
-  baseURL: 'https://api.perplexity.ai',
-  apiKey: process.env.PERPLEXITY_API_KEY,
+const perplexity = createPerplexity({
+  apiKey: process.env.PERPLEXITY_API_KEY || '',
 });
 
 export async function getApplications() {
@@ -47,8 +46,8 @@ export async function submitApplication(formData: any) {
   if (error) throw error;
 
   // 2. Step 1: Perplexity Research using form data
-  const { text: researchResult, citations } = await generateText({
-    model: perplexity,
+  const { text: researchResult } = await generateText({
+    model: perplexity('sonar-pro'),
     prompt: `Research 15-20 top-tier zero-commission or high-ROI schools and programs for the following profile. 
     Focus on ${formData.mode} opportunities in ${formData.locationPref}.
     Find data on: Name, Location, Est. Tuition, ROI (salary/outcomes in 3-5 years), and why it is a transparent/unbiased choice.
@@ -91,7 +90,7 @@ export async function submitApplication(formData: any) {
         match_score: m.matchScore,
         reasoning: m.reasoning,
         category: m.category,
-        citations: citations, // Store the citations for proof
+        citations: [], // Store the citations for proof
       }));
 
       await supabase.from('matches').insert(matchesWithAppId);
@@ -100,5 +99,5 @@ export async function submitApplication(formData: any) {
     console.error('Failed to parse Claude matches:', e);
   }
 
-  return { applicationId: application.id, matches, citations };
+  return { applicationId: application.id, matches, citations: [] };
 }
