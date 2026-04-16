@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rivernova — Unbiased AI-Powered Education Consulting</title>
+    <meta name="description" content="Find your perfect school with AI-powered, unbiased education consulting. No commissions, no hidden agendas — just honest recommendations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Ambient background orbs -->
+    <div class="ambient-bg" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Noise texture overlay -->
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="#" class="logo" id="logo">
+                <span class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1"/>
+                                <stop offset="100%" style="stop-color:#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M16 2L4 8v8c0 7.18 5.12 13.89 12 16 6.88-2.11 12-8.82 12-16V8L16 2z" fill="url(#logoGrad)" opacity="0.9"/>
+                        <path d="M16 6l-8 4v5.6c0 5.02 3.58 9.72 8 11.2 4.42-1.48 8-6.18 8-11.2V10l-8-4z" fill="rgba(255,255,255,0.15)"/>
+                    </svg>
+                </span>
+                <span class="logo-text">Rivernova</span>
+            </a>
+            <div class="nav-actions">
+                <button class="nav-link" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">How It Works</button>
+                <button class="cta-btn" id="nav-cta" onclick="openForm()">
+                    Get Started
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero" id="hero">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="container">
+            <div class="hero-badge reveal">
+                <span class="badge-dot"></span>
+                AI-Powered Education Consulting
+            </div>
+            <h1 class="hero-title reveal">
+                Find Your Perfect School
+                <span class="gradient-text">Without the Bias</span>
+            </h1>
+            <p class="hero-subtitle reveal">
+                AI-powered education consulting that puts your goals first — not commission deals. 
+                Get unbiased, data-driven school recommendations in minutes.
+            </p>
+            <div class="hero-actions reveal">
+                <button class="cta-btn-large" id="hero-cta" onclick="openForm()">
+                    Start Your Journey
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+                <button class="secondary-btn" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">
+                    See How It Works
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+                </button>
+            </div>
+            <div class="hero-stats reveal">
+                <div class="stat" id="stat-fees">
+                    <span class="stat-number">90%</span>
+                    <span class="stat-label">Lower Fees</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat" id="stat-unbiased">
+                    <span class="stat-number">100%</span>
+                    <span class="stat-label">Unbiased</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat" id="stat-ai">
+                    <span class="stat-number">AI</span>
+                    <span class="stat-label">Powered</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="problem" id="problem">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">The Problem</span>
+                <h2>Traditional Consultants Are <span class="gradient-text">Broken</span></h2>
+                <p class="section-desc">The education consulting industry is plagued by conflicts of interest that hurt students.</p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-card reveal" id="card-fees">
+                    <div class="card-glow"></div>
+                    <div class="icon-wrap icon-red">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <h3>Insane Fees</h3>
+                    <p>Traditional consultants charge thousands of dollars for basic guidance that should be accessible to everyone.</p>
+                </div>
+                <div class="problem-card reveal" id="card-commissions">
+                    <div class="card-glow"></div>
+                    <div class="icon-wrap icon-amber">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
+                    <h3>Hidden Commissions</h3>
+                    <p>They only recommend schools that pay them commissions, not what's actually best for your future.</p>
+                </div>
+                <div class="problem-card reveal" id="card-bias">
+                    <div class="card-glow"></div>
+                    <div class="icon-wrap icon-rose">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <h3>Biased Advice</h3>
+                    <p>Your success takes a backseat to their financial incentives and partnership deals.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="solution" id="solution">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">Our Solution</span>
+                <h2>AI-Powered, <span class="gradient-text">Unbiased</span> Guidance</h2>
+                <p class="section-desc">We use advanced AI to match you with schools based on your unique profile — no hidden agendas.</p>
+            </div>
+            <div class="solution-grid">
+                <div class="solution-card reveal" id="card-matching">
+                    <div class="card-glow"></div>
+                    <div class="icon-wrap icon-indigo">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <h3>AI-Driven Matching</h3>
+                    <p>Advanced algorithms analyze your profile and match you with schools that truly fit your goals and aspirations.</p>
+                </div>
+                <div class="solution-card reveal" id="card-zero-bias">
+                    <div class="card-glow"></div>
+                    <div class="icon-wrap icon-emerald">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <h3>Zero Bias</h3>
+                    <p>No commission deals, no hidden agendas — just honest recommendations based on your unique needs.</p>
+                </div>
+                <div class="solution-card reveal" id="card-pricing">
+                    <div class="card-glow"></div>
+                    <div class="icon-wrap icon-violet">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <h3>Affordable Pricing</h3>
+                    <p>Pay a fraction of what traditional consultants charge for better, unbiased, AI-driven results.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-tag">How It Works</span>
+                <h2>Four Steps to Your <span class="gradient-text">Dream School</span></h2>
+                <p class="section-desc">Our streamlined process makes finding the perfect school effortless.</p>
+            </div>
+            <div class="steps">
+                <div class="step reveal" id="step-1">
+                    <div class="step-connector" aria-hidden="true"></div>
+                    <div class="step-number"><span>1</span></div>
+                    <h3>Share Your Profile</h3>
+                    <p>Tell us about your academic background, goals, budget, and preferences.</p>
+                </div>
+                <div class="step reveal" id="step-2">
+                    <div class="step-connector" aria-hidden="true"></div>
+                    <div class="step-number"><span>2</span></div>
+                    <h3>AI Analysis</h3>
+                    <p>Our AI analyzes thousands of schools to find your perfect matches instantly.</p>
+                </div>
+                <div class="step reveal" id="step-3">
+                    <div class="step-connector" aria-hidden="true"></div>
+                    <div class="step-number"><span>3</span></div>
+                    <h3>Get Recommendations</h3>
+                    <p>Receive personalized, unbiased school recommendations with detailed insights.</p>
+                </div>
+                <div class="step reveal" id="step-4">
+                    <div class="step-number"><span>4</span></div>
+                    <h3>Apply with Confidence</h3>
+                    <p>Make informed decisions and apply to schools that truly align with your future.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section" id="cta-section">
+        <div class="container">
+            <div class="cta-card reveal">
+                <div class="cta-glow" aria-hidden="true"></div>
+                <h2>Ready to Find Your <span class="gradient-text">Perfect School?</span></h2>
+                <p>Join students who are taking control of their education journey with AI-powered, unbiased guidance.</p>
+                <button class="cta-btn-large" id="bottom-cta" onclick="openForm()">
+                    Get Started Now — It's Free
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-text">Rivernova</span>
+                    <p>Empowering students with unbiased, AI-powered education consulting.</p>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 Rivernova. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content auth-modal">
+            <button class="close" onclick="closeForm()" aria-label="Close modal">&times;</button>
+            
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+                        <defs>
+                            <linearGradient id="modalLogoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1"/>
+                                <stop offset="100%" style="stop-color:#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M16 2L4 8v8c0 7.18 5.12 13.89 12 16 6.88-2.11 12-8.82 12-16V8L16 2z" fill="url(#modalLogoGrad)" opacity="0.9"/>
+                    </svg>
+                </div>
+                <h2 id="modal-title">Welcome to Rivernova</h2>
+                <p>Start your unbiased education journey</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button id="signinTab" class="auth-tab active" onclick="showSignIn()">Sign In</button>
+                <button id="signupTab" class="auth-tab" onclick="showSignUp()">Sign Up</button>
+            </div>
+
+            <!-- Sign In Form -->
+            <div id="signinForm" class="auth-form">
+                <button class="gmail-btn" id="gmail-signin" onclick="signInWithGmail()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Continue with Google
+                </button>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <form onsubmit="signInWithEmail(event)">
+                    <div class="form-group">
+                        <label for="signin-email">Email</label>
+                        <input type="email" id="signin-email" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signin-password">Password</label>
+                        <input type="password" id="signin-password" placeholder="Enter your password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="auth-submit-btn" id="signin-submit">Sign In</button>
+                </form>
+            </div>
+
+            <!-- Sign Up Form -->
+            <div id="signupForm" class="auth-form" style="display: none;">
+                <button class="gmail-btn" id="gmail-signup" onclick="signInWithGmail()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Sign up with Google
+                </button>
+
+                <div class="divider">
+                    <span>or</span>
+                </div>
+
+                <form onsubmit="signUpWithEmail(event)">
+                    <div class="form-group">
+                        <label for="signup-name">Full Name</label>
+                        <input type="text" id="signup-name" placeholder="John Doe" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email">Email</label>
+                        <input type="email" id="signup-email" placeholder="you@example.com" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" placeholder="Create a password (min. 6 characters)" required autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="auth-submit-btn" id="signup-submit">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

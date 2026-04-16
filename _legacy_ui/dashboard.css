@@ -1,0 +1,169 @@
+/* ========================================
+   RIVERNOVA DASHBOARD — 2026 Design
+======================================== */
+
+.dashboard-container {
+    min-height: 100vh;
+    padding: 6rem 0 4rem;
+    background: var(--bg-primary);
+    position: relative;
+}
+
+.welcome-section {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 3rem 2.5rem;
+    background: var(--bg-elevated);
+    border-radius: var(--border-radius-xl);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gradient-primary);
+    opacity: 0.6;
+}
+
+.welcome-section h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--text-primary);
+    margin-bottom: 0.6rem;
+    font-weight: 800;
+    letter-spacing: -2px;
+}
+
+.welcome-section p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.dashboard-card {
+    background: var(--bg-elevated);
+    padding: 2.5rem;
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--border-subtle);
+    transition: all 0.4s var(--ease-out);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gradient-primary);
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+}
+
+.dashboard-card:hover {
+    background: var(--bg-elevated-hover);
+    transform: translateY(-4px);
+    border-color: var(--border-medium);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.dashboard-card:hover::before {
+    opacity: 1;
+}
+
+.card-icon {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.card-icon svg {
+    stroke: var(--accent-indigo);
+    transition: all 0.4s var(--ease-out);
+}
+
+.dashboard-card:hover .card-icon svg {
+    transform: scale(1.1);
+    stroke: var(--accent-violet);
+}
+
+.dashboard-card h3 {
+    font-size: 1.35rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-card p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.account-type {
+    font-size: 0.85rem !important;
+    margin-top: 0.3rem;
+    color: var(--text-tertiary) !important;
+}
+
+.account-type span {
+    color: var(--accent-indigo) !important;
+    font-weight: 600;
+}
+
+.dashboard-btn {
+    background: var(--gradient-primary);
+    color: #ffffff;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s var(--ease-out);
+    width: 100%;
+    font-family: var(--font-family);
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.2);
+}
+
+.dashboard-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 5rem 0 3rem;
+    }
+
+    .welcome-section {
+        padding: 2rem 1.5rem;
+    }
+
+    .welcome-section h1 {
+        letter-spacing: -1px;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-card {
+        padding: 2rem;
+    }
+}

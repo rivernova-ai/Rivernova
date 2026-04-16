@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    .outline { stroke: #222; fill: none; stroke-width: 8; stroke-linejoin: round; }
+    .text { fill: #222; font-size: 46px; font-weight: bold; font-family: sans-serif; text-anchor: middle; dominant-baseline: middle; }
+    @media (prefers-color-scheme: dark) {
+      .outline { stroke: #e5e7eb; }
+      .text { fill: #e5e7eb; }
+    }
+  </style>
+  <polygon class="outline" points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" />
+  <text class="text" x="50" y="55">R</text>
+</svg>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Application — Rivernova</title>
+    <meta name="description" content="Submit your education application with Rivernova for AI-powered, unbiased school recommendations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="application.css">
+</head>
+<body>
+    <!-- Ambient background orbs -->
+    <div class="ambient-bg" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="noise-overlay" aria-hidden="true"></div>
+
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="dashboard.html" class="logo" id="logo">
+                <span class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                        <defs>
+                            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#6366f1"/>
+                                <stop offset="100%" style="stop-color:#a855f7"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M16 2L4 8v8c0 7.18 5.12 13.89 12 16 6.88-2.11 12-8.82 12-16V8L16 2z" fill="url(#logoGrad)" opacity="0.9"/>
+                        <path d="M16 6l-8 4v5.6c0 5.02 3.58 9.72 8 11.2 4.42-1.48 8-6.18 8-11.2V10l-8-4z" fill="rgba(255,255,255,0.15)"/>
+                    </svg>
+                </span>
+                <span class="logo-text">Rivernova</span>
+            </a>
+            <a href="dashboard.html" class="cta-btn" id="back-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Back to Dashboard
+            </a>
+        </div>
+    </nav>
+
+    <div class="app-container">
+        <div class="container">
+            <!-- Progress Bar -->
+            <div class="progress-wrapper">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 25%"></div>
+                </div>
+                <div class="progress-steps">
+                    <div class="progress-step active" data-step="1">
+                        <span class="step-dot">1</span>
+                        <span class="step-label">Personal</span>
+                    </div>
+                    <div class="progress-step" data-step="2">
+                        <span class="step-dot">2</span>
+                        <span class="step-label">Academics</span>
+                    </div>
+                    <div class="progress-step" data-step="3">
+                        <span class="step-dot">3</span>
+                        <span class="step-label">Preferences</span>
+                    </div>
+                    <div class="progress-step" data-step="4">
+                        <span class="step-dot">4</span>
+                        <span class="step-label">About You</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Info -->
+            <div class="form-step active" id="step-1">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h1>Let's Get Started</h1>
+                        <p>Tell us a bit about yourself so we can find the best schools for you.</p>
+                    </div>
+                    <div class="form-body">
+                        <div class="field-group">
+                            <label for="fullName">What is your full name? <span class="required">*</span></label>
+                            <input type="text" id="fullName" placeholder="e.g. John Doe" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="email">What is your email address? <span class="required">*</span></label>
+                            <input type="email" id="email" placeholder="you@example.com" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="fieldOfStudy">What do you want to study? <span class="required">*</span></label>
+                            <input type="text" id="fieldOfStudy" placeholder="Major / Goals (e.g. Computer Science, Pre-Med)" required>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <div></div>
+                        <button class="btn-next" id="btn-next-1" onclick="nextStep(1)">
+                            Continue
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Academics -->
+            <div class="form-step" id="step-2">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h1>Academic Background</h1>
+                        <p>Help us understand your academic profile.</p>
+                    </div>
+                    <div class="form-body">
+                        <div class="field-group">
+                            <label for="gpa">What is your GPA or equivalent grade? <span class="required">*</span></label>
+                            <input type="text" id="gpa" placeholder="e.g. 3.8/4.0, 90%, A-level grades" required>
+                        </div>
+                        <div class="field-group">
+                            <label for="testScores">What are your test scores? <span class="required">*</span></label>
+                            <input type="text" id="testScores" placeholder="e.g. SAT 1450, ACT 32, IELTS 7.5, TOEFL 105" required>
+                            <span class="field-hint">Include all relevant standardized test scores</span>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-back" onclick="prevStep(2)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Back
+                        </button>
+                        <button class="btn-next" id="btn-next-2" onclick="nextStep(2)">
+                            Continue
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Preferences -->
+            <div class="form-step" id="step-3">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h1>Your Preferences</h1>
+                        <p>Let us know what matters most to you.</p>
+                    </div>
+                    <div class="form-body">
+                        <div class="field-group">
+                            <label for="budget">What is your planned budget per year? <span class="required">*</span></label>
+                            <div class="custom-select" id="budget-select">
+                                <button class="select-trigger" type="button" id="budget-trigger">
+                                    <span class="select-value" data-placeholder="true">Select budget range</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                </button>
+                                <div class="select-options" id="budget-options">
+                                    <div class="select-option" data-value="Less than $15,000">Less than $15,000</div>
+                                    <div class="select-option" data-value="$15,000 - $25,000">$15,000 – $25,000</div>
+                                    <div class="select-option" data-value="$25,000 - $35,000">$25,000 – $35,000</div>
+                                    <div class="select-option" data-value="$35,000 - $50,000">$35,000 – $50,000</div>
+                                    <div class="select-option" data-value="$50,000 - $70,000">$50,000 – $70,000</div>
+                                    <div class="select-option" data-value="$70,000+">$70,000+</div>
+                                    <div class="select-option" data-value="Flexible / Need scholarship help">Flexible / Need scholarship help</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="budget" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="scholarships">How important are scholarships to you? <span class="required">*</span></label>
+                            <div class="custom-select" id="scholarships-select">
+                                <button class="select-trigger" type="button" id="scholarships-trigger">
+                                    <span class="select-value" data-placeholder="true">Select importance</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                </button>
+                                <div class="select-options" id="scholarships-options">
+                                    <div class="select-option" data-value="Critical - I need significant financial aid">Critical — I need significant financial aid</div>
+                                    <div class="select-option" data-value="Important - Would help but not required">Important — Would help but not required</div>
+                                    <div class="select-option" data-value="Not important - Can pay full price">Not important — Can pay full price</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="scholarships" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="country">Which country are you considering studying in? <span class="required">*</span></label>
+                            <div class="custom-select" id="country-select">
+                                <button class="select-trigger" type="button" id="country-trigger">
+                                    <span class="select-value" data-placeholder="true">Select country</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                </button>
+                                <div class="select-options" id="country-options">
+                                    <div class="select-option" data-value="United States">United States</div>
+                                    <div class="select-option" data-value="United Kingdom">United Kingdom</div>
+                                    <div class="select-option" data-value="Canada">Canada</div>
+                                    <div class="select-option" data-value="Australia">Australia</div>
+                                    <div class="select-option" data-value="Germany">Germany</div>
+                                    <div class="select-option" data-value="Netherlands">Netherlands</div>
+                                    <div class="select-option" data-value="Other">Other</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="country" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label>What's most important to you? <span class="required">*</span> <span class="field-hint-inline">(Pick top 3)</span></label>
+                            <div class="checkbox-grid" id="priorities">
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Academic reputation / rankings">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Academic reputation / rankings
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Affordability / cost">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Affordability / cost
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Career outcomes / job placement">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Career outcomes / job placement
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Campus culture / student life">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Campus culture / student life
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Location / weather">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Location / weather
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Research opportunities">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Research opportunities
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Diversity / international community">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Diversity / international community
+                                    </span>
+                                </label>
+                                <label class="checkbox-card">
+                                    <input type="checkbox" name="priorities" value="Specific program strength">
+                                    <span class="checkbox-content">
+                                        <span class="checkbox-check">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        </span>
+                                        Specific program strength
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-back" onclick="prevStep(3)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Back
+                        </button>
+                        <button class="btn-next" id="btn-next-3" onclick="nextStep(3)">
+                            Continue
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: About You -->
+            <div class="form-step" id="step-4">
+                <div class="form-card">
+                    <div class="form-header">
+                        <h1>Almost Done!</h1>
+                        <p>A few more details to personalize your recommendations.</p>
+                    </div>
+                    <div class="form-body">
+                        <div class="field-group">
+                            <label for="timeline">When do you plan to start studying? <span class="required">*</span></label>
+                            <div class="custom-select" id="timeline-select">
+                                <button class="select-trigger" type="button" id="timeline-trigger">
+                                    <span class="select-value" data-placeholder="true">Select timeline</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                </button>
+                                <div class="select-options" id="timeline-options">
+                                    <div class="select-option" data-value="Fall 2025">Fall 2025</div>
+                                    <div class="select-option" data-value="Spring 2026">Spring 2026</div>
+                                    <div class="select-option" data-value="Fall 2026">Fall 2026</div>
+                                    <div class="select-option" data-value="2027 or later">2027 or later</div>
+                                    <div class="select-option" data-value="Not sure yet">Not sure yet</div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="timeline" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="previousConsultancy">Have you used an education consultancy before? <span class="required">*</span></label>
+                            <div class="radio-group" id="previousConsultancy-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="previousConsultancy" value="Yes">
+                                    <span class="radio-content">Yes</span>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="previousConsultancy" value="No">
+                                    <span class="radio-content">No</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="aboutYourself">Tell us more about yourself and what you're looking for</label>
+                            <textarea id="aboutYourself" rows="4" placeholder="Share your goals, aspirations, or anything else you'd like us to know..."></textarea>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="biggestChallenge">What has been your biggest challenge in the school search process so far?</label>
+                            <textarea id="biggestChallenge" rows="3" placeholder="e.g. Too many options, lack of guidance, confusing application process..."></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn-back" onclick="prevStep(4)">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                            Back
+                        </button>
+                        <button class="btn-submit" id="btn-submit" onclick="submitApplication()">
+                            Submit Application
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success State -->
+            <div class="form-step" id="step-success" style="display:none;">
+                <div class="form-card success-card">
+                    <div class="success-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                    </div>
+                    <h1>Application Submitted! 🎉</h1>
+                    <p>Thank you for submitting your application. Our AI is now analyzing your profile to find the best school matches for you.</p>
+                    <a href="dashboard.html" class="btn-next" style="text-decoration:none; display:inline-flex; margin-top:1rem;">
+                        Go to Dashboard
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="application.js"></script>
+</body>
+</html>
