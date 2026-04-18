@@ -49,7 +49,7 @@ Always maintain a friendly, professional tone and focus on helping students achi
 
     // Convert messages to Anthropic format
     const anthropicMessages = messages.map((msg: any) => ({
-      role: msg.role === 'user' ? 'user' : 'assistant',
+      role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
       content: msg.content,
     }));
 
