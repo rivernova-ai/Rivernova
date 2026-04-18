@@ -71,7 +71,7 @@ Rank matches by overall fit (success probability, affordability, career outcomes
     const { text } = await generateText({
       model: anthropic('claude-3-5-sonnet-20241022'),
       prompt,
-      maxTokens: 8000,
+      maxSteps: 10,
     });
 
     // Parse JSON response
@@ -107,7 +107,7 @@ Make it personal, authentic, and compelling.`;
     const { text } = await generateText({
       model: anthropic('claude-3-5-sonnet-20241022'),
       prompt,
-      maxTokens: 2000,
+      maxSteps: 5,
     });
 
     return text;
