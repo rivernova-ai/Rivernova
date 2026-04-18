@@ -71,7 +71,7 @@ export default function ApplicationWizard({ mode, onComplete, onCancel }: Applic
               <Label className="text-white/60 text-xs font-bold uppercase tracking-widest">Current Education Level</Label>
               <Select 
                 value={formData.currentEdu} 
-                onValueChange={(v) => setFormData({...formData, currentEdu: v})}
+                onValueChange={(v) => setFormData({...formData, currentEdu: v || ''})}
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white h-14 rounded-2xl">
                   <SelectValue placeholder="Select level..." />
@@ -102,7 +102,7 @@ export default function ApplicationWizard({ mode, onComplete, onCancel }: Applic
               <Label className="text-white/60 text-xs font-bold uppercase tracking-widest">Budget Range (Annual Tuition)</Label>
               <Select 
                 value={formData.budget} 
-                onValueChange={(v) => setFormData({...formData, budget: v})}
+                onValueChange={(v) => setFormData({...formData, budget: v || ''})}
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white h-14 rounded-2xl">
                   <SelectValue placeholder="Select budget..." />
