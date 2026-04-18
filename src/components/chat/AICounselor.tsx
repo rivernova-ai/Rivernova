@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useChat } from 'ai/react';
+import { useChat } from '@ai-sdk/react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
@@ -10,9 +10,15 @@ export function AICounselor() {
   const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
+  const chat = useChat({
     api: '/api/chat',
   });
+
+  const messages = chat.messages;
+  const input = chat.input || '';
+  const handleInputChange = chat.handleInputChange || (() => {});
+  const handleSubmit = chat.handleSubmit || (() => {});
+  const isLoading = chat.isLoading || false;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
