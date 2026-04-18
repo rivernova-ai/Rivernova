@@ -70,8 +70,8 @@ export default function ApplicationWizard({ mode, onComplete, onCancel }: Applic
             <div className="space-y-2">
               <Label className="text-white/60 text-xs font-bold uppercase tracking-widest">Current Education Level</Label>
               <Select 
-                value={formData.currentEdu} 
-                onValueChange={(v) => setFormData({...formData, currentEdu: v || ''})}
+                value={formData.currentEdu || undefined} 
+                onValueChange={(v) => setFormData({...formData, currentEdu: v ?? ''})}
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white h-14 rounded-2xl">
                   <SelectValue placeholder="Select level..." />
