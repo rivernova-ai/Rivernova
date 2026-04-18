@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useChat } from '@ai-sdk/react';
+import { useChat } from 'ai/react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
