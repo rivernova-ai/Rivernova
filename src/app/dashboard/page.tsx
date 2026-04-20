@@ -7,6 +7,8 @@ import { Loader2, Sparkles, CheckCircle2, Search, TrendingUp, MapPin, DollarSign
 import { createClient } from '@/utils/supabase/client';
 import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
+import MatchFilters from '@/components/matches/MatchFilters';
+import MapDistance from '@/components/matches/MapDistance';
 
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
@@ -39,8 +41,15 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<SchoolMatch[]>([]);
+  const [filteredResults, setFilteredResults] = useState<SchoolMatch[]>([]);
   const [rawResults, setRawResults] = useState('');
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [filters, setFilters] = useState({
+    budgetRange: 'all',
+    location: 'all',
+    successRate: 'all',
+    programType: 'all',
+  });
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -89,6 +98,7 @@ export default function Dashboard() {
           deadline: match.school_data?.deadline || '',
         }));
         setResults(formattedMatches);
+        setFilteredResults(formattedMatches);
       }
       
       setChecking(false);
@@ -229,6 +239,7 @@ export default function Dashboard() {
 
     const filteredSchools = schools.filter(s => s.name && s.name.length > 0);
     setResults(filteredSchools);
+    setFilteredResults(filteredSchools);
     return filteredSchools;
   };
 
@@ -242,6 +253,33 @@ export default function Dashboard() {
       }
       return newFavorites;
     });
+  };
+
+  const handleFilterChange = (newFilters: typeof filters) => {
+    setFilters(newFilters);
+    
+    const filtered = results.filter((school) => {
+      const tuition = parseInt(school.tuition?.replace(/[^0-9]/g, '') || '0');
+      const location = school.location?.toLowerCase() || '';
+
+      if (newFilters.budgetRange !== 'all') {
+        if (newFilters.budgetRange === 'under30k' && tuition >= 30000) return false;
+        if (newFilters.budgetRange === '30k-50k' && (tuition < 30000 || tuition >= 50000)) return false;
+        if (newFilters.budgetRange === '50k-70k' && (tuition < 50000 || tuition >= 70000)) return false;
+        if (newFilters.budgetRange === 'over70k' && tuition < 70000) return false;
+      }
+
+      if (newFilters.location !== 'all') {
+        if (newFilters.location === 'usa' && !location.includes('usa') && !location.includes('united states')) return false;
+        if (newFilters.location === 'canada' && !location.includes('canada')) return false;
+        if (newFilters.location === 'uk' && !location.includes('uk') && !location.includes('united kingdom')) return false;
+        if (newFilters.location === 'europe' && !location.includes('europe') && !location.includes('germany') && !location.includes('france')) return false;
+      }
+
+      return true;
+    });
+
+    setFilteredResults(filtered);
   };
 
   if (loading || checking) {
@@ -358,7 +396,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-3xl font-bold text-white mb-2">
-                {results.length} Perfect Matches
+                {filteredResults.length} Perfect Matches
               </h2>
               <p className="text-white/50">Curated for your success</p>
             </div>
@@ -372,8 +410,10 @@ export default function Dashboard() {
             </Button>
           </div>
 
+          <MatchFilters onFilterChange={handleFilterChange} />
+
           <div className="grid gap-6">
-            {results.map((school, idx) => (
+            {filteredResults.map((school, idx) => (
               <div
                 key={idx}
                 className="group relative"
@@ -490,6 +530,11 @@ export default function Dashboard() {
                         <span className="text-white/70 font-medium">{school.deadline}</span>
                       </div>
                     )}
+                  </div>
+
+                  {/* Map Distance */}
+                  <div className="mt-6">
+                    <MapDistance schoolLocation={school.location} schoolName={school.name} />
                   </div>
 
                   {/* CTA Button */}
