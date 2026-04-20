@@ -93,19 +93,19 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
                 <select
                   value={filters.budgetRange}
                   onChange={(e) => handleFilterChange('budgetRange', e.target.value)}
-                  className="w-full appearance-none bg-white/[0.07] hover:bg-white/[0.1] border border-white/[0.12] hover:border-white/[0.2] rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all cursor-pointer backdrop-blur-sm [&>option]:bg-[#1a1a1f] [&>option]:text-white [&>option]:py-3 [&>option]:px-4 [&>option]:rounded-xl [&>option]:my-1 [&>option:hover]:bg-emerald-500/20 [&>option:checked]:bg-emerald-500/30 [&>option:checked]:text-emerald-300"
+                  className="w-full appearance-none bg-gradient-to-br from-white/[0.08] to-white/[0.04] hover:from-white/[0.12] hover:to-white/[0.06] border border-white/[0.15] hover:border-emerald-500/30 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-transparent transition-all cursor-pointer backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-emerald-500/5 [&>option]:bg-[#0f0f14] [&>option]:text-white [&>option]:py-4 [&>option]:px-4 [&>option]:font-medium [&>option]:border-b [&>option]:border-white/5 [&>option:hover]:bg-emerald-500/10 [&>option:checked]:bg-gradient-to-r [&>option:checked]:from-emerald-500/20 [&>option:checked]:to-emerald-600/20 [&>option:checked]:text-emerald-300 [&>option:checked]:font-bold"
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2310B981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%2310B981' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'right 1rem center',
                     paddingRight: '3rem'
                   }}
                 >
                   <option value="all">All Budgets</option>
-                  <option value="under30k">💰 Under $30k/year</option>
-                  <option value="30k-50k">💵 $30k - $50k/year</option>
-                  <option value="50k-70k">💸 $50k - $70k/year</option>
-                  <option value="over70k">💎 Over $70k/year</option>
+                  <option value="under30k">Under $30k/year</option>
+                  <option value="30k-50k">$30k - $50k/year</option>
+                  <option value="50k-70k">$50k - $70k/year</option>
+                  <option value="over70k">Over $70k/year</option>
                 </select>
               </div>
             </div>
@@ -122,21 +122,21 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
                 <select
                   value={filters.location}
                   onChange={(e) => handleFilterChange('location', e.target.value)}
-                  className="w-full appearance-none bg-white/[0.07] hover:bg-white/[0.1] border border-white/[0.12] hover:border-white/[0.2] rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all cursor-pointer backdrop-blur-sm [&>option]:bg-[#1a1a1f] [&>option]:text-white [&>option]:py-3 [&>option]:px-4 [&>option:hover]:bg-blue-500/20 [&>option:checked]:bg-blue-500/30 [&>option:checked]:text-blue-300"
+                  className="w-full appearance-none bg-gradient-to-br from-white/[0.08] to-white/[0.04] hover:from-white/[0.12] hover:to-white/[0.06] border border-white/[0.15] hover:border-blue-500/30 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-transparent transition-all cursor-pointer backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-blue-500/5 [&>option]:bg-[#0f0f14] [&>option]:text-white [&>option]:py-4 [&>option]:px-4 [&>option]:font-medium [&>option]:border-b [&>option]:border-white/5 [&>option:hover]:bg-blue-500/10 [&>option:checked]:bg-gradient-to-r [&>option:checked]:from-blue-500/20 [&>option:checked]:to-blue-600/20 [&>option:checked]:text-blue-300 [&>option:checked]:font-bold"
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%233B82F6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%233B82F6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'right 1rem center',
                     paddingRight: '3rem'
                   }}
                 >
                   <option value="all">All Locations</option>
-                  <option value="usa">🇺🇸 United States</option>
-                  <option value="canada">🇨🇦 Canada</option>
-                  <option value="uk">🇬🇧 United Kingdom</option>
-                  <option value="europe">🇪🇺 Europe</option>
-                  <option value="asia">🌏 Asia</option>
-                  <option value="australia">🇦🇺 Australia</option>
+                  <option value="usa">United States</option>
+                  <option value="canada">Canada</option>
+                  <option value="uk">United Kingdom</option>
+                  <option value="europe">Europe</option>
+                  <option value="asia">Asia</option>
+                  <option value="australia">Australia</option>
                 </select>
               </div>
             </div>
@@ -153,18 +153,18 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
                 <select
                   value={filters.successRate}
                   onChange={(e) => handleFilterChange('successRate', e.target.value)}
-                  className="w-full appearance-none bg-white/[0.07] hover:bg-white/[0.1] border border-white/[0.12] hover:border-white/[0.2] rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all cursor-pointer backdrop-blur-sm [&>option]:bg-[#1a1a1f] [&>option]:text-white [&>option]:py-3 [&>option]:px-4 [&>option:hover]:bg-purple-500/20 [&>option:checked]:bg-purple-500/30 [&>option:checked]:text-purple-300"
+                  className="w-full appearance-none bg-gradient-to-br from-white/[0.08] to-white/[0.04] hover:from-white/[0.12] hover:to-white/[0.06] border border-white/[0.15] hover:border-purple-500/30 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-transparent transition-all cursor-pointer backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-purple-500/5 [&>option]:bg-[#0f0f14] [&>option]:text-white [&>option]:py-4 [&>option]:px-4 [&>option]:font-medium [&>option]:border-b [&>option]:border-white/5 [&>option:hover]:bg-purple-500/10 [&>option:checked]:bg-gradient-to-r [&>option:checked]:from-purple-500/20 [&>option:checked]:to-purple-600/20 [&>option:checked]:text-purple-300 [&>option:checked]:font-bold"
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23A855F7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%23A855F7' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'right 1rem center',
                     paddingRight: '3rem'
                   }}
                 >
                   <option value="all">All Scores</option>
-                  <option value="high">🔥 80%+ (High Match)</option>
-                  <option value="medium">✨ 60-79% (Good Match)</option>
-                  <option value="low">🎯 Below 60% (Reach)</option>
+                  <option value="high">80%+ High Match</option>
+                  <option value="medium">60-79% Good Match</option>
+                  <option value="low">Below 60% Reach</option>
                 </select>
               </div>
             </div>
@@ -181,19 +181,19 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
                 <select
                   value={filters.programType}
                   onChange={(e) => handleFilterChange('programType', e.target.value)}
-                  className="w-full appearance-none bg-white/[0.07] hover:bg-white/[0.1] border border-white/[0.12] hover:border-white/[0.2] rounded-2xl px-4 py-3.5 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-transparent transition-all cursor-pointer backdrop-blur-sm [&>option]:bg-[#1a1a1f] [&>option]:text-white [&>option]:py-3 [&>option]:px-4 [&>option:hover]:bg-pink-500/20 [&>option:checked]:bg-pink-500/30 [&>option:checked]:text-pink-300"
+                  className="w-full appearance-none bg-gradient-to-br from-white/[0.08] to-white/[0.04] hover:from-white/[0.12] hover:to-white/[0.06] border border-white/[0.15] hover:border-pink-500/30 rounded-2xl px-4 py-3.5 text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-pink-500/40 focus:border-transparent transition-all cursor-pointer backdrop-blur-xl shadow-lg shadow-black/5 hover:shadow-pink-500/5 [&>option]:bg-[#0f0f14] [&>option]:text-white [&>option]:py-4 [&>option]:px-4 [&>option]:font-medium [&>option]:border-b [&>option]:border-white/5 [&>option:hover]:bg-pink-500/10 [&>option:checked]:bg-gradient-to-r [&>option:checked]:from-pink-500/20 [&>option:checked]:to-pink-600/20 [&>option:checked]:text-pink-300 [&>option:checked]:font-bold"
                   style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23EC4899' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='14' height='9' viewBox='0 0 14 9' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L7 7.5L13 1.5' stroke='%23EC4899' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
                     backgroundPosition: 'right 1rem center',
                     paddingRight: '3rem'
                   }}
                 >
                   <option value="all">All Programs</option>
-                  <option value="undergraduate">🎓 Undergraduate</option>
-                  <option value="masters">📚 Master's</option>
-                  <option value="phd">🔬 PhD</option>
-                  <option value="certificate">📜 Certificate</option>
+                  <option value="undergraduate">Undergraduate</option>
+                  <option value="masters">Master's Degree</option>
+                  <option value="phd">PhD / Doctorate</option>
+                  <option value="certificate">Certificate Program</option>
                 </select>
               </div>
             </div>
