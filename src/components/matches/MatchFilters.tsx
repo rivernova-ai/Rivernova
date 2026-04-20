@@ -118,16 +118,16 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
                 </div>
               </div>
             </div>
-            <ChevronDown className={`w-5 h-5 text-white/60 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`w-5 h-5 text-white/60 transition-transform duration-300 ${isOpen ? 'rotate-0' : 'rotate-180'}`} />
           </div>
           
           {/* Animated gradient background */}
           <div className={`absolute inset-0 bg-gradient-to-r ${color} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
         </button>
 
-        {/* Dropdown Menu */}
+        {/* Dropdown Menu - Changed to Drop-UP */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute bottom-full left-0 right-0 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
             <div className="bg-[#0a0a0f]/95 backdrop-blur-2xl border border-white/[0.15] rounded-2xl shadow-2xl overflow-hidden">
               <div className="p-2 space-y-1">
                 {options.map((option) => (
