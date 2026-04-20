@@ -536,16 +536,6 @@ export default function Dashboard() {
                   <div className="mt-6">
                     <MapDistance schoolLocation={school.location} schoolName={school.name} />
                   </div>
-
-                  {/* CTA Button */}
-                  <div className="mt-6">
-                    <button 
-                      className="group/btn w-full h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 border-0 text-white font-semibold transition-all duration-300 flex items-center justify-center gap-2"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      <span>Learn More</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
