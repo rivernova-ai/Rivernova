@@ -47,7 +47,6 @@ Focus on recent data (2023-2024) and provide accurate, verifiable information.`;
     const { text } = await generateText({
       model: perplexity('sonar-pro'),
       prompt,
-      maxSteps: 10,
     });
 
     return text;
@@ -72,7 +71,6 @@ Provide recent, accurate information with citations.`;
     const { text } = await generateText({
       model: perplexity('sonar'),
       prompt,
-      maxSteps: 5,
     });
 
     return text;
@@ -97,7 +95,6 @@ Provide accurate, up-to-date information with sources.`;
     const { text } = await generateText({
       model: perplexity('sonar'),
       prompt,
-      maxSteps: 5,
     });
 
     return text;
