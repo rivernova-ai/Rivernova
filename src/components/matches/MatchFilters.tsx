@@ -95,9 +95,12 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
     const selectedOption = options.find(opt => opt.value === value);
 
     return (
-      <div className="relative">
+      <div className="relative z-50">
         <button
-          onClick={() => setOpenDropdown(isOpen ? null : name)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenDropdown(isOpen ? null : name);
+          }}
           className={`w-full group relative overflow-hidden rounded-2xl px-4 py-3.5 text-left transition-all duration-300 ${
             isOpen 
               ? `bg-gradient-to-br ${color} shadow-lg shadow-${color.split('-')[0]}-500/20 border-2 border-${color.split('-')[0]}-500/50` 
@@ -127,17 +130,23 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
 
         {/* Dropdown Menu - Changed to Drop-UP */}
         {isOpen && (
-          <div className="absolute bottom-full left-0 right-0 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
-            <div className="bg-[#0a0a0f]/95 backdrop-blur-2xl border border-white/[0.15] rounded-2xl shadow-2xl overflow-hidden">
-              <div className="p-2 space-y-1">
+          <div 
+            className="absolute bottom-full left-0 right-0 mb-2 z-[100] animate-in fade-in slide-in-from-bottom-2 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="bg-[#0a0a0f] backdrop-blur-2xl border-2 border-white/[0.2] rounded-2xl shadow-2xl overflow-hidden">
+              <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto">
                 {options.map((option) => (
                   <button
                     key={option.value}
-                    onClick={() => handleFilterChange(name, option.value)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleFilterChange(name, option.value);
+                    }}
                     className={`w-full group/item relative overflow-hidden rounded-xl px-4 py-3 text-left transition-all duration-200 ${
                       value === option.value
                         ? `bg-gradient-to-r ${color} text-white shadow-lg`
-                        : 'hover:bg-white/[0.08] text-white/70 hover:text-white'
+                        : 'hover:bg-white/[0.12] text-white/80 hover:text-white'
                     }`}
                   >
                     <div className="relative z-10 flex items-center justify-between">
@@ -237,7 +246,10 @@ export default function MatchFilters({ onFilterChange }: MatchFiltersProps) {
       {openDropdown && (
         <div 
           className="fixed inset-0 z-40" 
-          onClick={() => setOpenDropdown(null)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenDropdown(null);
+          }}
         />
       )}
     </div>
