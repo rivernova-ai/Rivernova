@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import MapDistance from './MapDistance';
 
 export interface Match {
   id?: string;
@@ -163,6 +164,9 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
               </div>
             </div>
           )}
+
+          {/* Map Distance */}
+          <MapDistance schoolLocation={match.location} schoolName={match.schoolName} />
 
           {/* Why Unbiased */}
           <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4">

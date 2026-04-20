@@ -1,9 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sparkles, MapPin, DollarSign, TrendingUp, ExternalLink, Info } from 'lucide-react';
+import MatchFilters from '@/components/matches/MatchFilters';
 
 interface MatchResultsProps {
   matches: any[];
@@ -11,6 +12,42 @@ interface MatchResultsProps {
 }
 
 export default function MatchResults({ matches, citations }: MatchResultsProps) {
+  const [filters, setFilters] = useState({
+    budgetRange: 'all',
+    location: 'all',
+    successRate: 'all',
+    programType: 'all',
+  });
+
+  const filteredMatches = useMemo(() => {
+    return matches.filter((match) => {
+      const tuition = parseInt(match.tuition?.replace(/[^0-9]/g, '') || '0');
+      const location = match.location?.toLowerCase() || '';
+      const score = match.match_score || match.matchScore || 0;
+
+      if (filters.budgetRange !== 'all') {
+        if (filters.budgetRange === 'under30k' && tuition >= 30000) return false;
+        if (filters.budgetRange === '30k-50k' && (tuition < 30000 || tuition >= 50000)) return false;
+        if (filters.budgetRange === '50k-70k' && (tuition < 50000 || tuition >= 70000)) return false;
+        if (filters.budgetRange === 'over70k' && tuition < 70000) return false;
+      }
+
+      if (filters.location !== 'all') {
+        if (filters.location === 'usa' && !location.includes('usa') && !location.includes('united states')) return false;
+        if (filters.location === 'canada' && !location.includes('canada')) return false;
+        if (filters.location === 'uk' && !location.includes('uk') && !location.includes('united kingdom')) return false;
+      }
+
+      if (filters.successRate !== 'all') {
+        if (filters.successRate === 'high' && score < 80) return false;
+        if (filters.successRate === 'medium' && (score < 60 || score >= 80)) return false;
+        if (filters.successRate === 'low' && score >= 60) return false;
+      }
+
+      return true;
+    });
+  }, [matches, filters]);
+
   if (!matches || matches.length === 0) return null;
 
   return (
@@ -21,7 +58,7 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
             Optimized <span className="gradient-text">Matches</span>
           </h2>
           <p className="text-white/40 font-medium">
-            AI has synthesized {matches.length} programs based on your ROI goals.
+            AI has synthesized {filteredMatches.length} programs based on your ROI goals.
           </p>
         </div>
         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/5 px-4 py-2 rounded-xl border border-indigo-500/10">
@@ -30,8 +67,10 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
         </div>
       </div>
 
+      <MatchFilters onFilterChange={setFilters} />
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {matches.map((match, i) => (
+        {filteredMatches.map((match, i) => (
           <Card key={i} className="bg-[#0c0c10] border-white/10 rounded-[32px] p-8 hover:border-white/20 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8">
               <div className="w-16 h-16 rounded-full border border-white/5 flex flex-col items-center justify-center bg-white/5 group-hover:bg-indigo-500/10 transition-colors">
