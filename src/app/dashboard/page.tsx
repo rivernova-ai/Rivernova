@@ -9,6 +9,7 @@ import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
 import MatchFilters from '@/components/matches/MatchFilters';
 import MapDistance from '@/components/matches/MapDistance';
+import { cleanAIText } from '@/lib/utils';
 
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
@@ -199,37 +200,37 @@ export default function Dashboard() {
           schools.push({ ...currentSchool, highlights } as SchoolMatch);
           highlights = [];
         }
-        currentSchool = { name: line.replace(/^\d+\.\s+/, '').replace(/\*\*/g, '') };
+        currentSchool = { name: cleanAIText(line.replace(/^\d+\.\s+/, '')) };
       }
       else if (line.toLowerCase().includes('location:')) {
-        currentSchool.location = line.split(':')[1]?.trim() || '';
+        currentSchool.location = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('program:')) {
-        currentSchool.program = line.split(':')[1]?.trim() || '';
+        currentSchool.program = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('tuition:')) {
-        currentSchool.tuition = line.split(':')[1]?.trim() || '';
+        currentSchool.tuition = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('admission rate:')) {
-        currentSchool.admissionRate = line.split(':')[1]?.trim() || '';
+        currentSchool.admissionRate = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('ranking:')) {
-        currentSchool.ranking = line.split(':')[1]?.trim() || '';
+        currentSchool.ranking = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('employment rate:')) {
-        currentSchool.employmentRate = line.split(':')[1]?.trim() || '';
+        currentSchool.employmentRate = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('salary:') || line.toLowerCase().includes('starting salary:')) {
-        currentSchool.avgSalary = line.split(':')[1]?.trim() || '';
+        currentSchool.avgSalary = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('scholarship:')) {
-        currentSchool.scholarships = line.split(':')[1]?.trim() || '';
+        currentSchool.scholarships = cleanAIText(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('deadline:')) {
-        currentSchool.deadline = line.split(':')[1]?.trim() || '';
+        currentSchool.deadline = cleanAIText(line.split(':')[1]);
       }
       else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
-        highlights.push(line.replace(/^[-•*]\s*/, ''));
+        highlights.push(cleanAIText(line.replace(/^[-•*]\s*/, '')));
       }
     }
 

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MapDistance from './MapDistance';
+import { cleanAIText } from '@/lib/utils';
 
 export interface Match {
   id?: string;
@@ -58,7 +59,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors">
-              {match.schoolName}
+              {cleanAIText(match.schoolName)}
             </h3>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
               <ShieldCheck className="w-3 h-3" />
@@ -67,9 +68,9 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
           </div>
           <div className="flex items-center gap-2 text-white/60 text-sm mb-3">
             <MapPin className="w-4 h-4" />
-            {match.location}
+            {cleanAIText(match.location)}
           </div>
-          <p className="text-white/80 font-medium">{match.programName}</p>
+          <p className="text-white/80 font-medium">{cleanAIText(match.programName)}</p>
         </div>
 
         <button
@@ -108,7 +109,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
         {match.highlights.slice(0, 3).map((highlight, idx) => (
           <div key={idx} className="flex items-start gap-2 text-white/80 text-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
-            <span>{highlight}</span>
+            <span>{cleanAIText(highlight)}</span>
           </div>
         ))}
       </div>
@@ -116,7 +117,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
       {/* Reasoning */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
         <h4 className="text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">Why This Match?</h4>
-        <p className="text-white/70 text-sm leading-relaxed">{match.reasoning}</p>
+        <p className="text-white/70 text-sm leading-relaxed">{cleanAIText(match.reasoning)}</p>
       </div>
 
       {/* Expandable Details */}
@@ -153,13 +154,13 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
               <h4 className="text-sm font-bold text-white/80 mb-3 uppercase tracking-wider">Admission Requirements</h4>
               <div className="space-y-2 text-sm text-white/70">
                 {match.admissionRequirements.gpa && (
-                  <div><span className="text-white/50">GPA:</span> {match.admissionRequirements.gpa}</div>
+                  <div><span className="text-white/50">GPA:</span> {cleanAIText(match.admissionRequirements.gpa)}</div>
                 )}
                 {match.admissionRequirements.testScores && (
-                  <div><span className="text-white/50">Test Scores:</span> {match.admissionRequirements.testScores}</div>
+                  <div><span className="text-white/50">Test Scores:</span> {cleanAIText(match.admissionRequirements.testScores)}</div>
                 )}
                 {match.admissionRequirements.other && (
-                  <div><span className="text-white/50">Other:</span> {match.admissionRequirements.other}</div>
+                  <div><span className="text-white/50">Other:</span> {cleanAIText(match.admissionRequirements.other)}</div>
                 )}
               </div>
             </div>
@@ -174,7 +175,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
               <ShieldCheck className="w-4 h-4" />
               Zero Commission Guarantee
             </h4>
-            <p className="text-white/70 text-sm leading-relaxed">{match.whyUnbiased}</p>
+            <p className="text-white/70 text-sm leading-relaxed">{cleanAIText(match.whyUnbiased)}</p>
           </div>
 
           {/* Citations */}
@@ -185,7 +186,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
                 {match.citations.map((citation, idx) => (
                   <div key={idx} className="text-xs text-white/50 flex items-start gap-2">
                     <span className="text-indigo-400">[{idx + 1}]</span>
-                    <span className="flex-1">{citation}</span>
+                    <span className="flex-1">{cleanAIText(citation)}</span>
                   </div>
                 ))}
               </div>

@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export function AICounselor() {
   const [isOpen, setIsOpen] = useState(false);
@@ -109,7 +111,27 @@ export function AICounselor() {
                   : 'bg-white/5 border border-white/10 text-white/90'
               }`}
             >
-              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              {message.role === 'assistant' ? (
+                <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
+                      ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
+                      ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
+                      li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                      strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
+                      em: ({node, ...props}) => <em className="italic" {...props} />,
+                      code: ({node, ...props}) => <code className="bg-white/10 px-1 py-0.5 rounded text-xs" {...props} />,
+                      a: ({node, ...props}) => <a className="text-indigo-400 hover:underline" {...props} />,
+                    }}
+                  >
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
+              ) : (
+                <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              )}
             </div>
           </div>
         ))}
