@@ -4,7 +4,7 @@ import { AuthProvider } from "@/lib/auth";
 import { AICounselor } from "@/components/chat/AICounselor";
 
 export const metadata: Metadata = {
-  title: "Rivernova — Unbiased AI-Powered Education Consulting",
+  title: "Rivernova",
   description: "Find your perfect school with AI-powered, unbiased education consulting. No commissions, no hidden agendas — just honest recommendations.",
 };
 
