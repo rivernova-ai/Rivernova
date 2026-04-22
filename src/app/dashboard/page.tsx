@@ -10,10 +10,6 @@ import { Button } from '@/components/ui/button';
 import MatchFilters from '@/components/matches/MatchFilters';
 import MapDistance from '@/components/matches/MapDistance';
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
   onboarding_completed: boolean;
