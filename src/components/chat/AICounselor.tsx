@@ -112,19 +112,9 @@ export function AICounselor() {
               }`}
             >
               {message.role === 'assistant' ? (
-                <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none">
+                <div className="text-sm leading-relaxed prose prose-invert prose-sm max-w-none [&>*]:text-white/90 [&_strong]:text-white [&_strong]:font-bold [&_em]:italic [&_code]:bg-white/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_a]:text-indigo-400 [&_a]:hover:underline [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:list-inside [&_ol]:mb-2 [&_li]:mb-1">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
-                    components={{
-                      p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-                      ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
-                      ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
-                      li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                      strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
-                      em: ({node, ...props}) => <em className="italic" {...props} />,
-                      code: ({node, ...props}) => <code className="bg-white/10 px-1 py-0.5 rounded text-xs" {...props} />,
-                      a: ({node, ...props}) => <a className="text-indigo-400 hover:underline" {...props} />,
-                    }}
                   >
                     {message.content}
                   </ReactMarkdown>

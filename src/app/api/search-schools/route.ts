@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { cleanAIText } from '@/lib/utils';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -84,7 +85,7 @@ Format the response clearly with school names as headers and organized informati
     }
 
     const data = await perplexityResponse.json();
-    const results = data.choices[0].message.content;
+    const results = cleanAIText(data.choices[0].message.content);
     const citations = data.citations || [];
 
     // Add citations to results

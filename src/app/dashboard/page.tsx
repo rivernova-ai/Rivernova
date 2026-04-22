@@ -86,17 +86,17 @@ export default function Dashboard() {
         // Convert database matches to display format
         const formattedMatches = matchesData.map(match => ({
           id: match.id,
-          name: match.school_name,
-          location: match.school_data?.location || '',
-          program: match.school_data?.programName || '',
-          tuition: match.school_data?.tuition || '',
-          highlights: match.school_data?.highlights || [],
-          admissionRate: match.school_data?.admissionRate || '',
-          ranking: match.school_data?.ranking || '',
-          employmentRate: match.school_data?.employmentRate || '',
-          avgSalary: match.school_data?.avgSalary || '',
-          scholarships: match.school_data?.scholarships || '',
-          deadline: match.school_data?.deadline || '',
+          name: cleanAIText(match.school_name),
+          location: cleanAIText(match.school_data?.location || ''),
+          program: cleanAIText(match.school_data?.programName || ''),
+          tuition: cleanAIText(match.school_data?.tuition || ''),
+          highlights: (match.school_data?.highlights || []).map((h: string) => cleanAIText(h)),
+          admissionRate: cleanAIText(match.school_data?.admissionRate || ''),
+          ranking: cleanAIText(match.school_data?.ranking || ''),
+          employmentRate: cleanAIText(match.school_data?.employmentRate || ''),
+          avgSalary: cleanAIText(match.school_data?.avgSalary || ''),
+          scholarships: cleanAIText(match.school_data?.scholarships || ''),
+          deadline: cleanAIText(match.school_data?.deadline || ''),
         }));
         setResults(formattedMatches);
         setFilteredResults(formattedMatches);
