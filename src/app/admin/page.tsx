@@ -4,6 +4,10 @@ import React, { useState } from 'react';
 import { ShieldCheck, Users, Activity, Settings, TrendingUp, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview');
 
