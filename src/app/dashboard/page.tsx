@@ -125,6 +125,7 @@ export default function Dashboard() {
 
     setSearching(true);
     setResults([]);
+    setFilteredResults([]);
     setRawResults('');
 
     try {
@@ -132,6 +133,14 @@ export default function Dashboard() {
       const career = profile.career_goals || {};
       const budget = profile.budget || {};
       const location = profile.location_preferences || {};
+
+      console.log('Starting school search with profile:', {
+        major: academic.major,
+        budget: budget.min && budget.max ? `$${budget.min} - $${budget.max}` : '',
+        location: location.preferredCountries,
+        gpa: academic.gpa,
+        goals: career.dreamJob || career.careerField,
+      });
 
       const response = await fetch('/api/search-schools', {
         method: 'POST',
@@ -148,12 +157,16 @@ export default function Dashboard() {
       const data = await response.json();
 
       if (!response.ok) {
+        console.error('Search API error:', data);
         throw new Error(data.error || 'Search failed');
       }
 
+      console.log('Search API response received, parsing results...');
       setRawResults(data.results);
       const parsedResults = parseResults(data.results);
       
+      console.log('Parsed schools:', parsedResults.length);
+
       // Save matches to database
       if (parsedResults.length > 0) {
         const supabase = createClient();
@@ -176,11 +189,16 @@ export default function Dashboard() {
           reasoning: 'Match based on your profile',
         }));
 
+        console.log('Saving matches to database...');
         await supabase.from('matches').insert(matchesToSave);
+        console.log('Matches saved successfully');
+      } else {
+        console.warn('No schools parsed from results');
+        alert('No schools found matching your criteria. Please try adjusting your search parameters.');
       }
     } catch (error: any) {
       console.error('Search error:', error);
-      alert(error.message || 'Failed to search schools');
+      alert(error.message || 'Failed to search schools. Please try again.');
     } finally {
       setSearching(false);
     }

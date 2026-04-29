@@ -85,7 +85,7 @@ Format the response clearly with school names as headers and organized informati
     }
 
     const data = await perplexityResponse.json();
-    const results = cleanAIText(data.choices[0].message.content);
+    const results = data.choices[0].message.content; // Keep raw results for parsing
     const citations = data.citations || [];
 
     // Add citations to results
@@ -93,9 +93,11 @@ Format the response clearly with school names as headers and organized informati
     if (citations.length > 0) {
       finalResults += '\n\n---\n\nSOURCES:\n';
       citations.forEach((citation: string, idx: number) => {
-        finalResults += `[${idx + 1}] ${citation}\n`;
+        finalResults += `${citation}\n`; // Remove [idx] since cleanAIText removes it anyway
       });
     }
+
+    console.log('Search completed successfully');
 
     return NextResponse.json({
       results: finalResults,
