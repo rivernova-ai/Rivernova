@@ -13,30 +13,32 @@ import { ArrowRight, ArrowLeft, Loader2, GraduationCap, Target, DollarSign, Glob
 const STEPS = ['Academic', 'Goals', 'Budget', 'Location', 'Mode'];
 
 interface OnboardingData {
-  // Step 1: Academic
   currentEducation: string;
   gpa: string;
   testScores: string;
   major: string;
-  
-  // Step 2: Career Goals
   careerField: string;
   dreamJob: string;
   industries: string;
-  
-  // Step 3: Budget
   budgetMin: string;
   budgetMax: string;
   scholarshipNeeded: boolean;
   financialAid: boolean;
-  
-  // Step 4: Location
   preferredCountries: string;
   visaNeeded: boolean;
-  
-  // Step 5: Mode
   mode: 'domestic' | 'international' | 'lifelong';
 }
+
+const HintBox = ({ children, gradient }: { children: React.ReactNode; gradient: string }) => (
+  <div className="relative group/hint mb-6">
+    <div className={`absolute -inset-[1px] ${gradient} rounded-2xl opacity-0 group-hover/hint:opacity-100 transition duration-500 blur-sm`} />
+    <div className="relative bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.15] rounded-2xl p-4 backdrop-blur-xl">
+      <p className="text-white/90 text-sm font-semibold tracking-tight">
+        {children}
+      </p>
+    </div>
+  </div>
+);
 
 export function OnboardingWizard() {
   const router = useRouter();
@@ -89,7 +91,6 @@ export function OnboardingWizard() {
         return;
       }
 
-      // Use upsert to handle both insert and update
       const { error } = await supabase
         .from('profiles')
         .upsert({
@@ -129,9 +130,7 @@ export function OnboardingWizard() {
         throw error;
       }
 
-      // Force a small delay to ensure database is updated
       await new Promise(resolve => setTimeout(resolve, 500));
-
       router.push('/dashboard');
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -171,11 +170,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
-                <p className="text-indigo-300 text-sm font-medium">
-                  💡 Be as detailed as possible so we can find the right match for you
-                </p>
-              </div>
+              <HintBox gradient="bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20">
+                Be as detailed as possible so we can find the right match for you
+              </HintBox>
 
               <div className="space-y-4">
                 <div>
@@ -235,11 +232,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
-                <p className="text-indigo-300 text-sm font-medium">
-                  💡 Be as detailed as possible so we can find the right match for you
-                </p>
-              </div>
+              <HintBox gradient="bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-indigo-500/20">
+                Be as detailed as possible so we can find the right match for you
+              </HintBox>
 
               <div className="space-y-4">
                 <div>
@@ -288,11 +283,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
-                <p className="text-indigo-300 text-sm font-medium">
-                  💡 Be as detailed as possible so we can find the right match for you
-                </p>
-              </div>
+              <HintBox gradient="bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20">
+                Be as detailed as possible so we can find the right match for you
+              </HintBox>
 
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -362,11 +355,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
-                <p className="text-indigo-300 text-sm font-medium">
-                  💡 Be as detailed as possible so we can find the right match for you
-                </p>
-              </div>
+              <HintBox gradient="bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-purple-500/20">
+                Be as detailed as possible so we can find the right match for you
+              </HintBox>
 
               <div className="space-y-4">
                 <div>
