@@ -152,10 +152,7 @@ export function OnboardingWizard() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
             Build Your <span className="gradient-text">Profile</span>
           </h1>
-          <p className="text-white/60 text-lg mb-2">Help us find your perfect matches</p>
-          <p className="text-indigo-400 text-sm font-medium italic">
-            Be as detailed as possible so we can find the right match for you
-          </p>
+          <p className="text-white/60 text-lg">Help us find your perfect matches</p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl">
@@ -172,6 +169,12 @@ export function OnboardingWizard() {
                   <h2 className="text-2xl font-bold text-white">Academic Background</h2>
                   <p className="text-white/60 text-sm">Tell us about your education</p>
                 </div>
+              </div>
+
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
+                <p className="text-indigo-300 text-sm font-medium">
+                  💡 Be as detailed as possible so we can find the right match for you
+                </p>
               </div>
 
               <div className="space-y-4">
@@ -232,6 +235,12 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
+                <p className="text-indigo-300 text-sm font-medium">
+                  💡 Be as detailed as possible so we can find the right match for you
+                </p>
+              </div>
+
               <div className="space-y-4">
                 <div>
                   <Label className="text-white/80">Career Field</Label>
@@ -277,6 +286,12 @@ export function OnboardingWizard() {
                   <h2 className="text-2xl font-bold text-white">Budget & Financial</h2>
                   <p className="text-white/60 text-sm">What's your budget range?</p>
                 </div>
+              </div>
+
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
+                <p className="text-indigo-300 text-sm font-medium">
+                  💡 Be as detailed as possible so we can find the right match for you
+                </p>
               </div>
 
               <div className="space-y-4">
@@ -345,6 +360,12 @@ export function OnboardingWizard() {
                   <h2 className="text-2xl font-bold text-white">Location Preferences</h2>
                   <p className="text-white/60 text-sm">Where do you want to study?</p>
                 </div>
+              </div>
+
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4 mb-6">
+                <p className="text-indigo-300 text-sm font-medium">
+                  💡 Be as detailed as possible so we can find the right match for you
+                </p>
               </div>
 
               <div className="space-y-4">
