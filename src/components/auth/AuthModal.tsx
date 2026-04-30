@@ -20,21 +20,12 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ open, onOpenChange }: AuthModalProps) {
-  const [isSignIn, setIsSignIn] = useState(true);
   const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [termsAccepted, setTermsAccepted] = useState(false);
-  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const { signInWithGoogle, signInWithOtp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!isSignIn && (!termsAccepted || !privacyAccepted)) {
-      alert('Please accept the Terms of Service and Privacy Policy to continue.');
-      return;
-    }
     
     setLoading(true);
     try {
@@ -74,28 +65,14 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
              </svg>
           </div>
           <DialogTitle className="text-2xl font-bold tracking-tight">
-            {isSignIn ? 'Welcome to Rivernova' : 'Create an Account'}
+            Welcome to Rivernova
           </DialogTitle>
           <DialogDescription className="text-white/60">
-            Start your Journey
+            Sign in to continue
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4">
-          <div className="flex bg-white/5 rounded-full p-1 border border-white/5 mx-auto w-[240px]">
-            <button
-              onClick={() => setIsSignIn(true)}
-              className={`flex-1 text-sm font-medium py-2 rounded-full transition-all ${isSignIn ? 'bg-white/10 text-white shadow-sm' : 'text-white/50 hover:text-white'}`}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setIsSignIn(false)}
-              className={`flex-1 text-sm font-medium py-2 rounded-full transition-all ${!isSignIn ? 'bg-white/10 text-white shadow-sm' : 'text-white/50 hover:text-white'}`}
-            >
-              Sign Up
-            </button>
-          </div>
 
           <Button 
             variant="outline" 
@@ -122,19 +99,6 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isSignIn && (
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-white/80">Full Name</Label>
-                <Input 
-                  id="name" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required={!isSignIn}
-                  placeholder="John Doe" 
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus-visible:ring-indigo-500"
-                />
-              </div>
-            )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-white/80">Email</Label>
               <Input 
@@ -148,50 +112,12 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
               />
             </div>
             
-            {!isSignIn && (
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500"
-                    required={!isSignIn}
-                  />
-                  <label htmlFor="terms" className="text-sm text-white/70 leading-relaxed">
-                    I agree to the{' '}
-                    <a href="/terms" target="_blank" className="text-indigo-400 hover:underline">
-                      Terms of Service
-                    </a>
-                  </label>
-                </div>
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="privacy"
-                    checked={privacyAccepted}
-                    onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                    className="mt-1 w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500"
-                    required={!isSignIn}
-                  />
-                  <label htmlFor="privacy" className="text-sm text-white/70 leading-relaxed">
-                    I acknowledge the{' '}
-                    <a href="/privacy" target="_blank" className="text-indigo-400 hover:underline">
-                      Privacy Policy
-                    </a>
-                    {' '}and consent to data processing
-                  </label>
-                </div>
-              </div>
-            )}
-            
             <Button 
                type="submit" 
-               disabled={loading || (!isSignIn && (!termsAccepted || !privacyAccepted))}
+               disabled={loading}
                className="w-full h-12 mt-2 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (isSignIn ? 'Sign In' : 'Create Account')}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
             </Button>
           </form>
         </div>
