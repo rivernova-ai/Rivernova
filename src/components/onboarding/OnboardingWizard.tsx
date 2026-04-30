@@ -152,7 +152,10 @@ export function OnboardingWizard() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
             Build Your <span className="gradient-text">Profile</span>
           </h1>
-          <p className="text-white/60 text-lg">Help us find your perfect matches</p>
+          <p className="text-white/60 text-lg mb-2">Help us find your perfect matches</p>
+          <p className="text-indigo-400 text-sm font-medium italic">
+            Be as detailed as possible so we can find the right match for you
+          </p>
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 backdrop-blur-xl">
