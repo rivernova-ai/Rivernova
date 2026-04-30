@@ -170,9 +170,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <HintBox gradient="bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20">
+              <p className="text-indigo-300 text-sm font-medium mb-6 tracking-tight">
                 Be as detailed as possible so we can find the right match for you
-              </HintBox>
+              </p>
 
               <div className="space-y-4">
                 <div>
@@ -232,9 +232,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <HintBox gradient="bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-indigo-500/20">
+              <p className="text-purple-300 text-sm font-medium mb-6 tracking-tight">
                 Be as detailed as possible so we can find the right match for you
-              </HintBox>
+              </p>
 
               <div className="space-y-4">
                 <div>
@@ -283,9 +283,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <HintBox gradient="bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20">
+              <p className="text-emerald-300 text-sm font-medium mb-6 tracking-tight">
                 Be as detailed as possible so we can find the right match for you
-              </HintBox>
+              </p>
 
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
@@ -355,9 +355,9 @@ export function OnboardingWizard() {
                 </div>
               </div>
 
-              <HintBox gradient="bg-gradient-to-r from-pink-500/20 via-rose-500/20 to-purple-500/20">
+              <p className="text-pink-300 text-sm font-medium mb-6 tracking-tight">
                 Be as detailed as possible so we can find the right match for you
-              </HintBox>
+              </p>
 
               <div className="space-y-4">
                 <div>
