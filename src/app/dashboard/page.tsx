@@ -3,13 +3,16 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
-import { Loader2, Sparkles, CheckCircle2, Search, TrendingUp, MapPin, DollarSign, GraduationCap, Award, Briefcase, Calendar, Heart, Star, Zap, ArrowRight } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle2, Search, TrendingUp, MapPin, DollarSign, GraduationCap, Award, Briefcase, Calendar, Heart, Star, Zap, ArrowRight, Plus, Check } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
 import MatchFilters from '@/components/matches/MatchFilters';
 import MapDistance from '@/components/matches/MapDistance';
 import { stripMarkdown, calculateMatchScore, getMatchScoreColor } from '@/lib/utils';
+import { ComparisonBar } from '@/components/comparison/ComparisonBar';
+import { ComparisonModal } from '@/components/comparison/ComparisonModal';
+import { ComparisonSchool } from '@/lib/comparison';
 
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
@@ -36,6 +39,11 @@ interface SchoolMatch {
   matchScore?: number;
 }
 
+interface ComparisonState {
+  isOpen: boolean;
+  schools: ComparisonSchool[];
+}
+
 export default function Dashboard() {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -51,6 +59,10 @@ export default function Dashboard() {
     location: 'all',
     successRate: 'all',
     programType: 'all',
+  });
+  const [comparison, setComparison] = useState<ComparisonState>({
+    isOpen: false,
+    schools: [],
   });
 
   useEffect(() => {
@@ -83,7 +95,7 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (matchesData && matchesData.length > 0) {
-        const formattedMatches = matchesData.map(match => (({
+        const formattedMatches = matchesData.map(match => ((({
           id: match.id,
           name: stripMarkdown(match.school_name),
           location: stripMarkdown(match.school_data?.location || ''),
@@ -238,12 +250,11 @@ export default function Dashboard() {
 
     const filteredSchools = schools.filter(s => s.name && s.name.length > 0);
     
-    // Calculate match scores for each school
     const schoolsWithScores = filteredSchools.map(school => {
       const tuition = parseInt(school.tuition?.replace(/[^0-9]/g, '') || '0');
       const matchScore = calculateMatchScore({
         userGPA: profile?.academic_background?.gpa ? parseFloat(profile.academic_background.gpa) : undefined,
-        schoolMinGPA: 3.0, // Default assumption
+        schoolMinGPA: 3.0,
         userBudgetMin: profile?.budget?.min,
         userBudgetMax: profile?.budget?.max,
         schoolTuition: tuition,
@@ -253,7 +264,6 @@ export default function Dashboard() {
       return { ...school, matchScore };
     });
     
-    // Sort by match score descending
     const sortedSchools = schoolsWithScores.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
     
     setResults(sortedSchools);
@@ -271,6 +281,37 @@ export default function Dashboard() {
       }
       return newFavorites;
     });
+  };
+
+  const toggleCompare = (school: SchoolMatch) => {
+    setComparison(prev => {
+      const isSelected = prev.schools.some(s => s.name === school.name);
+      if (isSelected) {
+        return {
+          ...prev,
+          schools: prev.schools.filter(s => s.name !== school.name),
+        };
+      }
+      if (prev.schools.length >= 3) {
+        alert('You can compare up to 3 schools at a time');
+        return prev;
+      }
+      return {
+        ...prev,
+        schools: [...prev.schools, school as ComparisonSchool],
+      };
+    });
+  };
+
+  const removeFromComparison = (schoolName: string) => {
+    setComparison(prev => ({
+      ...prev,
+      schools: prev.schools.filter(s => s.name !== schoolName),
+    }));
+  };
+
+  const isSchoolSelected = (schoolName: string) => {
+    return comparison.schools.some(s => s.name === schoolName);
   };
 
   const handleFilterChange = (newFilters: typeof filters) => {
@@ -311,8 +352,8 @@ export default function Dashboard() {
   if (!user || !profile) return null;
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header - Minimal */}
+    <div className="min-h-screen bg-black pb-24">
+      {/* Header */}
       <div className="border-b border-white/5 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 py-6 flex items-center justify-between">
           <div className="space-y-1">
@@ -334,7 +375,7 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 py-12">
-        {/* Profile Summary - Ultra Minimal */}
+        {/* Profile Summary */}
         <div className="mb-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
@@ -422,12 +463,12 @@ export default function Dashboard() {
             {/* Filters */}
             <MatchFilters onFilterChange={handleFilterChange} />
 
-            {/* School Cards - Ultra Sleek */}
+            {/* School Cards */}
             <div className="space-y-6">
               {filteredResults.map((school, idx) => (
                 <div key={idx} className="group">
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6 relative">
-                    {/* Match Score Badge - Top Right */}
+                  <div className={`bg-white/5 border rounded-2xl p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6 relative ${isSchoolSelected(school.name) ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-white/10'}`}>
+                    {/* Match Score Badge */}
                     {school.matchScore !== undefined && (
                       <div className={`absolute top-8 right-8 flex flex-col items-center justify-center w-20 h-20 rounded-2xl border-2 ${getMatchScoreColor(school.matchScore)} backdrop-blur-sm`}>
                         <div className="text-3xl font-black">{school.matchScore}%</div>
@@ -442,16 +483,33 @@ export default function Dashboard() {
                           <h3 className="text-2xl md:text-3xl font-light text-white group-hover:text-indigo-300 transition-colors">
                             {school.name}
                           </h3>
-                          <button
-                            onClick={() => toggleFavorite(idx)}
-                            className={`p-2 rounded-lg transition-all ${
-                              favorites.has(idx)
-                                ? 'bg-pink-500/20 text-pink-400'
-                                : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
-                            }`}
-                          >
-                            <Heart className={`w-5 h-5 ${favorites.has(idx) ? 'fill-current' : ''}`} />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => toggleFavorite(idx)}
+                              className={`p-2 rounded-lg transition-all ${
+                                favorites.has(idx)
+                                  ? 'bg-pink-500/20 text-pink-400'
+                                  : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
+                              }`}
+                            >
+                              <Heart className={`w-5 h-5 ${favorites.has(idx) ? 'fill-current' : ''}`} />
+                            </button>
+                            <button
+                              onClick={() => toggleCompare(school)}
+                              className={`p-2 rounded-lg transition-all ${
+                                isSchoolSelected(school.name)
+                                  ? 'bg-indigo-500/20 text-indigo-400'
+                                  : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
+                              }`}
+                              title="Add to comparison"
+                            >
+                              {isSchoolSelected(school.name) ? (
+                                <Check className="w-5 h-5" />
+                              ) : (
+                                <Plus className="w-5 h-5" />
+                              )}
+                            </button>
+                          </div>
                         </div>
                         {school.location && (
                           <div className="flex items-center gap-2 text-white/50 text-sm font-light">
@@ -478,7 +536,7 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    {/* Stats - Minimal Pills */}
+                    {/* Stats */}
                     {(school.admissionRate || school.ranking || school.employmentRate || school.avgSalary) && (
                       <div className="flex flex-wrap gap-3">
                         {school.admissionRate && (
@@ -549,6 +607,22 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Comparison Bar */}
+      <ComparisonBar
+        selectedSchools={comparison.schools}
+        onViewComparison={() => setComparison(prev => ({ ...prev, isOpen: true }))}
+        onRemoveSchool={removeFromComparison}
+      />
+
+      {/* Comparison Modal */}
+      {comparison.isOpen && profile && (
+        <ComparisonModal
+          schools={comparison.schools}
+          userProfile={profile}
+          onClose={() => setComparison(prev => ({ ...prev, isOpen: false }))}
+        />
+      )}
     </div>
   );
 }
