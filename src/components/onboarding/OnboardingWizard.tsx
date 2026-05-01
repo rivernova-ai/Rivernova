@@ -8,14 +8,23 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { StepIndicator } from './StepIndicator';
 import { createClient } from '@/utils/supabase/client';
-import { ArrowRight, ArrowLeft, Loader2, GraduationCap, Target, DollarSign, Globe, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, GraduationCap, Target, DollarSign, Globe, Sparkles, AlertCircle } from 'lucide-react';
+import {
+  validateGPA,
+  validateSATScore,
+  validateACTScore,
+  validateDreamJob,
+  validateCareerField,
+  validateBudgetRange,
+} from '@/lib/validation';
 
 const STEPS = ['Academic', 'Goals', 'Budget', 'Location', 'Mode'];
 
 interface OnboardingData {
   currentEducation: string;
   gpa: string;
-  testScores: string;
+  satScore: string;
+  actScore: string;
   major: string;
   careerField: string;
   dreamJob: string;
@@ -27,6 +36,10 @@ interface OnboardingData {
   preferredCountries: string;
   visaNeeded: boolean;
   mode: 'domestic' | 'international' | 'lifelong';
+}
+
+interface FieldErrors {
+  [key: string]: string;
 }
 
 const HintBox = ({ children, gradient }: { children: React.ReactNode; gradient: string }) => (
@@ -44,10 +57,12 @@ export function OnboardingWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [data, setData] = useState<OnboardingData>({
     currentEducation: '',
     gpa: '',
-    testScores: '',
+    satScore: '',
+    actScore: '',
     major: '',
     careerField: '',
     dreamJob: '',
@@ -63,9 +78,93 @@ export function OnboardingWizard() {
 
   const updateData = (field: keyof OnboardingData, value: any) => {
     setData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear error for this field
+    setFieldErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+    
+    // Validate field on change
+    validateField(field, value);
+  };
+
+  const validateField = (field: keyof OnboardingData, value: string) => {
+    let error: string | undefined;
+
+    if (field === 'gpa') {
+      const validation = validateGPA(value);
+      error = validation.error;
+    } else if (field === 'satScore') {
+      const validation = validateSATScore(value);
+      error = validation.error;
+    } else if (field === 'actScore') {
+      const validation = validateACTScore(value);
+      error = validation.error;
+    } else if (field === 'dreamJob') {
+      const validation = validateDreamJob(value);
+      error = validation.error;
+    } else if (field === 'careerField') {
+      const validation = validateCareerField(value);
+      error = validation.error;
+    }
+
+    setFieldErrors(prev => {
+      if (error) {
+        return { ...prev, [field]: error };
+      } else {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      }
+    });
+  };
+
+  const validateStep = (): boolean => {
+    const stepErrors: FieldErrors = {};
+
+    if (currentStep === 1) {
+      // Validate academic fields
+      if (data.gpa) {
+        const gpaValidation = validateGPA(data.gpa);
+        if (!gpaValidation.isValid) stepErrors.gpa = gpaValidation.error || 'Invalid GPA';
+      }
+      if (data.satScore) {
+        const satValidation = validateSATScore(data.satScore);
+        if (!satValidation.isValid) stepErrors.satScore = satValidation.error || 'Invalid SAT score';
+      }
+      if (data.actScore) {
+        const actValidation = validateACTScore(data.actScore);
+        if (!actValidation.isValid) stepErrors.actScore = actValidation.error || 'Invalid ACT score';
+      }
+    } else if (currentStep === 2) {
+      // Validate career fields
+      if (data.careerField) {
+        const careerValidation = validateCareerField(data.careerField);
+        if (!careerValidation.isValid) stepErrors.careerField = careerValidation.error || 'Invalid career field';
+      }
+      if (data.dreamJob) {
+        const dreamJobValidation = validateDreamJob(data.dreamJob);
+        if (!dreamJobValidation.isValid) stepErrors.dreamJob = dreamJobValidation.error || 'Invalid dream job';
+      }
+    } else if (currentStep === 3) {
+      // Validate budget fields
+      if (data.budgetMin || data.budgetMax) {
+        const budgetValidation = validateBudgetRange(data.budgetMin, data.budgetMax);
+        if (!budgetValidation.isValid) stepErrors.budgetRange = budgetValidation.error || 'Invalid budget range';
+      }
+    }
+
+    setFieldErrors(stepErrors);
+    return Object.keys(stepErrors).length === 0;
   };
 
   const handleNext = () => {
+    if (!validateStep()) {
+      return;
+    }
+    
     if (currentStep < 5) {
       setCurrentStep(prev => prev + 1);
     } else {
@@ -76,10 +175,15 @@ export function OnboardingWizard() {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
+      setFieldErrors({});
     }
   };
 
   const handleSubmit = async () => {
+    if (!validateStep()) {
+      return;
+    }
+
     setLoading(true);
     try {
       const supabase = createClient();
@@ -100,7 +204,8 @@ export function OnboardingWizard() {
           academic_background: {
             currentEducation: data.currentEducation,
             gpa: data.gpa,
-            testScores: data.testScores,
+            satScore: data.satScore,
+            actScore: data.actScore,
             major: data.major,
           },
           career_goals: {
@@ -140,6 +245,39 @@ export function OnboardingWizard() {
     }
   };
 
+  const FormField = ({ label, field, type = 'text', placeholder, hint, error }: any) => (
+    <div className="space-y-2">
+      <Label className="text-white/80">{label}</Label>
+      {type === 'textarea' ? (
+        <Textarea
+          value={data[field as keyof OnboardingData] || ''}
+          onChange={(e) => updateData(field as keyof OnboardingData, e.target.value)}
+          placeholder={placeholder}
+          className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl mt-2 min-h-[120px] ${
+            error ? 'border-red-500/50' : ''
+          }`}
+        />
+      ) : (
+        <Input
+          type={type}
+          value={data[field as keyof OnboardingData] || ''}
+          onChange={(e) => updateData(field as keyof OnboardingData, e.target.value)}
+          placeholder={placeholder}
+          className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2 ${
+            error ? 'border-red-500/50' : ''
+          }`}
+        />
+      )}
+      {error && (
+        <div className="flex items-center gap-2 text-red-400 text-sm font-light">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </div>
+      )}
+      {hint && !error && <p className="text-white/40 text-xs mt-1">{hint}</p>}
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-3xl">
@@ -175,46 +313,52 @@ export function OnboardingWizard() {
               </p>
 
               <div className="space-y-4">
-                <div>
-                  <Label className="text-white/80">Current Education Level</Label>
-                  <Input
-                    value={data.currentEducation}
-                    onChange={(e) => updateData('currentEducation', e.target.value)}
-                    placeholder="e.g., High School Senior, Bachelor's Degree"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
+                <FormField
+                  label="Current Education Level"
+                  field="currentEducation"
+                  placeholder="e.g., High School Senior, Bachelor's Degree"
+                />
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <FormField
+                    label="GPA / Grade"
+                    field="gpa"
+                    type="number"
+                    placeholder="0.0 - 4.0"
+                    hint="Enter a number between 0.0 and 4.0"
+                    error={fieldErrors.gpa}
+                  />
+                  <FormField
+                    label="Current Education Level"
+                    field="currentEducation"
+                    placeholder="e.g., High School Senior"
                   />
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-white/80">GPA / Grade</Label>
-                    <Input
-                      value={data.gpa}
-                      onChange={(e) => updateData('gpa', e.target.value)}
-                      placeholder="e.g., 3.8 / 4.0"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white/80">Test Scores (Optional)</Label>
-                    <Input
-                      value={data.testScores}
-                      onChange={(e) => updateData('testScores', e.target.value)}
-                      placeholder="e.g., SAT 1450, IELTS 7.5"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-white/80">Intended Major / Field of Study</Label>
-                  <Input
-                    value={data.major}
-                    onChange={(e) => updateData('major', e.target.value)}
-                    placeholder="e.g., Computer Science, Business, Medicine"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
+                  <FormField
+                    label="SAT Score (Optional)"
+                    field="satScore"
+                    type="number"
+                    placeholder="400 - 1600"
+                    hint="Enter a number between 400 and 1600"
+                    error={fieldErrors.satScore}
+                  />
+                  <FormField
+                    label="ACT Score (Optional)"
+                    field="actScore"
+                    type="number"
+                    placeholder="1 - 36"
+                    hint="Enter a number between 1 and 36"
+                    error={fieldErrors.actScore}
                   />
                 </div>
+
+                <FormField
+                  label="Intended Major / Field of Study"
+                  field="major"
+                  placeholder="e.g., Computer Science, Business, Medicine"
+                />
               </div>
             </div>
           )}
@@ -237,35 +381,28 @@ export function OnboardingWizard() {
               </p>
 
               <div className="space-y-4">
-                <div>
-                  <Label className="text-white/80">Career Field</Label>
-                  <Input
-                    value={data.careerField}
-                    onChange={(e) => updateData('careerField', e.target.value)}
-                    placeholder="e.g., Technology, Healthcare, Finance"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
-                  />
-                </div>
+                <FormField
+                  label="Career Field"
+                  field="careerField"
+                  placeholder="e.g., Technology, Healthcare, Finance"
+                  hint="Text only, no numbers"
+                  error={fieldErrors.careerField}
+                />
 
-                <div>
-                  <Label className="text-white/80">Dream Job</Label>
-                  <Input
-                    value={data.dreamJob}
-                    onChange={(e) => updateData('dreamJob', e.target.value)}
-                    placeholder="e.g., Software Engineer, Doctor, Investment Banker"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
-                  />
-                </div>
+                <FormField
+                  label="Dream Job"
+                  field="dreamJob"
+                  placeholder="e.g., Software Engineer, Doctor, Investment Banker"
+                  hint="Text only, minimum 3 characters, no numbers"
+                  error={fieldErrors.dreamJob}
+                />
 
-                <div>
-                  <Label className="text-white/80">Industries of Interest</Label>
-                  <Textarea
-                    value={data.industries}
-                    onChange={(e) => updateData('industries', e.target.value)}
-                    placeholder="Tell us about the industries you're interested in..."
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl mt-2 min-h-[120px]"
-                  />
-                </div>
+                <FormField
+                  label="Industries of Interest"
+                  field="industries"
+                  type="textarea"
+                  placeholder="Tell us about the industries you're interested in..."
+                />
               </div>
             </div>
           )}
@@ -289,26 +426,22 @@ export function OnboardingWizard() {
 
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-white/80">Minimum Budget (USD/year)</Label>
-                    <Input
-                      type="number"
-                      value={data.budgetMin}
-                      onChange={(e) => updateData('budgetMin', e.target.value)}
-                      placeholder="e.g., 10000"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-white/80">Maximum Budget (USD/year)</Label>
-                    <Input
-                      type="number"
-                      value={data.budgetMax}
-                      onChange={(e) => updateData('budgetMax', e.target.value)}
-                      placeholder="e.g., 50000"
-                      className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2"
-                    />
-                  </div>
+                  <FormField
+                    label="Minimum Budget (USD/year)"
+                    field="budgetMin"
+                    type="number"
+                    placeholder="e.g., 10000"
+                    hint="Numbers only"
+                    error={fieldErrors.budgetMin}
+                  />
+                  <FormField
+                    label="Maximum Budget (USD/year)"
+                    field="budgetMax"
+                    type="number"
+                    placeholder="e.g., 50000"
+                    hint="Must be greater than minimum"
+                    error={fieldErrors.budgetMax || fieldErrors.budgetRange}
+                  />
                 </div>
 
                 <div className="space-y-3">
@@ -360,16 +493,13 @@ export function OnboardingWizard() {
               </p>
 
               <div className="space-y-4">
-                <div>
-                  <Label className="text-white/80">Preferred Countries</Label>
-                  <Textarea
-                    value={data.preferredCountries}
-                    onChange={(e) => updateData('preferredCountries', e.target.value)}
-                    placeholder="e.g., United States, United Kingdom, Canada, Australia, Germany"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl mt-2 min-h-[100px]"
-                  />
-                  <p className="text-white/40 text-xs mt-2">Separate multiple countries with commas</p>
-                </div>
+                <FormField
+                  label="Preferred Countries"
+                  field="preferredCountries"
+                  type="textarea"
+                  placeholder="e.g., United States, United Kingdom, Canada, Australia, Germany"
+                  hint="Separate multiple countries with commas"
+                />
 
                 <label className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
                   <input
@@ -458,8 +588,8 @@ export function OnboardingWizard() {
 
             <Button
               onClick={handleNext}
-              disabled={loading}
-              className="rounded-xl h-12 px-6 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all"
+              disabled={loading || Object.keys(fieldErrors).length > 0}
+              className="rounded-xl h-12 px-6 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all disabled:opacity-50"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

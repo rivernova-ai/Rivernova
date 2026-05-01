@@ -8,7 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ArrowLeft, Check, GraduationCap, Target, DollarSign, Globe, Sparkles } from 'lucide-react';
+import { Loader2, ArrowLeft, Check, GraduationCap, Target, DollarSign, Globe, Sparkles, AlertCircle } from 'lucide-react';
+import {
+  validateGPA,
+  validateSATScore,
+  validateACTScore,
+  validateDreamJob,
+  validateCareerField,
+  validateBudgetRange,
+} from '@/lib/validation';
 
 interface Profile {
   id: string;
@@ -16,7 +24,8 @@ interface Profile {
   academic_background: {
     currentEducation: string;
     gpa: string;
-    testScores: string;
+    satScore?: string;
+    actScore?: string;
     major: string;
   };
   career_goals: {
@@ -37,6 +46,10 @@ interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
 }
 
+interface FieldErrors {
+  [key: string]: string;
+}
+
 export default function EditProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -45,6 +58,7 @@ export default function EditProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [savedField, setSavedField] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -85,10 +99,87 @@ export default function EditProfilePage() {
       };
     });
     setHasChanges(true);
+    
+    // Clear error for this field when user starts typing
+    setFieldErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[`${section}.${field}`];
+      return newErrors;
+    });
+    
+    // Validate field on change
+    validateField(section, field, value);
+  };
+
+  const validateField = (section: string, field: string, value: string) => {
+    const fieldKey = `${section}.${field}`;
+    let error: string | undefined;
+
+    if (section === 'academic_background') {
+      if (field === 'gpa') {
+        const validation = validateGPA(value);
+        error = validation.error;
+      } else if (field === 'satScore') {
+        const validation = validateSATScore(value);
+        error = validation.error;
+      } else if (field === 'actScore') {
+        const validation = validateACTScore(value);
+        error = validation.error;
+      }
+    } else if (section === 'career_goals') {
+      if (field === 'dreamJob') {
+        const validation = validateDreamJob(value);
+        error = validation.error;
+      } else if (field === 'careerField') {
+        const validation = validateCareerField(value);
+        error = validation.error;
+      }
+    }
+
+    setFieldErrors(prev => {
+      if (error) {
+        return { ...prev, [fieldKey]: error };
+      } else {
+        const newErrors = { ...prev };
+        delete newErrors[fieldKey];
+        return newErrors;
+      }
+    });
+  };
+
+  const validateBudgetFields = () => {
+    if (!profile) return true;
+    
+    const validation = validateBudgetRange(profile.budget.min, profile.budget.max);
+    if (!validation.isValid) {
+      setFieldErrors(prev => ({
+        ...prev,
+        'budget.range': validation.error || 'Invalid budget range',
+      }));
+      return false;
+    } else {
+      setFieldErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors['budget.range'];
+        return newErrors;
+      });
+      return true;
+    }
   };
 
   const saveAllChanges = async () => {
     if (!profile || !user) return;
+
+    // Validate all fields before saving
+    if (!validateBudgetFields()) {
+      return;
+    }
+
+    // Check for any existing errors
+    if (Object.keys(fieldErrors).length > 0) {
+      alert('Please fix all validation errors before saving.');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -126,6 +217,39 @@ export default function EditProfilePage() {
 
   if (!profile) return null;
 
+  const FormField = ({ label, field, section, type = 'text', placeholder, hint, error }: any) => (
+    <div className="space-y-2">
+      <Label className="text-sm text-white/60 font-light">{label}</Label>
+      {type === 'textarea' ? (
+        <Textarea
+          value={profile[section as keyof Profile][field] || ''}
+          onChange={(e) => updateField(section, field, e.target.value)}
+          placeholder={placeholder}
+          className={`bg-white/5 border rounded-xl min-h-[100px] font-light text-white placeholder:text-white/30 ${
+            error ? 'border-red-500/50' : 'border-white/10'
+          }`}
+        />
+      ) : (
+        <Input
+          type={type}
+          value={profile[section as keyof Profile][field] || ''}
+          onChange={(e) => updateField(section, field, e.target.value)}
+          placeholder={placeholder}
+          className={`bg-white/5 border h-11 rounded-xl font-light text-white placeholder:text-white/30 ${
+            error ? 'border-red-500/50' : 'border-white/10'
+          }`}
+        />
+      )}
+      {error && (
+        <div className="flex items-center gap-2 text-red-400 text-sm font-light">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </div>
+      )}
+      {hint && !error && <p className="text-xs text-white/40 font-light">{hint}</p>}
+    </div>
+  );
+
   const EditSection = ({ title, icon: Icon, fields, section }: any) => (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -137,36 +261,16 @@ export default function EditProfilePage() {
 
       <div className="space-y-4">
         {fields.map((field: any) => (
-          <div key={field.key} className="space-y-2">
-            <Label className="text-sm text-white/60 font-light">{field.label}</Label>
-            {field.type === 'textarea' ? (
-              <Textarea
-                value={profile[section as keyof Profile][field.key] || ''}
-                onChange={(e) => updateField(section, field.key, e.target.value)}
-                placeholder={field.placeholder}
-                className="bg-white/5 border border-white/10 text-white placeholder:text-white/30 rounded-xl min-h-[100px] font-light"
-              />
-            ) : field.type === 'checkbox' ? (
-              <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={profile[section as keyof Profile][field.key] || false}
-                  onChange={(e) => updateField(section, field.key, e.target.checked)}
-                  className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
-                />
-                <span className="text-white/80 font-light">{field.label}</span>
-              </label>
-            ) : (
-              <Input
-                type={field.type || 'text'}
-                value={profile[section as keyof Profile][field.key] || ''}
-                onChange={(e) => updateField(section, field.key, e.target.value)}
-                placeholder={field.placeholder}
-                className="bg-white/5 border border-white/10 text-white placeholder:text-white/30 h-11 rounded-xl font-light"
-              />
-            )}
-            {field.hint && <p className="text-xs text-white/40 font-light">{field.hint}</p>}
-          </div>
+          <FormField
+            key={field.key}
+            label={field.label}
+            field={field.key}
+            section={section}
+            type={field.type}
+            placeholder={field.placeholder}
+            hint={field.hint}
+            error={fieldErrors[`${section}.${field.key}`]}
+          />
         ))}
       </div>
     </div>
@@ -192,8 +296,8 @@ export default function EditProfilePage() {
           {hasChanges && (
             <Button
               onClick={saveAllChanges}
-              disabled={saving}
-              className="rounded-full bg-white text-black hover:bg-white/90 text-sm font-medium h-10 px-6 transition-all"
+              disabled={saving || Object.keys(fieldErrors).length > 0}
+              className="rounded-full bg-white text-black hover:bg-white/90 text-sm font-medium h-10 px-6 transition-all disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -217,8 +321,9 @@ export default function EditProfilePage() {
           section="academic_background"
           fields={[
             { key: 'currentEducation', label: 'Current Education Level', placeholder: 'e.g., High School Senior' },
-            { key: 'gpa', label: 'GPA / Grade', placeholder: 'e.g., 3.8 / 4.0' },
-            { key: 'testScores', label: 'Test Scores (Optional)', placeholder: 'e.g., SAT 1450, IELTS 7.5' },
+            { key: 'gpa', label: 'GPA / Grade', type: 'number', placeholder: '0.0 - 4.0', hint: 'Enter a number between 0.0 and 4.0' },
+            { key: 'satScore', label: 'SAT Score (Optional)', type: 'number', placeholder: '400 - 1600', hint: 'Enter a number between 400 and 1600' },
+            { key: 'actScore', label: 'ACT Score (Optional)', type: 'number', placeholder: '1 - 36', hint: 'Enter a number between 1 and 36' },
             { key: 'major', label: 'Intended Major / Field of Study', placeholder: 'e.g., Computer Science' },
           ]}
         />
@@ -229,24 +334,64 @@ export default function EditProfilePage() {
           icon={Target}
           section="career_goals"
           fields={[
-            { key: 'careerField', label: 'Career Field', placeholder: 'e.g., Technology, Healthcare' },
-            { key: 'dreamJob', label: 'Dream Job', placeholder: 'e.g., Software Engineer' },
+            { key: 'careerField', label: 'Career Field', placeholder: 'e.g., Technology, Healthcare', hint: 'Text only, no numbers' },
+            { key: 'dreamJob', label: 'Dream Job', placeholder: 'e.g., Software Engineer', hint: 'Text only, minimum 3 characters, no numbers' },
             { key: 'industries', label: 'Industries of Interest', type: 'textarea', placeholder: 'Tell us about your interests...' },
           ]}
         />
 
         {/* Budget & Financial */}
-        <EditSection
-          title="Budget & Financial"
-          icon={DollarSign}
-          section="budget"
-          fields={[
-            { key: 'min', label: 'Minimum Budget (USD/year)', type: 'number', placeholder: 'e.g., 10000' },
-            { key: 'max', label: 'Maximum Budget (USD/year)', type: 'number', placeholder: 'e.g., 50000' },
-            { key: 'scholarshipNeeded', label: 'I need scholarship opportunities', type: 'checkbox' },
-            { key: 'financialAid', label: 'I need financial aid', type: 'checkbox' },
-          ]}
-        />
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
+              <DollarSign className="w-5 h-5 text-indigo-400" />
+            </div>
+            <h2 className="text-2xl font-light text-white">Budget & Financial</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <FormField
+                label="Minimum Budget (USD/year)"
+                field="min"
+                section="budget"
+                type="number"
+                placeholder="e.g., 10000"
+                hint="Numbers only"
+                error={fieldErrors['budget.min']}
+              />
+              <FormField
+                label="Maximum Budget (USD/year)"
+                field="max"
+                section="budget"
+                type="number"
+                placeholder="e.g., 50000"
+                hint="Must be greater than minimum"
+                error={fieldErrors['budget.max'] || fieldErrors['budget.range']}
+              />
+            </div>
+
+            <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
+              <input
+                type="checkbox"
+                checked={profile.budget.scholarshipNeeded || false}
+                onChange={(e) => updateField('budget', 'scholarshipNeeded', e.target.checked)}
+                className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
+              />
+              <span className="text-white/80 font-light">I need scholarship opportunities</span>
+            </label>
+
+            <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
+              <input
+                type="checkbox"
+                checked={profile.budget.financialAid || false}
+                onChange={(e) => updateField('budget', 'financialAid', e.target.checked)}
+                className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
+              />
+              <span className="text-white/80 font-light">I need financial aid</span>
+            </label>
+          </div>
+        </div>
 
         {/* Location Preferences */}
         <EditSection
@@ -255,9 +400,18 @@ export default function EditProfilePage() {
           section="location_preferences"
           fields={[
             { key: 'preferredCountries', label: 'Preferred Countries', type: 'textarea', placeholder: 'e.g., United States, United Kingdom, Canada', hint: 'Separate multiple countries with commas' },
-            { key: 'visaNeeded', label: 'I will need visa assistance', type: 'checkbox' },
           ]}
         />
+
+        <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
+          <input
+            type="checkbox"
+            checked={profile.location_preferences.visaNeeded || false}
+            onChange={(e) => updateField('location_preferences', 'visaNeeded', e.target.checked)}
+            className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
+          />
+          <span className="text-white/80 font-light">I will need visa assistance</span>
+        </label>
 
         {/* Mode Selection */}
         <div className="space-y-6">
