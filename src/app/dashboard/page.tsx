@@ -82,7 +82,7 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (matchesData && matchesData.length > 0) {
-        const formattedMatches = matchesData.map(match => ({
+        const formattedMatches = matchesData.map(match => (({
           id: match.id,
           name: cleanAIText(match.school_name),
           location: cleanAIText(match.school_data?.location || ''),
@@ -95,7 +95,7 @@ export default function Dashboard() {
           avgSalary: cleanAIText(match.school_data?.avgSalary || ''),
           scholarships: cleanAIText(match.school_data?.scholarships || ''),
           deadline: cleanAIText(match.school_data?.deadline || ''),
-        }));
+        })));
         setResults(formattedMatches);
         setFilteredResults(formattedMatches);
       }
@@ -299,7 +299,16 @@ export default function Dashboard() {
             <p className="text-xs text-white/40 font-light uppercase tracking-wider">Welcome back</p>
             <h1 className="text-2xl md:text-3xl font-light text-white">{profile.full_name || 'Dashboard'}</h1>
           </div>
-          <ModeToggle currentMode={profile.mode} onChange={handleModeChange} />
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => router.push('/dashboard/edit-profile')}
+              variant="outline"
+              className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-full h-10 px-6 text-sm font-light"
+            >
+              Edit Profile
+            </Button>
+            <ModeToggle currentMode={profile.mode} onChange={handleModeChange} />
+          </div>
         </div>
       </div>
 
