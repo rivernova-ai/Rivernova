@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MapDistance from './MapDistance';
-import { stripMarkdown } from '@/lib/utils';
+import { stripMarkdown, getMatchScoreColor } from '@/lib/utils';
 
 export interface Match {
   id?: string;
@@ -12,6 +12,7 @@ export interface Match {
   location: string;
   programName: string;
   successProbability: number;
+  matchScore?: number;
   reasoning: string;
   costBreakdown: {
     tuition: number;
@@ -53,7 +54,15 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
   };
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 hover:border-white/20 transition-all group">
+    <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 hover:border-white/20 transition-all group relative">
+      {/* Match Score Badge - Top Right */}
+      {match.matchScore !== undefined && (
+        <div className={`absolute top-6 right-6 md:top-8 md:right-8 flex flex-col items-center justify-center w-20 h-20 rounded-2xl border-2 ${getMatchScoreColor(match.matchScore)} backdrop-blur-sm`}>
+          <div className="text-3xl font-black">{match.matchScore}%</div>
+          <div className="text-xs font-bold uppercase tracking-wider opacity-80">Match</div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex-1">

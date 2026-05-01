@@ -9,7 +9,7 @@ import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
 import MatchFilters from '@/components/matches/MatchFilters';
 import MapDistance from '@/components/matches/MapDistance';
-import { stripMarkdown } from '@/lib/utils';
+import { stripMarkdown, calculateMatchScore, getMatchScoreColor } from '@/lib/utils';
 
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
@@ -33,6 +33,7 @@ interface SchoolMatch {
   avgSalary?: string;
   scholarships?: string;
   deadline?: string;
+  matchScore?: number;
 }
 
 export default function Dashboard() {
@@ -236,9 +237,28 @@ export default function Dashboard() {
     }
 
     const filteredSchools = schools.filter(s => s.name && s.name.length > 0);
-    setResults(filteredSchools);
-    setFilteredResults(filteredSchools);
-    return filteredSchools;
+    
+    // Calculate match scores for each school
+    const schoolsWithScores = filteredSchools.map(school => {
+      const tuition = parseInt(school.tuition?.replace(/[^0-9]/g, '') || '0');
+      const matchScore = calculateMatchScore({
+        userGPA: profile?.academic_background?.gpa ? parseFloat(profile.academic_background.gpa) : undefined,
+        schoolMinGPA: 3.0, // Default assumption
+        userBudgetMin: profile?.budget?.min,
+        userBudgetMax: profile?.budget?.max,
+        schoolTuition: tuition,
+        programAvailable: true,
+        locationMatch: true,
+      });
+      return { ...school, matchScore };
+    });
+    
+    // Sort by match score descending
+    const sortedSchools = schoolsWithScores.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+    
+    setResults(sortedSchools);
+    setFilteredResults(sortedSchools);
+    return sortedSchools;
   };
 
   const toggleFavorite = (index: number) => {
@@ -406,7 +426,15 @@ export default function Dashboard() {
             <div className="space-y-6">
               {filteredResults.map((school, idx) => (
                 <div key={idx} className="group">
-                  <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6 relative">
+                    {/* Match Score Badge - Top Right */}
+                    {school.matchScore !== undefined && (
+                      <div className={`absolute top-8 right-8 flex flex-col items-center justify-center w-20 h-20 rounded-2xl border-2 ${getMatchScoreColor(school.matchScore)} backdrop-blur-sm`}>
+                        <div className="text-3xl font-black">{school.matchScore}%</div>
+                        <div className="text-xs font-bold uppercase tracking-wider opacity-80">Match</div>
+                      </div>
+                    )}
+
                     {/* Header */}
                     <div className="flex items-start justify-between gap-6">
                       <div className="flex-1 space-y-3">

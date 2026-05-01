@@ -56,3 +56,73 @@ export function stripMarkdown(text: string | undefined | null): string {
 export function cleanAIText(text: string | undefined | null): string {
   return stripMarkdown(text);
 }
+
+/**
+ * Calculates AI match score based on user profile and school data
+ * Weights: GPA alignment (40%), Budget fit (30%), Program availability (20%), Location preference (10%)
+ * @returns Score from 0-100
+ */
+export function calculateMatchScore(params: {
+  userGPA?: number;
+  schoolMinGPA?: number;
+  userBudgetMin?: number;
+  userBudgetMax?: number;
+  schoolTuition?: number;
+  programAvailable?: boolean;
+  locationMatch?: boolean;
+}): number {
+  let score = 0;
+  const weights = {
+    gpa: 0.4,
+    budget: 0.3,
+    program: 0.2,
+    location: 0.1,
+  };
+
+  // GPA Alignment (40%)
+  if (params.userGPA !== undefined && params.schoolMinGPA !== undefined) {
+    const gpaDiff = params.userGPA - params.schoolMinGPA;
+    const gpaScore = Math.min(100, Math.max(0, 50 + gpaDiff * 10));
+    score += gpaScore * weights.gpa;
+  } else {
+    score += 75 * weights.gpa; // Default to 75 if no data
+  }
+
+  // Budget Fit (30%)
+  if (
+    params.userBudgetMin !== undefined &&
+    params.userBudgetMax !== undefined &&
+    params.schoolTuition !== undefined
+  ) {
+    if (params.schoolTuition >= params.userBudgetMin && params.schoolTuition <= params.userBudgetMax) {
+      score += 100 * weights.budget;
+    } else if (params.schoolTuition < params.userBudgetMin) {
+      const diff = params.userBudgetMin - params.schoolTuition;
+      const budgetScore = Math.max(50, 100 - (diff / params.userBudgetMin) * 50);
+      score += budgetScore * weights.budget;
+    } else {
+      const diff = params.schoolTuition - params.userBudgetMax;
+      const budgetScore = Math.max(30, 100 - (diff / params.userBudgetMax) * 70);
+      score += budgetScore * weights.budget;
+    }
+  } else {
+    score += 70 * weights.budget; // Default to 70 if no data
+  }
+
+  // Program Availability (20%)
+  score += (params.programAvailable !== false ? 100 : 50) * weights.program;
+
+  // Location Preference (10%)
+  score += (params.locationMatch !== false ? 100 : 60) * weights.location;
+
+  return Math.round(score);
+}
+
+/**
+ * Gets color class for match score badge
+ */
+export function getMatchScoreColor(score: number): string {
+  if (score >= 85) return 'bg-purple-500/20 border-purple-500/30 text-purple-300';
+  if (score >= 70) return 'bg-blue-500/20 border-blue-500/30 text-blue-300';
+  return 'bg-gray-500/20 border-gray-500/30 text-gray-300';
+}

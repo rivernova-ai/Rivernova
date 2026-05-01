@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sparkles, MapPin, DollarSign, TrendingUp, ExternalLink, Info } from 'lucide-react';
 import MatchFilters from '@/components/matches/MatchFilters';
-import { stripMarkdown } from '@/lib/utils';
+import { stripMarkdown, getMatchScoreColor } from '@/lib/utils';
 
 interface MatchResultsProps {
   matches: any[];
@@ -74,9 +74,9 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
         {filteredMatches.map((match, i) => (
           <Card key={i} className="bg-[#0c0c10] border-white/10 rounded-[32px] p-8 hover:border-white/20 transition-all group relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8">
-              <div className="w-16 h-16 rounded-full border border-white/5 flex flex-col items-center justify-center bg-white/5 group-hover:bg-indigo-500/10 transition-colors">
-                 <span className="text-xs font-black text-white/40 group-hover:text-indigo-400 leading-none">SCORE</span>
-                 <span className="text-xl font-black text-white">{match.match_score || match.matchScore}</span>
+              <div className={`w-24 h-24 rounded-2xl border-2 flex flex-col items-center justify-center ${getMatchScoreColor(match.match_score || match.matchScore || 0)} backdrop-blur-sm`}>
+                 <span className="text-2xl font-black">{match.match_score || match.matchScore}%</span>
+                 <span className="text-xs font-bold uppercase tracking-wider opacity-80">Match</span>
               </div>
             </div>
 
