@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sparkles, MapPin, DollarSign, TrendingUp, ExternalLink, Info } from 'lucide-react';
 import MatchFilters from '@/components/matches/MatchFilters';
-import { cleanAIText } from '@/lib/utils';
+import { stripMarkdown } from '@/lib/utils';
 
 interface MatchResultsProps {
   matches: any[];
@@ -86,11 +86,11 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
                   {match.category || 'Target'}
                 </Badge>
                 <h3 className="text-2xl font-black text-white tracking-tight group-hover:text-indigo-400 transition-colors">
-                  {cleanAIText(match.name)}
+                  {stripMarkdown(match.name)}
                 </h3>
                 <div className="flex items-center gap-2 text-white/40 text-sm mt-1">
                   <MapPin className="w-3.5 h-3.5" />
-                  {cleanAIText(match.location)}
+                  {stripMarkdown(match.location)}
                 </div>
               </div>
 
@@ -100,20 +100,20 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
                     <DollarSign className="w-3 h-3" />
                     Est. Tuition
                   </div>
-                  <div className="text-lg font-bold text-white">{cleanAIText(match.tuition)}</div>
+                  <div className="text-lg font-bold text-white">{stripMarkdown(match.tuition)}</div>
                 </div>
                 <div className="bg-emerald-500/5 rounded-2xl p-4 border border-emerald-500/10">
                   <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400/50 uppercase tracking-widest mb-1">
                     <TrendingUp className="w-3 h-3" />
                     Projected ROI
                   </div>
-                  <div className="text-lg font-bold text-emerald-400">{cleanAIText(match.roi)}</div>
+                  <div className="text-lg font-bold text-emerald-400">{stripMarkdown(match.roi)}</div>
                 </div>
               </div>
 
               <div className="flex-1">
                 <p className="text-sm text-white/50 leading-relaxed italic border-l-2 border-indigo-500/20 pl-4 py-2">
-                  "{cleanAIText(match.reasoning)}"
+                  "{stripMarkdown(match.reasoning)}"
                 </p>
               </div>
 

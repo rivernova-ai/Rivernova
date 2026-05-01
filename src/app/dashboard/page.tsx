@@ -9,7 +9,7 @@ import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
 import MatchFilters from '@/components/matches/MatchFilters';
 import MapDistance from '@/components/matches/MapDistance';
-import { cleanAIText } from '@/lib/utils';
+import { stripMarkdown } from '@/lib/utils';
 
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
@@ -84,17 +84,17 @@ export default function Dashboard() {
       if (matchesData && matchesData.length > 0) {
         const formattedMatches = matchesData.map(match => (({
           id: match.id,
-          name: cleanAIText(match.school_name),
-          location: cleanAIText(match.school_data?.location || ''),
-          program: cleanAIText(match.school_data?.programName || ''),
-          tuition: cleanAIText(match.school_data?.tuition || ''),
-          highlights: (match.school_data?.highlights || []).map((h: string) => cleanAIText(h)),
-          admissionRate: cleanAIText(match.school_data?.admissionRate || ''),
-          ranking: cleanAIText(match.school_data?.ranking || ''),
-          employmentRate: cleanAIText(match.school_data?.employmentRate || ''),
-          avgSalary: cleanAIText(match.school_data?.avgSalary || ''),
-          scholarships: cleanAIText(match.school_data?.scholarships || ''),
-          deadline: cleanAIText(match.school_data?.deadline || ''),
+          name: stripMarkdown(match.school_name),
+          location: stripMarkdown(match.school_data?.location || ''),
+          program: stripMarkdown(match.school_data?.programName || ''),
+          tuition: stripMarkdown(match.school_data?.tuition || ''),
+          highlights: (match.school_data?.highlights || []).map((h: string) => stripMarkdown(h)),
+          admissionRate: stripMarkdown(match.school_data?.admissionRate || ''),
+          ranking: stripMarkdown(match.school_data?.ranking || ''),
+          employmentRate: stripMarkdown(match.school_data?.employmentRate || ''),
+          avgSalary: stripMarkdown(match.school_data?.avgSalary || ''),
+          scholarships: stripMarkdown(match.school_data?.scholarships || ''),
+          deadline: stripMarkdown(match.school_data?.deadline || ''),
         })));
         setResults(formattedMatches);
         setFilteredResults(formattedMatches);
@@ -197,37 +197,37 @@ export default function Dashboard() {
           schools.push({ ...currentSchool, highlights } as SchoolMatch);
           highlights = [];
         }
-        currentSchool = { name: cleanAIText(line.replace(/^\d+\.\s+/, '')) };
+        currentSchool = { name: stripMarkdown(line.replace(/^\d+\.\s+/, '')) };
       }
       else if (line.toLowerCase().includes('location:')) {
-        currentSchool.location = cleanAIText(line.split(':')[1]);
+        currentSchool.location = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('program:')) {
-        currentSchool.program = cleanAIText(line.split(':')[1]);
+        currentSchool.program = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('tuition:')) {
-        currentSchool.tuition = cleanAIText(line.split(':')[1]);
+        currentSchool.tuition = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('admission rate:')) {
-        currentSchool.admissionRate = cleanAIText(line.split(':')[1]);
+        currentSchool.admissionRate = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('ranking:')) {
-        currentSchool.ranking = cleanAIText(line.split(':')[1]);
+        currentSchool.ranking = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('employment rate:')) {
-        currentSchool.employmentRate = cleanAIText(line.split(':')[1]);
+        currentSchool.employmentRate = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('salary:') || line.toLowerCase().includes('starting salary:')) {
-        currentSchool.avgSalary = cleanAIText(line.split(':')[1]);
+        currentSchool.avgSalary = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('scholarship:')) {
-        currentSchool.scholarships = cleanAIText(line.split(':')[1]);
+        currentSchool.scholarships = stripMarkdown(line.split(':')[1]);
       }
       else if (line.toLowerCase().includes('deadline:')) {
-        currentSchool.deadline = cleanAIText(line.split(':')[1]);
+        currentSchool.deadline = stripMarkdown(line.split(':')[1]);
       }
       else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
-        highlights.push(cleanAIText(line.replace(/^[-•*]\s*/, '')));
+        highlights.push(stripMarkdown(line.replace(/^[-•*]\s*/, '')));
       }
     }
 
