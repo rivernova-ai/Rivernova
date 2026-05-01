@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
-import { Loader2, Sparkles, CheckCircle2, Search, TrendingUp, MapPin, DollarSign, GraduationCap, Award, Briefcase, Calendar, ExternalLink, Heart, ArrowUpRight, Star, Zap } from 'lucide-react';
+import { Loader2, Sparkles, CheckCircle2, Search, TrendingUp, MapPin, DollarSign, GraduationCap, Award, Briefcase, Calendar, Heart, Star, Zap, ArrowRight } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
@@ -75,7 +75,6 @@ export default function Dashboard() {
 
       setProfile(profileData);
       
-      // Load existing matches from database
       const { data: matchesData } = await supabase
         .from('matches')
         .select('*')
@@ -83,7 +82,6 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (matchesData && matchesData.length > 0) {
-        // Convert database matches to display format
         const formattedMatches = matchesData.map(match => ({
           id: match.id,
           name: cleanAIText(match.school_name),
@@ -134,14 +132,6 @@ export default function Dashboard() {
       const budget = profile.budget || {};
       const location = profile.location_preferences || {};
 
-      console.log('Starting school search with profile:', {
-        major: academic.major,
-        budget: budget.min && budget.max ? `$${budget.min} - $${budget.max}` : '',
-        location: location.preferredCountries,
-        gpa: academic.gpa,
-        goals: career.dreamJob || career.careerField,
-      });
-
       const response = await fetch('/api/search-schools', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -157,17 +147,12 @@ export default function Dashboard() {
       const data = await response.json();
 
       if (!response.ok) {
-        console.error('Search API error:', data);
         throw new Error(data.error || 'Search failed');
       }
 
-      console.log('Search API response received, parsing results...');
       setRawResults(data.results);
       const parsedResults = parseResults(data.results);
-      
-      console.log('Parsed schools:', parsedResults.length);
 
-      // Save matches to database
       if (parsedResults.length > 0) {
         const supabase = createClient();
         const matchesToSave = parsedResults.map(school => ({
@@ -185,19 +170,13 @@ export default function Dashboard() {
             scholarships: school.scholarships,
             deadline: school.deadline,
           },
-          success_probability: 75, // Default value
+          success_probability: 75,
           reasoning: 'Match based on your profile',
         }));
 
-        console.log('Saving matches to database...');
         await supabase.from('matches').insert(matchesToSave);
-        console.log('Matches saved successfully');
-      } else {
-        console.warn('No schools parsed from results');
-        alert('No schools found matching your criteria. Please try adjusting your search parameters.');
       }
     } catch (error: any) {
-      console.error('Search error:', error);
       alert(error.message || 'Failed to search schools. Please try again.');
     } finally {
       setSearching(false);
@@ -303,8 +282,8 @@ export default function Dashboard() {
 
   if (loading || checking) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
       </div>
     );
   }
@@ -312,255 +291,227 @@ export default function Dashboard() {
   if (!user || !profile) return null;
 
   return (
-    <div className="min-h-screen p-4 md:p-8 lg:p-12 max-w-[1400px] mx-auto">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-            <span className="text-indigo-400 text-xs font-bold uppercase tracking-[0.2em]">Dashboard</span>
+    <div className="min-h-screen bg-black">
+      {/* Header - Minimal */}
+      <div className="border-b border-white/5 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 py-6 flex items-center justify-between">
+          <div className="space-y-1">
+            <p className="text-xs text-white/40 font-light uppercase tracking-wider">Welcome back</p>
+            <h1 className="text-2xl md:text-3xl font-light text-white">{profile.full_name || 'Dashboard'}</h1>
           </div>
-          <h1 className="text-4xl lg:text-5xl font-bold text-white tracking-tight">
-            {profile.full_name || 'Welcome'}
-          </h1>
-          <p className="text-white/50 text-lg">Find your perfect match</p>
-        </div>
-
-        <ModeToggle currentMode={profile.mode} onChange={handleModeChange} />
-      </div>
-
-      {/* Profile Summary - Minimalist */}
-      <div className="bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/[0.08] rounded-3xl p-6 md:p-8 mb-8 backdrop-blur-xl">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-white">Your Profile</h2>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 text-emerald-400 text-sm">
-              <CheckCircle2 className="w-4 h-4" />
-              <span className="font-medium">Complete</span>
-            </div>
-            <Button
-              onClick={() => router.push('/onboarding?edit=true')}
-              variant="outline"
-              className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl h-9 px-4 text-sm"
-            >
-              Edit Profile
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Major', value: profile.academic_background?.major || 'Not specified', isEmpty: !profile.academic_background?.major },
-            { label: 'Budget', value: profile.budget?.min && profile.budget?.max ? `$${profile.budget.min}-${profile.budget.max}` : 'Not specified', isEmpty: !profile.budget?.min || !profile.budget?.max },
-            { label: 'Location', value: profile.location_preferences?.preferredCountries || 'Not specified', isEmpty: !profile.location_preferences?.preferredCountries },
-            { label: 'GPA', value: profile.academic_background?.gpa || 'Not specified', isEmpty: !profile.academic_background?.gpa },
-          ].map((item, i) => (
-            <div key={i} className="group">
-              <div className="text-white/40 text-xs font-medium uppercase tracking-wider mb-2">{item.label}</div>
-              <div className={`font-semibold truncate ${item.isEmpty ? 'text-white/30 italic' : 'text-white'}`}>{item.value}</div>
-            </div>
-          ))}
+          <ModeToggle currentMode={profile.mode} onChange={handleModeChange} />
         </div>
       </div>
 
-      {/* Search Button */}
-      {!searching && results.length === 0 && (
-        <div className="relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20 group-hover:opacity-30 transition duration-500" />
-          <div className="relative bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.1] rounded-3xl p-12 md:p-16 text-center backdrop-blur-xl">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="w-8 h-8 text-indigo-400" />
+      {/* Main Content */}
+      <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 py-12">
+        {/* Profile Summary - Ultra Minimal */}
+        <div className="mb-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { label: 'Major', value: profile.academic_background?.major || '—', icon: GraduationCap },
+              { label: 'Budget', value: profile.budget?.min && profile.budget?.max ? `$${profile.budget.min}-${profile.budget.max}` : '—', icon: DollarSign },
+              { label: 'Location', value: profile.location_preferences?.preferredCountries || '—', icon: MapPin },
+              { label: 'GPA', value: profile.academic_background?.gpa || '—', icon: Star },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div key={i} className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-indigo-400/60" />
+                    <p className="text-xs text-white/40 font-light uppercase tracking-wider">{item.label}</p>
+                  </div>
+                  <p className="text-lg font-light text-white">{item.value}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Search State */}
+        {!searching && results.length === 0 && (
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <h2 className="text-5xl md:text-6xl font-light text-white leading-tight">
+                Discover your<br />
+                <span className="font-semibold bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">perfect match</span>
+              </h2>
+              <p className="text-lg text-white/50 font-light max-w-2xl">
+                AI-powered recommendations tailored to your profile and goals
+              </p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 tracking-tight">
-              Discover Your Perfect Match
-            </h2>
-            <p className="text-white/50 text-lg mb-10 max-w-2xl mx-auto">
-              AI-powered recommendations tailored to your profile
-            </p>
+
             <Button
               onClick={searchSchools}
-              className="h-14 px-10 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 shadow-[0_0_40px_rgba(99,102,241,0.3)] hover:shadow-[0_0_60px_rgba(99,102,241,0.5)] transition-all text-base font-semibold"
+              className="rounded-full bg-white text-black hover:bg-white/90 text-base font-medium h-12 px-8 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
-              <Search className="w-5 h-5 mr-2" />
               Find Schools
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Searching State */}
-      {searching && (
-        <div className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl blur-xl opacity-20 animate-pulse" />
-          <div className="relative bg-gradient-to-br from-white/[0.05] to-white/[0.02] border border-white/[0.1] rounded-3xl p-16 text-center backdrop-blur-xl">
-            <div className="relative w-20 h-20 mx-auto mb-8">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-20 animate-ping" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-                <Loader2 className="w-10 h-10 text-indigo-400 animate-spin" />
+        {/* Searching State */}
+        {searching && (
+          <div className="space-y-12 py-20">
+            <div className="flex flex-col items-center justify-center space-y-6">
+              <div className="relative w-16 h-16">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500 opacity-20 animate-pulse" />
+                <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500/10 to-purple-500/10 flex items-center justify-center border border-indigo-500/20">
+                  <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                </div>
+              </div>
+              <div className="text-center space-y-2">
+                <h2 className="text-3xl font-light text-white">Analyzing schools</h2>
+                <p className="text-white/50 font-light">Finding your perfect matches...</p>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">
-              Analyzing Thousands of Schools
-            </h2>
-            <p className="text-white/50 max-w-md mx-auto">
-              Our AI is researching programs, scholarships, and outcomes
-            </p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Results - Ultra Modern Design */}
-      {results.length > 0 && !searching && (
-        <div className="space-y-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-3xl font-bold text-white mb-2">
-                {filteredResults.length} Perfect Matches
-              </h2>
-              <p className="text-white/50">Curated for your success</p>
-            </div>
-            <Button
-              onClick={searchSchools}
-              variant="outline"
-              className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-xl h-11 px-6"
-            >
-              <Search className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
-          </div>
-
-          <MatchFilters onFilterChange={handleFilterChange} />
-
-          <div className="grid gap-6">
-            {filteredResults.map((school, idx) => (
-              <div
-                key={idx}
-                className="group relative"
+        {/* Results */}
+        {results.length > 0 && !searching && (
+          <div className="space-y-12">
+            {/* Results Header */}
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h2 className="text-4xl md:text-5xl font-light text-white">
+                  {filteredResults.length} <span className="font-semibold">matches</span>
+                </h2>
+                <p className="text-white/50 font-light">Curated for your success</p>
+              </div>
+              <Button
+                onClick={searchSchools}
+                variant="outline"
+                className="border-white/10 bg-white/5 hover:bg-white/10 text-white rounded-full h-11 px-6 font-light"
               >
-                {/* Glow effect */}
-                <div className="absolute -inset-[1px] bg-gradient-to-r from-indigo-500/0 via-purple-500/20 to-pink-500/0 rounded-3xl opacity-0 group-hover:opacity-100 transition duration-500 blur-sm" />
-                
-                <div className="relative bg-gradient-to-br from-white/[0.07] to-white/[0.02] border border-white/[0.08] rounded-3xl p-6 md:p-8 backdrop-blur-xl overflow-hidden transition-all duration-300 group-hover:border-white/[0.15]">
-                  {/* Subtle gradient overlay */}
-                  <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-500/[0.03] to-transparent rounded-full blur-3xl pointer-events-none" />
+                <Search className="w-4 h-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
 
-                  {/* Header */}
-                  <div className="relative flex items-start justify-between mb-6">
-                    <div className="flex-1 pr-4">
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-indigo-400 group-hover:to-purple-400 transition-all">
-                          {school.name}
-                        </h3>
-                        <button
-                          onClick={() => toggleFavorite(idx)}
-                          className={`p-2 rounded-xl transition-all ${
-                            favorites.has(idx)
-                              ? 'bg-pink-500/20 text-pink-400 scale-110'
-                              : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60 hover:scale-110'
-                          }`}
-                        >
-                          <Heart className={`w-5 h-5 ${favorites.has(idx) ? 'fill-current' : ''}`} />
-                        </button>
-                      </div>
-                      {school.location && (
-                        <div className="flex items-center gap-2 text-white/50 text-sm mb-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>{school.location}</span>
+            {/* Filters */}
+            <MatchFilters onFilterChange={handleFilterChange} />
+
+            {/* School Cards - Ultra Sleek */}
+            <div className="space-y-6">
+              {filteredResults.map((school, idx) => (
+                <div key={idx} className="group">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="flex-1 space-y-3">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-2xl md:text-3xl font-light text-white group-hover:text-indigo-300 transition-colors">
+                            {school.name}
+                          </h3>
+                          <button
+                            onClick={() => toggleFavorite(idx)}
+                            className={`p-2 rounded-lg transition-all ${
+                              favorites.has(idx)
+                                ? 'bg-pink-500/20 text-pink-400'
+                                : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
+                            }`}
+                          >
+                            <Heart className={`w-5 h-5 ${favorites.has(idx) ? 'fill-current' : ''}`} />
+                          </button>
                         </div>
-                      )}
-                      {school.program && (
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/80 text-sm font-medium">
-                          <GraduationCap className="w-4 h-4" />
-                          <span>{school.program}</span>
+                        {school.location && (
+                          <div className="flex items-center gap-2 text-white/50 text-sm font-light">
+                            <MapPin className="w-4 h-4" />
+                            <span>{school.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      {school.tuition && (
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-3xl font-light bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                            {school.tuition}
+                          </p>
+                          <p className="text-xs text-white/30 font-light mt-1">per year</p>
                         </div>
                       )}
                     </div>
 
-                    {school.tuition && (
-                      <div className="text-right flex-shrink-0">
-                        <div className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                          {school.tuition}
-                        </div>
-                        <div className="text-xs text-white/30 uppercase tracking-wider mt-1">per year</div>
+                    {/* Program Badge */}
+                    {school.program && (
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-light">
+                        <GraduationCap className="w-4 h-4" />
+                        {school.program}
                       </div>
                     )}
-                  </div>
 
-                  {/* Stats - Sleek Pills */}
-                  {(school.admissionRate || school.ranking || school.employmentRate || school.avgSalary) && (
-                    <div className="flex flex-wrap gap-3 mb-6">
-                      {school.admissionRate && (
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                          <TrendingUp className="w-4 h-4 text-emerald-400" />
-                          <span className="text-sm font-semibold text-emerald-400">{school.admissionRate}</span>
-                          <span className="text-xs text-white/40">admit</span>
-                        </div>
-                      )}
-                      {school.ranking && (
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20">
-                          <Star className="w-4 h-4 text-amber-400" />
-                          <span className="text-sm font-semibold text-amber-400">{school.ranking}</span>
-                        </div>
-                      )}
-                      {school.employmentRate && (
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20">
-                          <Briefcase className="w-4 h-4 text-indigo-400" />
-                          <span className="text-sm font-semibold text-indigo-400">{school.employmentRate}</span>
-                          <span className="text-xs text-white/40">employed</span>
-                        </div>
-                      )}
-                      {school.avgSalary && (
-                        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20">
-                          <Zap className="w-4 h-4 text-purple-400" />
-                          <span className="text-sm font-semibold text-purple-400">{school.avgSalary}</span>
-                          <span className="text-xs text-white/40">avg salary</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    {/* Stats - Minimal Pills */}
+                    {(school.admissionRate || school.ranking || school.employmentRate || school.avgSalary) && (
+                      <div className="flex flex-wrap gap-3">
+                        {school.admissionRate && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-light">
+                            <TrendingUp className="w-4 h-4" />
+                            {school.admissionRate}
+                          </div>
+                        )}
+                        {school.ranking && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-light">
+                            <Star className="w-4 h-4" />
+                            {school.ranking}
+                          </div>
+                        )}
+                        {school.employmentRate && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-light">
+                            <Briefcase className="w-4 h-4" />
+                            {school.employmentRate}
+                          </div>
+                        )}
+                        {school.avgSalary && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-light">
+                            <Zap className="w-4 h-4" />
+                            {school.avgSalary}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
-                  {/* Highlights - Clean List */}
-                  {school.highlights && school.highlights.length > 0 && (
-                    <div className="mb-6">
-                      <div className="grid md:grid-cols-2 gap-3">
-                        {school.highlights.slice(0, 6).map((highlight, i) => (
-                          <div key={i} className="flex items-start gap-3 text-white/70 text-sm group/item">
-                            <div className="w-1 h-1 rounded-full bg-indigo-400 mt-2 flex-shrink-0 group-hover/item:scale-150 transition-transform" />
-                            <span className="leading-relaxed">{highlight}</span>
+                    {/* Highlights */}
+                    {school.highlights && school.highlights.length > 0 && (
+                      <div className="grid md:grid-cols-2 gap-3 pt-4 border-t border-white/5">
+                        {school.highlights.slice(0, 4).map((highlight, i) => (
+                          <div key={i} className="flex items-start gap-3 text-white/60 text-sm font-light">
+                            <div className="w-1 h-1 rounded-full bg-indigo-400 mt-2 flex-shrink-0" />
+                            <span>{highlight}</span>
                           </div>
                         ))}
                       </div>
+                    )}
+
+                    {/* Footer */}
+                    {(school.scholarships || school.deadline) && (
+                      <div className="flex flex-wrap gap-6 pt-4 border-t border-white/5 text-sm font-light">
+                        {school.scholarships && (
+                          <div className="flex items-center gap-2 text-white/50">
+                            <Award className="w-4 h-4 text-yellow-400/60" />
+                            <span>{school.scholarships}</span>
+                          </div>
+                        )}
+                        {school.deadline && (
+                          <div className="flex items-center gap-2 text-white/50">
+                            <Calendar className="w-4 h-4 text-pink-400/60" />
+                            <span>{school.deadline}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Map */}
+                    <div className="pt-4 border-t border-white/5">
+                      <MapDistance schoolLocation={school.location} schoolName={school.name} />
                     </div>
-                  )}
-
-                  {/* Footer Info */}
-                  <div className="flex flex-wrap items-center gap-4 pt-6 border-t border-white/[0.08]">
-                    {school.scholarships && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Award className="w-4 h-4 text-yellow-400/60" />
-                        <span className="text-white/40">Scholarships:</span>
-                        <span className="text-white/70 font-medium">{school.scholarships}</span>
-                      </div>
-                    )}
-                    {school.deadline && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Calendar className="w-4 h-4 text-pink-400/60" />
-                        <span className="text-white/40">Deadline:</span>
-                        <span className="text-white/70 font-medium">{school.deadline}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Map Distance */}
-                  <div className="mt-6">
-                    <MapDistance schoolLocation={school.location} schoolName={school.name} />
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
