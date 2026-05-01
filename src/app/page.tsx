@@ -153,33 +153,20 @@ export default function Home() {
       {/* Divider */}
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      {/* Zero Commissions Section */}
+      {/* Transparency Section */}
       <section className="py-32 md:py-40 px-6 relative z-10">
         <div className="max-w-[1200px] mx-auto">
           <div className="mb-20 md:mb-32">
             <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">Transparency</p>
             <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              100% unbiased.<br />
-              <span className="font-semibold">Cryptographically verified.</span>
+              <span className="font-semibold">100% unbiased.</span>
             </h2>
           </div>
 
           <div className="max-w-2xl mx-auto">
-            <p className="text-lg text-white/60 font-light leading-relaxed mb-16">
-              We believe students shouldn't have to guess if their counselor is getting paid behind closed doors. We cryptographically sign and verify that $0.00 in commissions are accepted from our recommended institutions.
-            </p>
-
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white/5 border border-white/10 p-12 rounded-2xl text-center hover:bg-white/10 transition-colors duration-300">
-                <p className="text-5xl font-light text-white mb-3">0%</p>
-                <p className="text-sm text-white/50 font-light tracking-wide">Commission Rate</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 p-12 rounded-2xl text-center hover:bg-white/10 transition-colors duration-300">
-                <p className="text-5xl font-light text-white mb-3 flex items-center justify-center gap-3">
-                  Live <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                </p>
-                <p className="text-sm text-white/50 font-light tracking-wide">Status Sync</p>
-              </div>
+            <div className="bg-white/5 border border-white/10 p-12 rounded-2xl text-center hover:bg-white/10 transition-colors duration-300">
+              <p className="text-5xl font-light text-white mb-3">0%</p>
+              <p className="text-sm text-white/50 font-light tracking-wide">Commission Rate</p>
             </div>
           </div>
         </div>
@@ -222,43 +209,6 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      {/* Testimonials Section */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="mb-20 md:mb-32">
-            <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">Success Stories</p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              Students love<br />
-              <span className="font-semibold">Rivernova.</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { name: 'Sarah Chen', school: 'MIT', quote: 'Got matched with my dream school in 15 minutes. No bias, just facts.' },
-              { name: 'Marcus Johnson', school: 'Stanford', quote: 'Saved $5K compared to traditional consultants. Best decision ever.' },
-              { name: 'Emma Rodriguez', school: 'Harvard', quote: 'The AI recommendations were spot-on. Felt like having a personal advisor.' }
-            ].map((testimonial, i) => (
-              <div key={i} className="bg-white/5 border border-white/10 p-8 rounded-2xl hover:bg-white/10 transition-colors duration-300 space-y-6">
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, j) => (
-                    <span key={j} className="text-yellow-400 text-sm">★</span>
-                  ))}
-                </div>
-                <p className="text-base text-white/80 font-light leading-relaxed">"{testimonial.quote}"</p>
-                <div>
-                  <p className="text-sm font-light text-white">{testimonial.name}</p>
-                  <p className="text-sm text-white/50 font-light">{testimonial.school}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
