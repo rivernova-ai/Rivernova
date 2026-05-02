@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, TrendingUp, AlertCircle, CheckCircle2, DollarSign, Briefcase, Zap, Sparkles, ShieldCheck, GraduationCap, MapPin, Target, Wallet, ArrowUpRight, Send, Loader2, MessageCircle } from 'lucide-react';
+import { X, TrendingUp, AlertCircle, CheckCircle2, DollarSign, Briefcase, Zap, Sparkles, ShieldCheck, GraduationCap, MapPin, Target, Wallet, ArrowUpRight, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import ReactMarkdown from 'react-markdown';
@@ -40,12 +40,11 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
         if (data.error) throw new Error(data.error);
         setReport(data);
         
-        // Initial AI Message
         if (data.ai_recommendation) {
            setChatMessages([{
              id: 'initial',
              role: 'assistant',
-             content: `Hi! I've analyzed **${school.name}** for you. My current verdict: *${data.ai_recommendation}*\n\nHow can I help you understand this ROI report further?`
+             content: `I've analyzed the financial trajectory for **${school.name}**. Based on your profile, here is my direct assessment: \n\n*${data.ai_recommendation}*\n\nWould you like to explore the specific cost breakdowns or career projections?`
            }]);
         }
       } catch (err: any) {
@@ -112,15 +111,14 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
     
     return (
       <div className="space-y-4">
-        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-white/40">
-          <span>Investment Strategy</span>
-          <span className="text-white">Revenue vs Cost</span>
+        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-white/20">
+          <span>Investment vs Revenue</span>
         </div>
-        <div className="h-4 w-full flex rounded-full overflow-hidden border border-white/5">
-          <div className="h-full bg-rose-500/80" style={{ width: `${costPct}%` }} />
-          <div className="h-full bg-emerald-500/80" style={{ width: `${revPct}%` }} />
+        <div className="h-2 w-full flex rounded-full overflow-hidden bg-white/5">
+          <div className="h-full bg-rose-500/60" style={{ width: `${costPct}%` }} />
+          <div className="h-full bg-emerald-500/60" style={{ width: `${revPct}%` }} />
         </div>
-        <div className="flex justify-between text-[9px] font-bold text-white/40 uppercase tracking-tighter">
+        <div className="flex justify-between text-[9px] font-medium text-white/30 uppercase tracking-tighter">
           <span>Cost (${Math.round(cost/1000)}k)</span>
           <span>5Y Revenue (${Math.round(revenue/1000)}k)</span>
         </div>
@@ -129,102 +127,102 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-2xl animate-in fade-in duration-500">
-      <div className="relative w-full max-w-6xl h-[90vh] bg-[#050505] md:rounded-[2.5rem] border border-white/[0.08] shadow-2xl overflow-hidden flex flex-col md:flex-row scale-in-center animate-in duration-700">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-3xl animate-in fade-in duration-500">
+      <div className="relative w-full max-w-6xl h-[85vh] bg-[#050505] md:rounded-[2rem] border border-white/[0.06] shadow-2xl overflow-hidden flex flex-col md:flex-row scale-in-center animate-in duration-700">
         
-        {/* LEFT: ROI REPORT (70%) */}
-        <div className="flex-1 flex flex-col border-r border-white/[0.05] overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center justify-between px-10 py-8 border-b border-white/[0.05]">
-            <div className="flex items-center gap-6">
-              <div className="w-12 h-12 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black">ROI Analysis</p>
-                <h2 className="text-2xl font-bold text-white tracking-tight">{school.name}</h2>
-              </div>
+        {/* LEFT: MINIMALIST REPORT */}
+        <div className="flex-1 flex flex-col border-r border-white/[0.05] overflow-hidden bg-[#050505]">
+          <div className="flex items-center justify-between px-12 py-10">
+            <div className="space-y-1">
+              <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold">Financial Intelligence</p>
+              <h2 className="text-3xl font-bold text-white tracking-tight">{school.name}</h2>
             </div>
-            <button onClick={onClose} className="md:hidden p-3 hover:bg-white/5 rounded-full">
-              <X className="w-5 h-5 text-white/20" />
+            <button onClick={onClose} className="md:hidden p-3 hover:bg-white/5 rounded-full transition-colors">
+              <X className="w-5 h-5 text-white/40" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-12">
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-12 pb-12 space-y-12">
             {loading ? (
               <div className="h-full flex flex-col items-center justify-center space-y-6">
-                <Loader2 className="w-12 h-12 animate-spin text-indigo-500" />
-                <p className="text-sm text-white/40 font-black tracking-widest uppercase">Calculating Metrics...</p>
+                <div className="w-8 h-8 rounded-full border-2 border-white/5 border-t-white/40 animate-spin" />
+                <p className="text-xs text-white/20 font-bold tracking-widest uppercase">Analyzing Data</p>
               </div>
             ) : (
               <>
+                {report?.data_warning && (
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                    <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-amber-200/80 font-medium leading-relaxed">
+                      {report.data_warning}
+                    </p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-2 gap-8">
-                  <div className="col-span-2 md:col-span-1 bg-[#0A0A0A] border border-white/[0.08] rounded-[2rem] p-10 flex flex-col justify-between">
+                  <div className="col-span-2 md:col-span-1 bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-10 flex flex-col justify-between">
                     <div className="space-y-4">
-                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-black">Strategic ROI</p>
-                      <h1 className={`text-7xl font-black tracking-tighter ${colors?.text}`}>{Math.round(report.roi_score)}%</h1>
+                      <p className="text-[10px] text-white/20 uppercase tracking-widest font-bold">ROI Match Score</p>
+                      <h1 className={`text-8xl font-black tracking-tighter ${colors?.text}`}>{Math.round(report.roi_score)}%</h1>
                     </div>
-                    <div className="pt-8 space-y-2">
-                      <p className="text-xl font-bold text-white">Market Positive</p>
-                      <p className="text-sm text-white/40 leading-relaxed font-light">Significant long-term capital advantage detected.</p>
+                    <div className="pt-8">
+                      <p className="text-sm text-white/40 leading-relaxed font-light">A highly efficient match based on your academic profile and target major.</p>
                     </div>
                   </div>
 
-                  <div className="col-span-2 md:col-span-1 bg-[#0A0A0A] border border-white/[0.08] rounded-[2rem] p-10 flex flex-col items-center justify-center">
-                    <div className="relative w-32 h-32">
+                  <div className="col-span-2 md:col-span-1 bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-10 flex flex-col items-center justify-center">
+                    <div className="relative w-28 h-28">
                       <svg className="w-full h-full" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="45" fill="none" stroke="white" strokeOpacity="0.05" strokeWidth="8" />
-                        <circle cx="50" cy="50" r="45" fill="none" stroke={colors?.hex} strokeWidth="8" strokeLinecap="round"
-                          strokeDasharray={283}
-                          strokeDashoffset={283 - (Math.min(report.breakeven_years, 10) / 10) * 283}
+                        <circle cx="50" cy="50" r="46" fill="none" stroke="white" strokeOpacity="0.03" strokeWidth="6" />
+                        <circle cx="50" cy="50" r="46" fill="none" stroke={colors?.hex} strokeWidth="6" strokeLinecap="round"
+                          strokeDasharray={289}
+                          strokeDashoffset={289 - (Math.min(report.breakeven_years, 10) / 10) * 289}
                           transform="rotate(-90 50 50)"
+                          className="opacity-60"
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-black text-white">{report.breakeven_years.toFixed(1)}</span>
-                        <span className="text-[9px] text-white/40 uppercase font-black">Years</span>
+                        <span className="text-2xl font-bold text-white">{report.breakeven_years.toFixed(1)}</span>
+                        <span className="text-[8px] text-white/30 uppercase font-black">Years</span>
                       </div>
                     </div>
-                    <p className="mt-4 text-[10px] text-white/30 uppercase tracking-widest font-black">Break-even Point</p>
+                    <p className="mt-4 text-[10px] text-white/20 uppercase tracking-widest font-bold">Breakeven Point</p>
                   </div>
                 </div>
 
-                <div className="bg-[#0A0A0A] border border-white/[0.08] rounded-[2rem] p-10 space-y-10">
+                <div className="bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-10 space-y-10">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-3">
-                      <TrendingUp className="w-5 h-5 text-indigo-400" />
-                      Financial Simulation
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-3">
+                      <TrendingUp className="w-4 h-4 text-white/40" />
+                      Outcome Simulation
                     </h3>
-                    <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full">
-                      <ArrowUpRight className="w-3 h-3 text-emerald-400" />
-                      <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">Aggressive Growth</span>
-                    </div>
+                    <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-widest bg-emerald-400/5 px-2 py-1 rounded-md">Growth Phase</span>
                   </div>
                   <RevenueVsCostChart cost={report.total_cost_4yr} revenue={report.year1_salary + report.year3_salary * 2 + report.year5_salary * 2} />
-                  <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/[0.05]">
+                  <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/[0.03]">
                     {[
-                      { label: 'Y1 Salary', val: report.year1_salary },
-                      { label: 'Y3 Salary', val: report.year3_salary },
-                      { label: 'Y5 Salary', val: report.year5_salary },
+                      { label: 'Year 1', val: report.year1_salary },
+                      { label: 'Year 3', val: report.year3_salary },
+                      { label: 'Year 5', val: report.year5_salary },
                     ].map((s, i) => (
                       <div key={i} className="space-y-1 text-center">
-                        <p className="text-[9px] text-white/20 uppercase font-black">{s.label}</p>
+                        <p className="text-[9px] text-white/20 uppercase font-bold">{s.label}</p>
                         <p className="text-lg font-bold text-white tracking-tight">${Math.round(s.val/1000)}k</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-3 gap-4">
                    {[
-                     { label: 'Degree Fit', val: 'Excellent', icon: GraduationCap },
-                     { label: 'Career Index', val: 'High', icon: Briefcase },
-                     { label: 'Status', val: 'Verified', icon: CheckCircle2 },
+                     { label: 'Academic Fit', val: 'Match', icon: GraduationCap },
+                     { label: 'Career Scale', val: 'High', icon: Briefcase },
+                     { label: 'Data Status', val: 'Verified', icon: ShieldCheck },
                    ].map((m, i) => (
-                     <div key={i} className="flex flex-col items-center gap-2 p-6 bg-white/[0.02] border border-white/[0.05] rounded-3xl text-center">
-                       <m.icon className="w-4 h-4 text-white/30" />
-                       <p className="text-[9px] text-white/20 uppercase font-black tracking-widest">{m.label}</p>
-                       <p className="text-xs font-bold text-white">{m.val}</p>
+                     <div key={i} className="flex flex-col items-center gap-2 p-5 bg-white/[0.01] border border-white/[0.03] rounded-2xl text-center">
+                       <m.icon className="w-3.5 h-3.5 text-white/20" />
+                       <p className="text-[8px] text-white/20 uppercase font-black tracking-widest">{m.label}</p>
+                       <p className="text-[11px] font-bold text-white/60">{m.val}</p>
                      </div>
                    ))}
                 </div>
@@ -233,42 +231,35 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
           </div>
         </div>
 
-        {/* RIGHT: CLAUDE AI CHAT (30%) */}
-        <div className="w-full md:w-[400px] flex flex-col bg-[#0A0A0A]/50 backdrop-blur-xl">
-          <div className="flex items-center justify-between px-8 py-8 border-b border-white/[0.05]">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-indigo-400" />
-              </div>
-              <div>
-                <h3 className="text-white font-bold text-sm">AI Advisor</h3>
-                <p className="text-white/40 text-[10px] uppercase font-black tracking-widest">Counselor Mode</p>
-              </div>
+        {/* RIGHT: CLEAN ADVISOR (30%) */}
+        <div className="w-full md:w-[380px] flex flex-col bg-[#080808]">
+          <div className="flex items-center justify-between px-10 py-10">
+            <div className="space-y-0.5">
+              <h3 className="text-lg font-bold text-white tracking-tight">Rivernova Advisor</h3>
+              <p className="text-[9px] text-white/20 uppercase font-black tracking-[0.2em]">Zero Commission Analysis</p>
             </div>
-            <button onClick={onClose} className="hidden md:block p-3 hover:bg-white/5 rounded-full group">
-              <X className="w-5 h-5 text-white/20 group-hover:text-white" />
+            <button onClick={onClose} className="hidden md:block p-2 hover:bg-white/5 rounded-full transition-colors group">
+              <X className="w-4 h-4 text-white/20 group-hover:text-white" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-8 space-y-6 custom-scrollbar">
-            {chatMessages.length === 0 && !loading && (
-              <div className="text-center py-12 space-y-4">
-                <MessageCircle className="w-8 h-8 text-white/10 mx-auto" />
-                <p className="text-white/40 text-sm italic">Analyze this report with AI...</p>
-              </div>
-            )}
-            
+          <div className="flex-1 overflow-y-auto px-10 py-2 space-y-8 custom-scrollbar">
             {chatMessages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm ${
-                  msg.role === 'user' ? 'bg-indigo-500 text-white' : 'bg-white/5 border border-white/10 text-white/90'
+              <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-2`}>
+                <div className={`max-w-[100%] rounded-[1.2rem] px-5 py-4 text-[13px] leading-relaxed ${
+                  msg.role === 'user' 
+                    ? 'bg-white text-black' 
+                    : 'bg-white/[0.03] border border-white/[0.05] text-white/80'
                 }`}>
                   {msg.role === 'assistant' ? (
-                    <div className="prose prose-invert prose-sm max-w-none [&_strong]:text-white [&_p]:mb-2 [&_p:last-child]:mb-0">
+                    <div className="prose prose-invert prose-sm max-w-none 
+                      [&_strong]:text-white [&_strong]:font-bold 
+                      [&_p]:mb-3 [&_p:last-child]:mb-0 
+                      [&_ul]:list-disc [&_ul]:pl-4 [&_li]:mb-1">
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                    <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
                   )}
                 </div>
               </div>
@@ -276,36 +267,43 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
             
             {isChatLoading && (
               <div className="flex justify-start">
-                <div className="bg-white/5 border border-white/10 rounded-2xl px-4 py-3">
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+                <div className="w-8 h-8 rounded-full bg-white/[0.03] flex items-center justify-center">
+                   <div className="w-1 h-1 bg-white/40 rounded-full animate-pulse" />
                 </div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          <div className="p-8 border-t border-white/[0.05] space-y-4">
-            <form onSubmit={handleChatSubmit} className="flex gap-2">
-              <Textarea 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask about this school..."
-                className="flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl resize-none min-h-[44px] max-h-[120px] text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleChatSubmit(e as any);
-                  }
-                }}
-              />
-              <Button type="submit" disabled={isChatLoading || !chatInput.trim()} className="h-[44px] px-4 bg-indigo-500 hover:bg-indigo-400 border-0">
-                <Send className="w-4 h-4" />
-              </Button>
+          <div className="p-10 space-y-6">
+            <form onSubmit={handleChatSubmit} className="relative">
+              <div className="flex items-end gap-2 bg-white/[0.03] border border-white/[0.08] rounded-2xl p-2 focus-within:border-white/20 transition-all">
+                <Textarea 
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask a question..."
+                  className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/10 rounded-xl resize-none min-h-[44px] max-h-[140px] text-xs py-3 px-3"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleChatSubmit(e as any);
+                    }
+                  }}
+                />
+                <Button 
+                  type="submit" 
+                  disabled={isChatLoading || !chatInput.trim()} 
+                  className="h-10 w-10 rounded-xl bg-white text-black hover:bg-white/90 shadow-lg transition-all active:scale-95 disabled:opacity-20 flex-shrink-0 p-0"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                </Button>
+              </div>
             </form>
-            <div className="p-3 bg-rose-500/5 border border-rose-500/10 rounded-xl">
-              <p className="text-[9px] text-rose-400/80 leading-relaxed text-center font-medium">
-                <AlertCircle className="w-3 h-3 inline mr-1 mb-0.5" />
-                AI can make mistakes. Always double check critical financial data.
+            
+            <div className="flex items-center justify-center gap-2">
+              <AlertCircle className="w-3 h-3 text-white/10" />
+              <p className="text-[9px] text-white/20 font-bold uppercase tracking-tight">
+                AI advisor can make mistakes. Verify critical data.
               </p>
             </div>
           </div>

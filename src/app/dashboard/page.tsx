@@ -551,9 +551,23 @@ export default function Dashboard() {
                               e.stopPropagation();
                               setRoiModal({ isOpen: true, school: school });
                             }}
-                            className="h-8 text-[10px] uppercase tracking-wider font-bold border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 bg-transparent px-3 rounded-lg"
+                            className="group relative h-10 px-5 rounded-full overflow-hidden bg-[#050505] border border-white/10 transition-all duration-700 hover:border-white/30 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_20px_rgba(0,0,0,0.5)]"
                           >
-                            📊 See ROI Report
+                            {/* Luminous Animated Edge */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 animate-pulse" />
+                            
+                            <div className="relative flex items-center gap-2.5">
+                              <div className="relative">
+                                <Zap className="w-3.5 h-3.5 text-white/40 group-hover:text-indigo-400 transition-colors duration-500" />
+                                <div className="absolute inset-0 bg-indigo-500 blur-lg opacity-0 group-hover:opacity-50 transition-opacity" />
+                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 group-hover:text-white transition-all duration-500">
+                                ROI Intelligence
+                              </span>
+                            </div>
+
+                            {/* Bottom Glow */}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/2 h-[1px] bg-indigo-500 blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                           </Button>
                           <div className="flex gap-1.5">
                             <button

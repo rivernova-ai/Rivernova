@@ -96,22 +96,34 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Calculations
-    let totalPerYear = 0;
-    let total4Years = 0;
     let livingCost = 13000; // Mid-size default
     let roi = 0;
     let breakeven = 0;
+    let warning = null;
 
-    if (tuitionNum && !isNaN(tuitionNum)) {
-      const cityMatch = majorCities.some(city => schoolLocation?.toLowerCase().includes(city.toLowerCase()));
-      if (cityMatch) {
-        livingCost = 20000;
-      } else if (schoolLocation?.toLowerCase().includes('rural') || schoolLocation?.toLowerCase().includes('town')) {
-        livingCost = 8000;
-      }
+    // Detect living costs based on location
+    const cityMatch = majorCities.some(city => schoolLocation?.toLowerCase().includes(city.toLowerCase()));
+    if (cityMatch) {
+      livingCost = 20000;
+    } else if (schoolLocation?.toLowerCase().includes('rural') || schoolLocation?.toLowerCase().includes('town')) {
+      livingCost = 8000;
+    }
 
-      totalPerYear = tuitionNum + livingCost + 1200;
-      total4Years = totalPerYear * 4;
+    // Bug 1 Fix: Ensure tuition + living + books are all added and multiplied by 4
+    const annualTuition = tuitionNum || 0;
+    const annualBooks = 1200;
+    const totalPerYear = annualTuition + livingCost + annualBooks;
+    const total4Years = totalPerYear * 4;
+
+    // Sanity log for Bug 1
+    if (total4Years < 60000) {
+      console.log('DEBUG: Low 4-Year Cost Detected', { 
+        school: schoolName, 
+        annualTuition, 
+        livingCost, 
+        annualBooks, 
+        total4Years 
+      });
     }
 
     // Salary mapping
@@ -132,7 +144,16 @@ export async function POST(req: NextRequest) {
 
     if (total4Years > 0) {
       roi = ((total5yrEarnings - total4Years) / total4Years) * 100;
-      breakeven = total4Years / year1;
+      
+      // Bug 2 Fix: Realistic Breakeven (Taxes + Surplus)
+      const effectiveTakeHome = year1 * 0.72; // 28% tax
+      const annualSurplus = effectiveTakeHome - 18000; // Living expenses while working
+      breakeven = total4Years / annualSurplus;
+
+      // Bug 3 Fix: ROI Sanity Check (> 400%)
+      if (roi > 400) {
+        warning = "Cost data incomplete — ROI estimate may be inaccurate. Visit school website for exact tuition figures.";
+      }
     }
 
     // 3. AI Recommendation
@@ -181,6 +202,7 @@ Give your honest 3-sentence verdict on whether this is a smart choice for this s
       roi_score: roi || null,
       breakeven_years: breakeven || null,
       ai_recommendation: aiRecommendation,
+      data_warning: warning,
       major: major,
       tuition_per_year: tuitionNum || 0,
       living_costs_per_year: livingCost,
