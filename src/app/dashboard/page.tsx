@@ -9,10 +9,13 @@ import { ModeToggle } from '@/components/dashboard/ModeToggle';
 import { Button } from '@/components/ui/button';
 import MatchFilters from '@/components/matches/MatchFilters';
 import MapDistance from '@/components/matches/MapDistance';
-import { stripMarkdown, calculateMatchScore, getMatchScoreColor } from '@/lib/utils';
+import { calculateMatchScore, getMatchScoreColor, getMatchScoreLabel, isValidMatchScore, stripMarkdown, cleanText } from '@/lib/utils';
+import { parseSchoolJSON, validateSchoolData } from '@/lib/schoolParser';
 import { ComparisonBar } from '@/components/comparison/ComparisonBar';
 import { ComparisonModal } from '@/components/comparison/ComparisonModal';
+import { DeadlinesTracker } from '@/components/dashboard/DeadlinesTracker';
 import { ComparisonSchool } from '@/lib/comparison';
+import { ROIReportModal } from '@/components/dashboard/ROIReportModal';
 
 interface Profile {
   mode: 'domestic' | 'international' | 'lifelong';
@@ -30,7 +33,10 @@ interface SchoolMatch {
   program: string;
   tuition: string;
   highlights: string[];
+  netPrice?: string;
   admissionRate?: string;
+  graduationRate?: string;
+  gpaMinimum?: string;
   ranking?: string;
   employmentRate?: string;
   avgSalary?: string;
@@ -53,7 +59,7 @@ export default function Dashboard() {
   const [results, setResults] = useState<SchoolMatch[]>([]);
   const [filteredResults, setFilteredResults] = useState<SchoolMatch[]>([]);
   const [rawResults, setRawResults] = useState('');
-  const [favorites, setFavorites] = useState<Set<number>>(new Set());
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState({
     budgetRange: 'all',
     location: 'all',
@@ -63,6 +69,10 @@ export default function Dashboard() {
   const [comparison, setComparison] = useState<ComparisonState>({
     isOpen: false,
     schools: [],
+  });
+  const [roiModal, setRoiModal] = useState<{ isOpen: boolean; school: any | null }>({
+    isOpen: false,
+    school: null,
   });
 
   useEffect(() => {
@@ -95,22 +105,63 @@ export default function Dashboard() {
         .order('created_at', { ascending: false });
 
       if (matchesData && matchesData.length > 0) {
-        const formattedMatches = matchesData.map(match => ((({
-          id: match.id,
-          name: stripMarkdown(match.school_name),
-          location: stripMarkdown(match.school_data?.location || ''),
-          program: stripMarkdown(match.school_data?.programName || ''),
-          tuition: stripMarkdown(match.school_data?.tuition || ''),
-          highlights: (match.school_data?.highlights || []).map((h: string) => stripMarkdown(h)),
-          admissionRate: stripMarkdown(match.school_data?.admissionRate || ''),
-          ranking: stripMarkdown(match.school_data?.ranking || ''),
-          employmentRate: stripMarkdown(match.school_data?.employmentRate || ''),
-          avgSalary: stripMarkdown(match.school_data?.avgSalary || ''),
-          scholarships: stripMarkdown(match.school_data?.scholarships || ''),
-          deadline: stripMarkdown(match.school_data?.deadline || ''),
-        })));
-        setResults(formattedMatches);
-        setFilteredResults(formattedMatches);
+        const formattedMatches = matchesData.map(match => {
+          const schoolData = match.school_data || {};
+          // ALWAYS calculate match score using our rigorous rubric
+          const tuitionStr = schoolData.tuition || '';
+          const netPriceStr = schoolData.netPrice || '';
+          const acceptanceStr = schoolData.admissionRate || '';
+          const graduationStr = schoolData.graduationRate || '';
+          
+          const matchScore = calculateMatchScore({
+            userGPA: profileData?.academic_background?.gpa ? parseFloat(profileData.academic_background.gpa) : undefined,
+            userBudgetMax: profileData?.budget?.max ? Number(profileData.budget.max) : undefined,
+            userMajor: profileData?.academic_background?.major || '',
+            schoolMinGPA: schoolData.gpaMinimum ? parseFloat(schoolData.gpaMinimum) : undefined,
+            schoolNetPrice: netPriceStr ? parseInt(netPriceStr.replace(/[^0-9]/g, '') || '0') : undefined,
+            schoolTuition: parseInt((tuitionStr || '').replace(/[^0-9]/g, '') || '0'),
+            schoolAcceptanceRate: acceptanceStr ? parseFloat(acceptanceStr.replace(/[^0-9.]/g, '') || '0') : undefined,
+            schoolGraduationRate: graduationStr ? parseFloat(graduationStr.replace(/[^0-9.]/g, '') || '0') : undefined,
+            schoolProgram: schoolData.programName || '',
+          });
+          
+          const extractPercentStr = (text: string) => {
+            if (!text) return '';
+            const match = text.match(/(\d+\.?\d*)\s*%/);
+            return match ? `${parseFloat(match[1])}%` : '';
+          };
+
+          return {
+            id: match.id,
+            name: stripMarkdown(match.school_name),
+            location: stripMarkdown(schoolData.location || ''),
+            program: stripMarkdown(schoolData.programName || ''),
+            tuition: stripMarkdown(schoolData.tuition || ''),
+            netPrice: stripMarkdown(schoolData.netPrice || ''),
+            gpaMinimum: stripMarkdown(schoolData.gpaMinimum ? String(schoolData.gpaMinimum) : ''),
+            highlights: (schoolData.highlights || []).map((h: string) => stripMarkdown(h)),
+            admissionRate: extractPercentStr(schoolData.admissionRate || ''),
+            graduationRate: extractPercentStr(schoolData.graduationRate || ''),
+            ranking: stripMarkdown(schoolData.ranking || ''),
+            employmentRate: extractPercentStr(schoolData.employmentRate || ''),
+            avgSalary: stripMarkdown(schoolData.avgSalary || ''),
+            scholarships: stripMarkdown(schoolData.scholarships || ''),
+            deadline: stripMarkdown(schoolData.deadline || ''),
+            matchScore,
+          };
+        });
+        
+        const initialFavorites = new Set<string>();
+        matchesData.forEach(match => {
+          if (match.favorited) initialFavorites.add(stripMarkdown(match.school_name));
+        });
+        setFavorites(initialFavorites);
+
+        const filtered = formattedMatches
+          .filter(m => isValidMatchScore(m.matchScore || 0))
+          .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+        setResults(filtered);
+        setFilteredResults(filtered);
       }
       
       setChecking(false);
@@ -163,25 +214,69 @@ export default function Dashboard() {
         throw new Error(data.error || 'Search failed');
       }
 
-      setRawResults(data.results);
-      const parsedResults = parseResults(data.results);
+      // Primary path: parse structured JSON from API
+      let validatedSchools;
+      if (data.schools && Array.isArray(data.schools)) {
+        // New JSON path — API returns { schools: [...] }
+        const parsed = parseSchoolJSON(data.schools);
+        validatedSchools = validateSchoolData(parsed);
+        setRawResults(JSON.stringify(data.schools, null, 2));
+      } else {
+        throw new Error('AI returned an invalid response format. Please try again.');
+      }
 
-      if (parsedResults.length > 0) {
+      if (validatedSchools.length === 0) {
+        throw new Error('No valid schools found. The AI response did not contain recognizable school data. Please try again.');
+      }
+      
+      // Add match scores, filter below-threshold schools
+      const schoolsWithScores = validatedSchools
+        .map(school => {
+          // Ignore AI-provided match score, force recalculation based on strict rubric
+          const netPriceNum = school.netPrice ? parseInt(school.netPrice.replace(/[^0-9]/g, '') || '0') : 0;
+          const tuitionNum = parseInt((school.tuition || '').replace(/[^0-9]/g, '') || '0');
+          const gpaMin = school.gpaMinimum ? parseFloat(school.gpaMinimum) : undefined;
+          const acceptanceNum = school.admissionRate ? parseFloat(school.admissionRate.replace(/[^0-9.]/g, '') || '0') : undefined;
+          const graduationNum = school.graduationRate ? parseFloat(school.graduationRate.replace(/[^0-9.]/g, '') || '0') : undefined;
+          const matchScore = calculateMatchScore({
+            userGPA: profile?.academic_background?.gpa ? parseFloat(profile.academic_background.gpa) : undefined,
+            userBudgetMax: profile?.budget?.max ? Number(profile.budget.max) : undefined,
+            userMajor: profile?.academic_background?.major || '',
+            schoolMinGPA: gpaMin,
+            schoolNetPrice: netPriceNum || undefined,
+            schoolTuition: tuitionNum || undefined,
+            schoolAcceptanceRate: acceptanceNum || undefined,
+            schoolGraduationRate: graduationNum || undefined,
+            schoolProgram: school.program || '',
+          });
+          return { ...school, matchScore };
+        })
+        .filter(school => isValidMatchScore(school.matchScore || 0));
+      
+      const sortedSchools = schoolsWithScores.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+      setResults(sortedSchools);
+      setFilteredResults(sortedSchools);
+
+      if (sortedSchools.length > 0) {
         const supabase = createClient();
-        const matchesToSave = parsedResults.map(school => ({
+        const matchesToSave = sortedSchools.map(school => ({
           user_id: user!.id,
           school_name: school.name,
           school_data: {
-            location: school.location,
-            programName: school.program,
-            tuition: school.tuition,
-            highlights: school.highlights,
-            admissionRate: school.admissionRate,
-            ranking: school.ranking,
-            employmentRate: school.employmentRate,
-            avgSalary: school.avgSalary,
-            scholarships: school.scholarships,
-            deadline: school.deadline,
+            location: school.location || '',
+            programName: school.program || '',
+            tuition: school.tuition || '',
+            netPrice: school.netPrice || '',
+            highlights: school.highlights || [],
+            admissionRate: school.admissionRate || '',
+            graduationRate: school.graduationRate || '',
+            gpaMinimum: school.gpaMinimum || '',
+            ranking: school.ranking || '',
+            employmentRate: school.employmentRate || '',
+            avgSalary: school.avgSalary || '',
+            scholarships: school.scholarships || '',
+            deadline: school.deadline || '',
+            matchScore: school.matchScore || 0,
           },
           success_probability: 75,
           reasoning: 'Match based on your profile',
@@ -196,88 +291,25 @@ export default function Dashboard() {
     }
   };
 
-  const parseResults = (text: string): SchoolMatch[] => {
-    const schools: SchoolMatch[] = [];
-    const lines = text.split('\n');
-    let currentSchool: Partial<SchoolMatch> = {};
-    let highlights: string[] = [];
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-
-      if (line.match(/^\d+\.\s+(.+)/) || (line.length > 0 && line.length < 100 && !line.includes(':') && i > 0 && lines[i-1].trim() === '')) {
-        if (currentSchool.name) {
-          schools.push({ ...currentSchool, highlights } as SchoolMatch);
-          highlights = [];
-        }
-        currentSchool = { name: stripMarkdown(line.replace(/^\d+\.\s+/, '')) };
-      }
-      else if (line.toLowerCase().includes('location:')) {
-        currentSchool.location = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('program:')) {
-        currentSchool.program = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('tuition:')) {
-        currentSchool.tuition = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('admission rate:')) {
-        currentSchool.admissionRate = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('ranking:')) {
-        currentSchool.ranking = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('employment rate:')) {
-        currentSchool.employmentRate = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('salary:') || line.toLowerCase().includes('starting salary:')) {
-        currentSchool.avgSalary = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('scholarship:')) {
-        currentSchool.scholarships = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.toLowerCase().includes('deadline:')) {
-        currentSchool.deadline = stripMarkdown(line.split(':')[1]);
-      }
-      else if (line.startsWith('-') || line.startsWith('•') || line.startsWith('*')) {
-        highlights.push(stripMarkdown(line.replace(/^[-•*]\s*/, '')));
-      }
-    }
-
-    if (currentSchool.name) {
-      schools.push({ ...currentSchool, highlights } as SchoolMatch);
-    }
-
-    const filteredSchools = schools.filter(s => s.name && s.name.length > 0);
+  const toggleFavorite = async (school: SchoolMatch) => {
+    const supabase = createClient();
+    const schoolName = cleanText(school.name);
     
-    const schoolsWithScores = filteredSchools.map(school => {
-      const tuition = parseInt(school.tuition?.replace(/[^0-9]/g, '') || '0');
-      const matchScore = calculateMatchScore({
-        userGPA: profile?.academic_background?.gpa ? parseFloat(profile.academic_background.gpa) : undefined,
-        schoolMinGPA: 3.0,
-        userBudgetMin: profile?.budget?.min,
-        userBudgetMax: profile?.budget?.max,
-        schoolTuition: tuition,
-        programAvailable: true,
-        locationMatch: true,
-      });
-      return { ...school, matchScore };
-    });
-    
-    const sortedSchools = schoolsWithScores.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-    
-    setResults(sortedSchools);
-    setFilteredResults(sortedSchools);
-    return sortedSchools;
-  };
-
-  const toggleFavorite = (index: number) => {
     setFavorites(prev => {
       const newFavorites = new Set(prev);
-      if (newFavorites.has(index)) {
-        newFavorites.delete(index);
+      if (newFavorites.has(schoolName)) {
+        newFavorites.delete(schoolName);
+        supabase.from('matches').update({ favorited: false }).eq('user_id', user!.id).eq('school_name', schoolName).then();
+        supabase.from('user_deadlines').delete().eq('user_id', user!.id).eq('school_name', schoolName).then();
       } else {
-        newFavorites.add(index);
+        newFavorites.add(schoolName);
+        supabase.from('matches').update({ favorited: true }).eq('user_id', user!.id).eq('school_name', schoolName).then();
+        supabase.from('user_deadlines').insert({
+          user_id: user!.id,
+          school_name: schoolName,
+          application_type: 'Regular Decision',
+          deadline_date: null,
+        }).then();
       }
       return newFavorites;
     });
@@ -292,8 +324,8 @@ export default function Dashboard() {
           schools: prev.schools.filter(s => s.name !== school.name),
         };
       }
-      if (prev.schools.length >= 3) {
-        alert('You can compare up to 3 schools at a time');
+      if (prev.schools.length >= 5) {
+        alert('You can compare up to 5 schools at a time');
         return prev;
       }
       return {
@@ -352,10 +384,10 @@ export default function Dashboard() {
   if (!user || !profile) return null;
 
   return (
-    <div className="min-h-screen bg-black pb-24">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <div className="border-b border-white/5 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 py-6 flex items-center justify-between">
+      <div className="border-b border-white/5 backdrop-blur-sm sticky top-0 z-50 bg-black/80">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-6 flex items-center justify-between">
           <div className="space-y-1">
             <p className="text-xs text-white/40 font-light uppercase tracking-wider">Welcome back</p>
             <h1 className="text-2xl md:text-3xl font-light text-white">{profile.full_name || 'Dashboard'}</h1>
@@ -374,9 +406,9 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[1600px] mx-auto px-6 md:px-8 lg:px-12 py-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 py-12">
         {/* Profile Summary */}
-        <div className="mb-16">
+        <div className="mb-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
               { label: 'Major', value: profile.academic_background?.major || '—', icon: GraduationCap },
@@ -398,15 +430,25 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* My Deadlines Tracker 
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-light text-white">My Deadlines</h2>
+            <div className="text-sm text-white/50 font-light">Application Tracker</div>
+          </div>
+          <DeadlinesTracker />
+        </div>
+        */}
+
         {/* Search State */}
         {!searching && results.length === 0 && (
-          <div className="space-y-8">
+          <div className="space-y-8 text-center">
             <div className="space-y-4">
-              <h2 className="text-5xl md:text-6xl font-light text-white leading-tight">
+              <h2 className="text-4xl md:text-5xl font-light text-white leading-tight">
                 Discover your<br />
                 <span className="font-semibold bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">perfect match</span>
               </h2>
-              <p className="text-lg text-white/50 font-light max-w-2xl">
+              <p className="text-lg text-white/50 font-light max-w-2xl mx-auto">
                 AI-powered recommendations tailored to your profile and goals
               </p>
             </div>
@@ -441,11 +483,11 @@ export default function Dashboard() {
 
         {/* Results */}
         {results.length > 0 && !searching && (
-          <div className="space-y-12">
+          <div className="space-y-8">
             {/* Results Header */}
             <div className="flex items-center justify-between">
               <div className="space-y-2">
-                <h2 className="text-4xl md:text-5xl font-light text-white">
+                <h2 className="text-3xl md:text-4xl font-light text-white">
                   {filteredResults.length} <span className="font-semibold">matches</span>
                 </h2>
                 <p className="text-white/50 font-light">Curated for your success</p>
@@ -467,72 +509,88 @@ export default function Dashboard() {
             <div className="space-y-6">
               {filteredResults.map((school, idx) => (
                 <div key={idx} className="group">
-                  <div className={`bg-white/5 border rounded-2xl p-8 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6 relative ${isSchoolSelected(school.name) ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-white/10'}`}>
-                    {/* Match Score Badge */}
-                    {school.matchScore !== undefined && (
-                      <div className={`absolute top-8 right-8 flex flex-col items-center justify-center w-20 h-20 rounded-2xl border-2 ${getMatchScoreColor(school.matchScore)} backdrop-blur-sm`}>
-                        <div className="text-3xl font-black">{school.matchScore}%</div>
-                        <div className="text-xs font-bold uppercase tracking-wider opacity-80">Match</div>
-                      </div>
-                    )}
-
+                  <div 
+                    onClick={() => router.push('/dashboard/school/' + encodeURIComponent(cleanText(school.name)))}
+                    className={`bg-white/5 border rounded-2xl p-6 hover:bg-white/10 hover:border-white/20 transition-all duration-300 space-y-6 cursor-pointer ${isSchoolSelected(school.name) ? 'border-indigo-500/50 bg-indigo-500/5' : 'border-white/10'}`}
+                  >
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-6">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-2xl md:text-3xl font-light text-white group-hover:text-indigo-300 transition-colors">
-                            {school.name}
-                          </h3>
-                          <div className="flex items-center gap-2">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 space-y-2 min-w-0">
+                        <h3 className="text-xl md:text-2xl font-light text-white group-hover:text-indigo-300 transition-colors truncate">
+                          {cleanText(school.name)}
+                        </h3>
+                        {school.location && (
+                          <div className="flex items-center gap-2 text-white/50 text-sm font-light">
+                            <MapPin className="w-4 h-4 flex-shrink-0" />
+                            <span>{cleanText(school.location)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right side: tuition + match score + actions */}
+                      <div className="flex items-start gap-3 flex-shrink-0">
+                        {school.tuition && (
+                          <div className="text-right">
+                            <p className="text-xl font-light bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+                              {cleanText(school.tuition)}
+                            </p>
+                            <p className="text-xs text-white/30 font-light mt-0.5">per year</p>
+                          </div>
+                        )}
+                        {school.matchScore !== undefined && (
+                          <div className={`flex flex-col items-center justify-center w-14 h-14 rounded-xl border-2 flex-shrink-0 ${getMatchScoreColor(school.matchScore)}`}>
+                            <div className="text-lg font-black leading-none">{school.matchScore}%</div>
+                             <div className="text-[9px] font-bold uppercase tracking-wider opacity-80 mt-0.5">{getMatchScoreLabel(school.matchScore)}</div>
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setRoiModal({ isOpen: true, school: school });
+                            }}
+                            className="h-8 text-[10px] uppercase tracking-wider font-bold border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 bg-transparent px-3 rounded-lg"
+                          >
+                            📊 See ROI Report
+                          </Button>
+                          <div className="flex gap-1.5">
                             <button
-                              onClick={() => toggleFavorite(idx)}
-                              className={`p-2 rounded-lg transition-all ${
-                                favorites.has(idx)
+                              onClick={(e) => { e.stopPropagation(); toggleFavorite(school); }}
+                              className={`p-2 rounded-lg transition-all flex-1 flex items-center justify-center ${
+                                favorites.has(cleanText(school.name))
                                   ? 'bg-pink-500/20 text-pink-400'
                                   : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
                               }`}
                             >
-                              <Heart className={`w-5 h-5 ${favorites.has(idx) ? 'fill-current' : ''}`} />
+                              <Heart className={`w-4 h-4 ${favorites.has(cleanText(school.name)) ? 'fill-current' : ''}`} />
                             </button>
                             <button
-                              onClick={() => toggleCompare(school)}
-                              className={`p-2 rounded-lg transition-all ${
+                              onClick={(e) => { e.stopPropagation(); toggleCompare(school); }}
+                              className={`p-2 rounded-lg transition-all flex-1 flex items-center justify-center ${
                                 isSchoolSelected(school.name)
-                                  ? 'bg-indigo-500/20 text-indigo-400'
+                                  ? 'bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/40'
                                   : 'bg-white/5 text-white/30 hover:bg-white/10 hover:text-white/60'
                               }`}
-                              title="Add to comparison"
+                              title={isSchoolSelected(school.name) ? 'Remove from comparison' : 'Add to comparison'}
                             >
                               {isSchoolSelected(school.name) ? (
-                                <Check className="w-5 h-5" />
+                                <Check className="w-4 h-4" />
                               ) : (
-                                <Plus className="w-5 h-5" />
+                                <Plus className="w-4 h-4" />
                               )}
                             </button>
                           </div>
                         </div>
-                        {school.location && (
-                          <div className="flex items-center gap-2 text-white/50 text-sm font-light">
-                            <MapPin className="w-4 h-4" />
-                            <span>{school.location}</span>
-                          </div>
-                        )}
                       </div>
-                      {school.tuition && (
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-3xl font-light bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                            {school.tuition}
-                          </p>
-                          <p className="text-xs text-white/30 font-light mt-1">per year</p>
-                        </div>
-                      )}
                     </div>
 
                     {/* Program Badge */}
                     {school.program && (
                       <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-white/70 text-sm font-light">
                         <GraduationCap className="w-4 h-4" />
-                        {school.program}
+                        {cleanText(school.program)}
                       </div>
                     )}
 
@@ -542,25 +600,25 @@ export default function Dashboard() {
                         {school.admissionRate && (
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-light">
                             <TrendingUp className="w-4 h-4" />
-                            {school.admissionRate}
+                            {cleanText(school.admissionRate)}
                           </div>
                         )}
                         {school.ranking && (
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-light">
                             <Star className="w-4 h-4" />
-                            {school.ranking}
+                            {cleanText(school.ranking)}
                           </div>
                         )}
                         {school.employmentRate && (
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-light">
                             <Briefcase className="w-4 h-4" />
-                            {school.employmentRate}
+                            {cleanText(school.employmentRate)}
                           </div>
                         )}
                         {school.avgSalary && (
                           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-sm font-light">
                             <Zap className="w-4 h-4" />
-                            {school.avgSalary}
+                            {cleanText(school.avgSalary)}
                           </div>
                         )}
                       </div>
@@ -572,7 +630,7 @@ export default function Dashboard() {
                         {school.highlights.slice(0, 4).map((highlight, i) => (
                           <div key={i} className="flex items-start gap-3 text-white/60 text-sm font-light">
                             <div className="w-1 h-1 rounded-full bg-indigo-400 mt-2 flex-shrink-0" />
-                            <span>{highlight}</span>
+                            <span>{cleanText(highlight)}</span>
                           </div>
                         ))}
                       </div>
@@ -584,22 +642,17 @@ export default function Dashboard() {
                         {school.scholarships && (
                           <div className="flex items-center gap-2 text-white/50">
                             <Award className="w-4 h-4 text-yellow-400/60" />
-                            <span>{school.scholarships}</span>
+                            <span>{cleanText(school.scholarships)}</span>
                           </div>
                         )}
                         {school.deadline && (
                           <div className="flex items-center gap-2 text-white/50">
                             <Calendar className="w-4 h-4 text-pink-400/60" />
-                            <span>{school.deadline}</span>
+                            <span>{cleanText(school.deadline)}</span>
                           </div>
                         )}
                       </div>
                     )}
-
-                    {/* Map */}
-                    <div className="pt-4 border-t border-white/5">
-                      <MapDistance schoolLocation={school.location} schoolName={school.name} />
-                    </div>
                   </div>
                 </div>
               ))}
@@ -614,6 +667,15 @@ export default function Dashboard() {
         onViewComparison={() => setComparison(prev => ({ ...prev, isOpen: true }))}
         onRemoveSchool={removeFromComparison}
       />
+
+      {/* ROI Modal */}
+      {roiModal.isOpen && (
+        <ROIReportModal
+          school={roiModal.school}
+          userProfile={profile}
+          onClose={() => setRoiModal({ isOpen: false, school: null })}
+        />
+      )}
 
       {/* Comparison Modal */}
       {comparison.isOpen && profile && (

@@ -9,6 +9,9 @@ export interface ComparisonSchool {
   tuition: string;
   matchScore?: number;
   admissionRate?: string;
+  graduationRate?: string;
+  netPrice?: string;
+  gpaMinimum?: string;
   ranking?: string;
   employmentRate?: string;
   avgSalary?: string;
@@ -18,7 +21,9 @@ export interface ComparisonSchool {
 }
 
 export function getTuitionNumber(tuitionStr: string): number {
-  return parseInt(tuitionStr?.replace(/[^0-9]/g, '') || '0');
+  if (!tuitionStr) return 0;
+  const m = tuitionStr.match(/\$?([\d,]+)/);
+  return m ? parseInt(m[1].replace(/,/g, '')) : 0;
 }
 
 export function formatCurrency(value: number): string {

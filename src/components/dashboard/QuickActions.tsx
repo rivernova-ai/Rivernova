@@ -2,11 +2,27 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Search, MessageCircle, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Search, MessageCircle, ShieldCheck, ArrowRight, FileText } from 'lucide-react';
 
 export function QuickActions() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Link href="/dashboard/essay" className="group">
+        <div className="bg-gradient-to-br from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-3xl p-8 hover:border-amber-500/30 transition-all cursor-pointer h-full">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+            <FileText className="w-7 h-7 text-amber-400" />
+          </div>
+          <h3 className="text-xl font-bold text-white mb-3">Essay Strategy</h3>
+          <p className="text-white/60 leading-relaxed mb-4">
+            Get your $5,000 essay positioning strategy — free
+          </p>
+          <div className="flex items-center gap-2 text-amber-400 font-medium text-sm group-hover:gap-3 transition-all">
+            Start Now
+            <ArrowRight className="w-4 h-4" />
+          </div>
+        </div>
+      </Link>
+
       <Link href="/dashboard/matches" className="group">
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer h-full">
           <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">

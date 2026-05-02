@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import MapDistance from './MapDistance';
-import { stripMarkdown, getMatchScoreColor } from '@/lib/utils';
+import { stripMarkdown, cleanText, getMatchScoreColor, getMatchScoreLabel } from '@/lib/utils';
 
 export interface Match {
   id?: string;
@@ -59,7 +59,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
       {match.matchScore !== undefined && (
         <div className={`absolute top-6 right-6 md:top-8 md:right-8 flex flex-col items-center justify-center w-20 h-20 rounded-2xl border-2 ${getMatchScoreColor(match.matchScore)} backdrop-blur-sm`}>
           <div className="text-3xl font-black">{match.matchScore}%</div>
-          <div className="text-xs font-bold uppercase tracking-wider opacity-80">Match</div>
+          <div className="text-[9px] font-bold uppercase tracking-wider opacity-80 mt-0.5 text-center px-1">{getMatchScoreLabel(match.matchScore)}</div>
         </div>
       )}
 
@@ -68,7 +68,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-2xl font-bold text-white group-hover:text-indigo-400 transition-colors">
-              {stripMarkdown(match.schoolName)}
+              {cleanText(match.schoolName)}
             </h3>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold bg-emerald-500/10 border-emerald-500/20 text-emerald-400">
               <ShieldCheck className="w-3 h-3" />
@@ -77,9 +77,9 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
           </div>
           <div className="flex items-center gap-2 text-white/60 text-sm mb-3">
             <MapPin className="w-4 h-4" />
-            {stripMarkdown(match.location)}
+            {cleanText(match.location)}
           </div>
-          <p className="text-white/80 font-medium">{stripMarkdown(match.programName)}</p>
+          <p className="text-white/80 font-medium">{cleanText(match.programName)}</p>
         </div>
 
         <button
@@ -118,7 +118,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
         {match.highlights.slice(0, 3).map((highlight, idx) => (
           <div key={idx} className="flex items-start gap-2 text-white/80 text-sm">
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 flex-shrink-0" />
-            <span>{stripMarkdown(highlight)}</span>
+            <span>{cleanText(highlight)}</span>
           </div>
         ))}
       </div>
@@ -126,7 +126,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
       {/* Reasoning */}
       <div className="bg-white/5 border border-white/10 rounded-2xl p-4 mb-6">
         <h4 className="text-sm font-bold text-white/80 mb-2 uppercase tracking-wider">Why This Match?</h4>
-        <p className="text-white/70 text-sm leading-relaxed">{stripMarkdown(match.reasoning)}</p>
+        <p className="text-white/70 text-sm leading-relaxed">{cleanText(match.reasoning)}</p>
       </div>
 
       {/* Expandable Details */}
@@ -163,13 +163,13 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
               <h4 className="text-sm font-bold text-white/80 mb-3 uppercase tracking-wider">Admission Requirements</h4>
               <div className="space-y-2 text-sm text-white/70">
                 {match.admissionRequirements.gpa && (
-                  <div><span className="text-white/50">GPA:</span> {stripMarkdown(match.admissionRequirements.gpa)}</div>
+                  <div><span className="text-white/50">GPA:</span> {cleanText(match.admissionRequirements.gpa)}</div>
                 )}
                 {match.admissionRequirements.testScores && (
-                  <div><span className="text-white/50">Test Scores:</span> {stripMarkdown(match.admissionRequirements.testScores)}</div>
+                  <div><span className="text-white/50">Test Scores:</span> {cleanText(match.admissionRequirements.testScores)}</div>
                 )}
                 {match.admissionRequirements.other && (
-                  <div><span className="text-white/50">Other:</span> {stripMarkdown(match.admissionRequirements.other)}</div>
+                  <div><span className="text-white/50">Other:</span> {cleanText(match.admissionRequirements.other)}</div>
                 )}
               </div>
             </div>
@@ -184,7 +184,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
               <ShieldCheck className="w-4 h-4" />
               Zero Commission Guarantee
             </h4>
-            <p className="text-white/70 text-sm leading-relaxed">{stripMarkdown(match.whyUnbiased)}</p>
+            <p className="text-white/70 text-sm leading-relaxed">{cleanText(match.whyUnbiased)}</p>
           </div>
 
           {/* Citations */}
@@ -195,7 +195,7 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
                 {match.citations.map((citation, idx) => (
                   <div key={idx} className="text-xs text-white/50 flex items-start gap-2">
                     <span className="text-indigo-400">[{idx + 1}]</span>
-                    <span className="flex-1">{stripMarkdown(citation)}</span>
+                    <span className="flex-1">{cleanText(citation)}</span>
                   </div>
                 ))}
               </div>

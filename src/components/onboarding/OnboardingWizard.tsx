@@ -245,12 +245,12 @@ export function OnboardingWizard() {
     }
   };
 
-  const FormField = ({ label, field, type = 'text', placeholder, hint, error }: any) => (
+  const renderFormField = ({ label, field, type = 'text', placeholder, hint, error }: any) => (
     <div className="space-y-2">
       <Label className="text-white/80">{label}</Label>
       {type === 'textarea' ? (
         <Textarea
-          value={data[field as keyof OnboardingData] || ''}
+          value={(data[field as keyof OnboardingData] as string) || ''}
           onChange={(e) => updateData(field as keyof OnboardingData, e.target.value)}
           placeholder={placeholder}
           className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 rounded-xl mt-2 min-h-[120px] ${
@@ -260,7 +260,7 @@ export function OnboardingWizard() {
       ) : (
         <Input
           type={type}
-          value={data[field as keyof OnboardingData] || ''}
+          value={(data[field as keyof OnboardingData] as string) || ''}
           onChange={(e) => updateData(field as keyof OnboardingData, e.target.value)}
           placeholder={placeholder}
           className={`bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl mt-2 ${
@@ -313,52 +313,52 @@ export function OnboardingWizard() {
               </p>
 
               <div className="space-y-4">
-                <FormField
-                  label="Current Education Level"
-                  field="currentEducation"
-                  placeholder="e.g., High School Senior, Bachelor's Degree"
-                />
+                {renderFormField({
+                  label: "Current Education Level",
+                  field: "currentEducation",
+                  placeholder: "e.g., High School Senior, Bachelor's Degree"
+                })}
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    label="GPA / Grade"
-                    field="gpa"
-                    type="number"
-                    placeholder="0.0 - 4.0"
-                    hint="Enter a number between 0.0 and 4.0"
-                    error={fieldErrors.gpa}
-                  />
-                  <FormField
-                    label="Current Education Level"
-                    field="currentEducation"
-                    placeholder="e.g., High School Senior"
-                  />
+                  {renderFormField({
+                    label: "GPA / Grade",
+                    field: "gpa",
+                    type: "number",
+                    placeholder: "0.0 - 4.0",
+                    hint: "Enter a number between 0.0 and 4.0",
+                    error: fieldErrors.gpa
+                  })}
+                  {renderFormField({
+                    label: "Current Education Level",
+                    field: "currentEducation",
+                    placeholder: "e.g., High School Senior"
+                  })}
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    label="SAT Score (Optional)"
-                    field="satScore"
-                    type="number"
-                    placeholder="400 - 1600"
-                    hint="Enter a number between 400 and 1600"
-                    error={fieldErrors.satScore}
-                  />
-                  <FormField
-                    label="ACT Score (Optional)"
-                    field="actScore"
-                    type="number"
-                    placeholder="1 - 36"
-                    hint="Enter a number between 1 and 36"
-                    error={fieldErrors.actScore}
-                  />
+                  {renderFormField({
+                    label: "SAT Score (Optional)",
+                    field: "satScore",
+                    type: "number",
+                    placeholder: "400 - 1600",
+                    hint: "Enter a number between 400 and 1600",
+                    error: fieldErrors.satScore
+                  })}
+                  {renderFormField({
+                    label: "ACT Score (Optional)",
+                    field: "actScore",
+                    type: "number",
+                    placeholder: "1 - 36",
+                    hint: "Enter a number between 1 and 36",
+                    error: fieldErrors.actScore
+                  })}
                 </div>
 
-                <FormField
-                  label="Intended Major / Field of Study"
-                  field="major"
-                  placeholder="e.g., Computer Science, Business, Medicine"
-                />
+                {renderFormField({
+                  label: "Intended Major / Field of Study",
+                  field: "major",
+                  placeholder: "e.g., Computer Science, Business, Medicine"
+                })}
               </div>
             </div>
           )}
@@ -381,28 +381,28 @@ export function OnboardingWizard() {
               </p>
 
               <div className="space-y-4">
-                <FormField
-                  label="Career Field"
-                  field="careerField"
-                  placeholder="e.g., Technology, Healthcare, Finance"
-                  hint="Text only, no numbers"
-                  error={fieldErrors.careerField}
-                />
+                {renderFormField({
+                  label: "Career Field",
+                  field: "careerField",
+                  placeholder: "e.g., Technology, Healthcare, Finance",
+                  hint: "Text only, no numbers",
+                  error: fieldErrors.careerField
+                })}
 
-                <FormField
-                  label="Dream Job"
-                  field="dreamJob"
-                  placeholder="e.g., Software Engineer, Doctor, Investment Banker"
-                  hint="Text only, minimum 3 characters, no numbers"
-                  error={fieldErrors.dreamJob}
-                />
+                {renderFormField({
+                  label: "Dream Job",
+                  field: "dreamJob",
+                  placeholder: "e.g., Software Engineer, Doctor, Investment Banker",
+                  hint: "Text only, minimum 3 characters, no numbers",
+                  error: fieldErrors.dreamJob
+                })}
 
-                <FormField
-                  label="Industries of Interest"
-                  field="industries"
-                  type="textarea"
-                  placeholder="Tell us about the industries you're interested in..."
-                />
+                {renderFormField({
+                  label: "Industries of Interest",
+                  field: "industries",
+                  type: "textarea",
+                  placeholder: "Tell us about the industries you're interested in..."
+                })}
               </div>
             </div>
           )}
@@ -426,22 +426,22 @@ export function OnboardingWizard() {
 
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
-                  <FormField
-                    label="Minimum Budget (USD/year)"
-                    field="budgetMin"
-                    type="number"
-                    placeholder="e.g., 10000"
-                    hint="Numbers only"
-                    error={fieldErrors.budgetMin}
-                  />
-                  <FormField
-                    label="Maximum Budget (USD/year)"
-                    field="budgetMax"
-                    type="number"
-                    placeholder="e.g., 50000"
-                    hint="Must be greater than minimum"
-                    error={fieldErrors.budgetMax || fieldErrors.budgetRange}
-                  />
+                  {renderFormField({
+                    label: "Minimum Budget (USD/year)",
+                    field: "budgetMin",
+                    type: "number",
+                    placeholder: "e.g., 10000",
+                    hint: "Numbers only",
+                    error: fieldErrors.budgetMin
+                  })}
+                  {renderFormField({
+                    label: "Maximum Budget (USD/year)",
+                    field: "budgetMax",
+                    type: "number",
+                    placeholder: "e.g., 50000",
+                    hint: "Must be greater than minimum",
+                    error: fieldErrors.budgetMax || fieldErrors.budgetRange
+                  })}
                 </div>
 
                 <div className="space-y-3">
@@ -493,13 +493,13 @@ export function OnboardingWizard() {
               </p>
 
               <div className="space-y-4">
-                <FormField
-                  label="Preferred Countries"
-                  field="preferredCountries"
-                  type="textarea"
-                  placeholder="e.g., United States, United Kingdom, Canada, Australia, Germany"
-                  hint="Separate multiple countries with commas"
-                />
+                {renderFormField({
+                  label: "Preferred Countries",
+                  field: "preferredCountries",
+                  type: "textarea",
+                  placeholder: "e.g., United States, United Kingdom, Canada, Australia, Germany",
+                  hint: "Separate multiple countries with commas"
+                })}
 
                 <label className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
                   <input

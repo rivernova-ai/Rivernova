@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Sparkles, MapPin, DollarSign, TrendingUp, ExternalLink, Info } from 'lucide-react';
 import MatchFilters from '@/components/matches/MatchFilters';
-import { stripMarkdown, getMatchScoreColor } from '@/lib/utils';
+import { stripMarkdown, getMatchScoreColor, getMatchScoreLabel } from '@/lib/utils';
 
 interface MatchResultsProps {
   matches: any[];
@@ -76,7 +76,7 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
             <div className="absolute top-0 right-0 p-8">
               <div className={`w-24 h-24 rounded-2xl border-2 flex flex-col items-center justify-center ${getMatchScoreColor(match.match_score || match.matchScore || 0)} backdrop-blur-sm`}>
                  <span className="text-2xl font-black">{match.match_score || match.matchScore}%</span>
-                 <span className="text-xs font-bold uppercase tracking-wider opacity-80">Match</span>
+                 <span className="text-xs font-bold uppercase tracking-wider opacity-80">{getMatchScoreLabel(match.match_score || match.matchScore || 0)}</span>
               </div>
             </div>
 

@@ -90,10 +90,13 @@ export default function EditProfilePage() {
 
     setProfile(prev => {
       if (!prev) return prev;
+      if (section === 'mode') {
+        return { ...prev, mode: value };
+      }
       return {
         ...prev,
         [section]: {
-          ...prev[section as keyof Profile],
+          ...(prev[section as keyof Profile] as object),
           [field]: value,
         },
       };
@@ -217,12 +220,12 @@ export default function EditProfilePage() {
 
   if (!profile) return null;
 
-  const FormField = ({ label, field, section, type = 'text', placeholder, hint, error }: any) => (
+  const renderFormField = ({ label, field, section, type = 'text', placeholder, hint, error }: any) => (
     <div className="space-y-2">
       <Label className="text-sm text-white/60 font-light">{label}</Label>
       {type === 'textarea' ? (
         <Textarea
-          value={profile[section as keyof Profile][field] || ''}
+          value={(profile as any)[section]?.[field] || ''}
           onChange={(e) => updateField(section, field, e.target.value)}
           placeholder={placeholder}
           className={`bg-white/5 border rounded-xl min-h-[100px] font-light text-white placeholder:text-white/30 ${
@@ -232,7 +235,7 @@ export default function EditProfilePage() {
       ) : (
         <Input
           type={type}
-          value={profile[section as keyof Profile][field] || ''}
+          value={(profile as any)[section]?.[field] || ''}
           onChange={(e) => updateField(section, field, e.target.value)}
           placeholder={placeholder}
           className={`bg-white/5 border h-11 rounded-xl font-light text-white placeholder:text-white/30 ${
@@ -250,7 +253,7 @@ export default function EditProfilePage() {
     </div>
   );
 
-  const EditSection = ({ title, icon: Icon, fields, section }: any) => (
+  const renderEditSection = ({ title, icon: Icon, fields, section }: any) => (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
@@ -261,16 +264,17 @@ export default function EditProfilePage() {
 
       <div className="space-y-4">
         {fields.map((field: any) => (
-          <FormField
-            key={field.key}
-            label={field.label}
-            field={field.key}
-            section={section}
-            type={field.type}
-            placeholder={field.placeholder}
-            hint={field.hint}
-            error={fieldErrors[`${section}.${field.key}`]}
-          />
+          <div key={field.key}>
+            {renderFormField({
+              label: field.label,
+              field: field.key,
+              section: section,
+              type: field.type,
+              placeholder: field.placeholder,
+              hint: field.hint,
+              error: fieldErrors[`${section}.${field.key}`]
+            })}
+          </div>
         ))}
       </div>
     </div>
@@ -315,30 +319,30 @@ export default function EditProfilePage() {
       {/* Content */}
       <div className="max-w-[900px] mx-auto px-6 md:px-8 py-12 space-y-16">
         {/* Academic Background */}
-        <EditSection
-          title="Academic Background"
-          icon={GraduationCap}
-          section="academic_background"
-          fields={[
+        {renderEditSection({
+          title: "Academic Background",
+          icon: GraduationCap,
+          section: "academic_background",
+          fields: [
             { key: 'currentEducation', label: 'Current Education Level', placeholder: 'e.g., High School Senior' },
             { key: 'gpa', label: 'GPA / Grade', type: 'number', placeholder: '0.0 - 4.0', hint: 'Enter a number between 0.0 and 4.0' },
             { key: 'satScore', label: 'SAT Score (Optional)', type: 'number', placeholder: '400 - 1600', hint: 'Enter a number between 400 and 1600' },
             { key: 'actScore', label: 'ACT Score (Optional)', type: 'number', placeholder: '1 - 36', hint: 'Enter a number between 1 and 36' },
             { key: 'major', label: 'Intended Major / Field of Study', placeholder: 'e.g., Computer Science' },
-          ]}
-        />
+          ]
+        })}
 
         {/* Career Goals */}
-        <EditSection
-          title="Career Goals"
-          icon={Target}
-          section="career_goals"
-          fields={[
+        {renderEditSection({
+          title: "Career Goals",
+          icon: Target,
+          section: "career_goals",
+          fields: [
             { key: 'careerField', label: 'Career Field', placeholder: 'e.g., Technology, Healthcare', hint: 'Text only, no numbers' },
             { key: 'dreamJob', label: 'Dream Job', placeholder: 'e.g., Software Engineer', hint: 'Text only, minimum 3 characters, no numbers' },
             { key: 'industries', label: 'Industries of Interest', type: 'textarea', placeholder: 'Tell us about your interests...' },
-          ]}
-        />
+          ]
+        })}
 
         {/* Budget & Financial */}
         <div className="space-y-6">
@@ -351,24 +355,24 @@ export default function EditProfilePage() {
 
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
-              <FormField
-                label="Minimum Budget (USD/year)"
-                field="min"
-                section="budget"
-                type="number"
-                placeholder="e.g., 10000"
-                hint="Numbers only"
-                error={fieldErrors['budget.min']}
-              />
-              <FormField
-                label="Maximum Budget (USD/year)"
-                field="max"
-                section="budget"
-                type="number"
-                placeholder="e.g., 50000"
-                hint="Must be greater than minimum"
-                error={fieldErrors['budget.max'] || fieldErrors['budget.range']}
-              />
+              {renderFormField({
+                label: "Minimum Budget (USD/year)",
+                field: "min",
+                section: "budget",
+                type: "number",
+                placeholder: "e.g., 10000",
+                hint: "Numbers only",
+                error: fieldErrors['budget.min']
+              })}
+              {renderFormField({
+                label: "Maximum Budget (USD/year)",
+                field: "max",
+                section: "budget",
+                type: "number",
+                placeholder: "e.g., 50000",
+                hint: "Must be greater than minimum",
+                error: fieldErrors['budget.max'] || fieldErrors['budget.range']
+              })}
             </div>
 
             <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
@@ -394,14 +398,14 @@ export default function EditProfilePage() {
         </div>
 
         {/* Location Preferences */}
-        <EditSection
-          title="Location Preferences"
-          icon={Globe}
-          section="location_preferences"
-          fields={[
+        {renderEditSection({
+          title: "Location Preferences",
+          icon: Globe,
+          section: "location_preferences",
+          fields: [
             { key: 'preferredCountries', label: 'Preferred Countries', type: 'textarea', placeholder: 'e.g., United States, United Kingdom, Canada', hint: 'Separate multiple countries with commas' },
-          ]}
-        />
+          ]
+        })}
 
         <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
           <input

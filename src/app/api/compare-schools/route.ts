@@ -17,6 +17,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: 'API key not configured' },
+        { status: 500 }
+      );
+    }
+
     const schoolsText = schools
       .map(
         (school: any, idx: number) => `
@@ -63,7 +70,7 @@ NEXT STEPS:
 [Specific action items the student should take to decide between these schools]`;
 
     const { text } = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
+      model: anthropic('claude-sonnet-4-20250514'),
       prompt,
       temperature: 0.7,
     });
