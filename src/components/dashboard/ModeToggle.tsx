@@ -7,7 +7,7 @@ interface ModeToggleProps {
   onChange: (mode: 'domestic' | 'international' | 'lifelong') => void;
 }
 
-export function ModeToggle({ currentMode, onModeChange }: { currentMode: string; onModeChange: (mode: any) => void }) {
+export function ModeToggle({ currentMode, onChange }: ModeToggleProps) {
   const modes = [
     { id: 'domestic', label: 'Domestic', icon: Home, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
     { id: 'international', label: 'Global', icon: Globe, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
@@ -23,7 +23,7 @@ export function ModeToggle({ currentMode, onModeChange }: { currentMode: string;
         return (
           <button
             key={mode.id}
-            onClick={() => onModeChange(mode.id)}
+            onClick={() => onChange(mode.id as any)}
             className={`relative group flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
               isActive
                 ? `${mode.bg} ${mode.color} ${mode.border} border shadow-[0_0_20px_rgba(0,0,0,0.3)]`
