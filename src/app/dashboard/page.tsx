@@ -30,7 +30,7 @@ interface SchoolMatch {
   location: string;
   program: string;
   tuition: string;
-  highlights: string[];
+  highlights?: string[];
   netPrice?: string;
   admissionRate?: string;
   graduationRate?: string;
@@ -222,6 +222,10 @@ export default function Dashboard() {
     });
   };
 
+  const removeFromComparison = (name: string) => {
+    setComparison(prev => ({ ...prev, schools: prev.schools.filter(s => s.name !== name) }));
+  };
+
   const isSchoolSelected = (name: string) => comparison.schools.some(s => s.name === name);
 
   const handleFilterChange = (newFilters: any) => {
@@ -274,9 +278,6 @@ export default function Dashboard() {
 
           <div className="flex items-center gap-6">
             <ModeToggle currentMode={profile?.mode || 'domestic'} onChange={handleModeChange} />
-            <div className="h-10 w-10 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center group cursor-pointer hover:bg-white/10 transition-all">
-              <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-            </div>
           </div>
         </div>
       </nav>
