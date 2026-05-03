@@ -24,7 +24,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
   useEffect(() => {
     const performInitialResearch = async () => {
       setMessages([{
-        id: 'system-1',
+        id: `system-${Date.now()}`,
         role: 'assistant',
         content: `Initializing deep-intelligence protocol for **${schoolName}**... \n\nI'm currently scanning real-time databases for campus safety metrics, student life sentiment, and local infrastructure data.`
       }]);
@@ -50,13 +50,13 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
 
         const data = await response.json();
         setMessages(prev => [...prev, {
-          id: 'research-result',
+          id: `research-${Date.now()}`,
           role: 'assistant',
           content: data.message
         }]);
       } catch (error) {
         setMessages(prev => [...prev, {
-          id: 'error',
+          id: `error-${Date.now()}`,
           role: 'assistant',
           content: "Deep research protocol interrupted. I still have extensive core knowledge about this institution—how can I help?"
         }]);
