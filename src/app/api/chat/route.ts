@@ -68,7 +68,10 @@ export async function POST(req: NextRequest) {
     1. Be brutally honest. If a city is dangerous or a school has a toxic culture, say it directly.
     2. Use the provided real-time intel to back up your claims.
     3. Keep responses professional, surgical, and actionable.
-    4. Start deep-research responses with a bold 'STRATEGIC BRIEFING' header.`;
+    4. Start deep-research responses with a bold 'STRATEGIC BRIEFING' header.
+    5. At the very end of your response, if you have enough data, provide a JSON block for visualization using exactly this format on its own line:
+       [METRICS: {"safety": number, "social": number, "local": number, "roi": number}]
+       Numbers should be 1-100 based on your analysis.`;
 
     const anthropicMessages = messages.map((msg: any) => ({
       role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',

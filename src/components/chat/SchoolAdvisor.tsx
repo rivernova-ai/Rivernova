@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2, Sparkles, MessageCircle, ShieldAlert, Users, Compass, Zap, ArrowUpRight, AlertCircle } from 'lucide-react';
+import { Send, Loader2, Sparkles, MessageCircle, ShieldAlert, Users, Compass, Zap, ArrowUpRight, AlertCircle, TrendingUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  ResponsiveContainer,
+} from 'recharts';
 
 interface SchoolAdvisorProps {
   schoolName: string;
@@ -13,12 +21,34 @@ interface SchoolAdvisorProps {
   program: string;
 }
 
+interface Metrics {
+  safety: number;
+  social: number;
+  local: number;
+  roi: number;
+}
+
 export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorProps) {
   const [messages, setMessages] = useState<Array<{id: string; role: string; content: string}>>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResearching, setIsResearching] = useState(true);
+  const [metrics, setMetrics] = useState<Metrics>({ safety: 0, social: 0, local: 0, roi: 0 });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const parseMetrics = (content: string) => {
+    const match = content.match(/\[METRICS:\s*({.*?})\]/);
+    if (match) {
+      try {
+        const data = JSON.parse(match[1]);
+        setMetrics(data);
+        return content.replace(match[0], '').trim();
+      } catch (e) {
+        console.error('Failed to parse metrics:', e);
+      }
+    }
+    return content;
+  };
 
   // Initial research on mount
   useEffect(() => {
@@ -49,10 +79,12 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
         });
 
         const data = await response.json();
+        const cleanedContent = parseMetrics(data.message);
+        
         setMessages(prev => [...prev, {
           id: `research-${Date.now()}`,
           role: 'assistant',
-          content: data.message
+          content: cleanedContent
         }]);
       } catch (error) {
         setMessages(prev => [...prev, {
@@ -96,7 +128,13 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
       });
 
       const data = await response.json();
-      setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'assistant', content: data.message }]);
+      const cleanedContent = parseMetrics(data.message);
+      
+      setMessages(prev => [...prev, { 
+        id: (Date.now() + 1).toString(), 
+        role: 'assistant', 
+        content: cleanedContent 
+      }]);
     } catch (error) {
       console.error('Chat error:', error);
     } finally {
@@ -104,50 +142,83 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
     }
   };
 
+  const chartData = [
+    { subject: 'Safety', A: metrics.safety, fullMark: 100 },
+    { subject: 'Social', A: metrics.social, fullMark: 100 },
+    { subject: 'Local', A: metrics.local, fullMark: 100 },
+    { subject: 'ROI', A: metrics.roi, fullMark: 100 },
+  ];
+
   return (
-    <div className="w-full bg-[#050505] border border-white/[0.08] rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-[700px] shadow-2xl">
+    <div className="w-full bg-[#050505] border border-white/[0.08] rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-[750px] shadow-2xl">
       {/* Sidebar: Strategic Intel Summary */}
-      <div className="w-full md:w-80 bg-white/[0.01] border-r border-white/[0.05] p-10 flex flex-col justify-between">
+      <div className="w-full md:w-96 bg-white/[0.01] border-r border-white/[0.05] p-10 flex flex-col justify-between overflow-y-auto">
         <div className="space-y-12">
           <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-white tracking-tight">Counselor</h3>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black">Deep Intel Active</p>
+            <h3 className="text-2xl font-bold text-white tracking-tight">Intelligence</h3>
+            <p className="text-[10px] text-indigo-400 uppercase tracking-[0.3em] font-black">Strategic Focus Active</p>
           </div>
 
-          <div className="space-y-8">
-            <div className="flex items-start gap-4 group cursor-default">
-              <div className="mt-1 w-8 h-8 rounded-xl bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 group-hover:bg-indigo-500/20 transition-colors">
-                <ShieldAlert className="w-4 h-4 text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white/60">Safety Index</p>
-                <p className="text-[10px] text-white/30 uppercase font-black">Live Data</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 group cursor-default">
-              <div className="mt-1 w-8 h-8 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20 group-hover:bg-purple-500/20 transition-colors">
-                <Users className="w-4 h-4 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white/60">Social Pulse</p>
-                <p className="text-[10px] text-white/30 uppercase font-black">Sentiment</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 group cursor-default">
-              <div className="mt-1 w-8 h-8 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 group-hover:bg-emerald-500/20 transition-colors">
-                <Compass className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white/60">Local Scene</p>
-                <p className="text-[10px] text-white/30 uppercase font-black">Exploration</p>
-              </div>
-            </div>
+          {/* Futuristic Visual Representation */}
+          <div className="relative aspect-square w-full py-4">
+             {/* Background Glow */}
+             <div className="absolute inset-0 bg-indigo-500/5 blur-[60px] rounded-full pointer-events-none" />
+             
+             <ResponsiveContainer width="100%" height="100%">
+               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
+                 <PolarGrid stroke="#ffffff10" strokeDasharray="3 3" />
+                 <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 900, textTransform: 'uppercase' }} 
+                 />
+                 <Radar
+                   name="School metrics"
+                   dataKey="A"
+                   stroke="#818cf8"
+                   fill="#818cf8"
+                   fillOpacity={0.4}
+                   animationDuration={1500}
+                 />
+               </RadarChart>
+             </ResponsiveContainer>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: ShieldAlert, label: 'Safety', value: metrics.safety, color: 'indigo' },
+              { icon: Users, label: 'Social', value: metrics.social, color: 'purple' },
+              { icon: Compass, label: 'Local', value: metrics.local, color: 'emerald' },
+              { icon: Zap, label: 'ROI', value: metrics.roi, color: 'amber' },
+            ].map((stat, i) => (
+              <motion.div 
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-3"
+              >
+                 <div className="flex items-center gap-2">
+                    <stat.icon className={`w-3.5 h-3.5 text-${stat.color}-400`} />
+                    <span className="text-[9px] font-black text-white/30 uppercase tracking-widest">{stat.label}</span>
+                 </div>
+                 <div className="flex items-end justify-between">
+                    <span className="text-xl font-bold text-white">{stat.value}%</span>
+                    <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
+                       <motion.div 
+                         initial={{ width: 0 }}
+                         animate={{ width: `${stat.value}%` }}
+                         className={`h-full bg-${stat.color}-400`}
+                       />
+                    </div>
+                 </div>
+              </motion.div>
+            ))}
           </div>
         </div>
 
-        <div className="p-6 bg-white/[0.02] border border-white/[0.05] rounded-2xl">
-          <p className="text-[9px] text-white/20 leading-relaxed font-medium">
-             Consensus engine uses real-time web-scouring to synthesize campus culture and safety.
+        <div className="mt-12 p-6 bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem]">
+          <p className="text-[10px] text-white/20 leading-relaxed font-bold uppercase tracking-tight">
+             Deep Research Mode: Using Perplexity Sonar Pro & Claude 3.5 Sonnet for real-time verification.
           </p>
         </div>
       </div>
@@ -156,56 +227,67 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
       <div className="flex-1 flex flex-col bg-[#080808]">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-8 md:p-12 space-y-10 custom-scrollbar">
-          {messages.map((msg) => (
-            <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500`}>
-              <div className={`max-w-[85%] rounded-[1.5rem] px-6 py-5 text-sm leading-relaxed ${
-                msg.role === 'user' 
-                  ? 'bg-white text-black font-medium shadow-xl' 
-                  : 'bg-white/[0.03] border border-white/[0.06] text-white/90 backdrop-blur-md'
-              }`}>
-                {msg.role === 'assistant' ? (
-                  <div className="prose prose-invert prose-sm max-w-none 
-                    [&_strong]:text-white [&_strong]:font-black 
-                    [&_p]:mb-4 [&_p:last-child]:mb-0 
-                    [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-2
-                    [&_h1]:text-white [&_h1]:text-xl [&_h1]:font-black [&_h1]:mb-4
-                    [&_h2]:text-white [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mb-3
-                    [&_h3]:text-white [&_h3]:text-base [&_h3]:font-bold [&_h3]:mb-2">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                  </div>
-                ) : (
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                )}
-              </div>
-              <p className="text-[8px] text-white/10 uppercase tracking-widest font-black px-2">
-                {msg.role === 'user' ? 'Prospective Student' : 'Advisor Intelligence'}
-              </p>
-            </div>
-          ))}
+          <AnimatePresence>
+            {messages.map((msg) => (
+              <motion.div 
+                key={msg.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-3`}
+              >
+                <div className={`max-w-[85%] rounded-[2rem] px-8 py-6 text-sm leading-relaxed ${
+                  msg.role === 'user' 
+                    ? 'bg-white text-black font-medium shadow-2xl' 
+                    : 'bg-white/[0.03] border border-white/[0.06] text-white/90 backdrop-blur-3xl shadow-lg'
+                }`}>
+                  {msg.role === 'assistant' ? (
+                    <div className="prose prose-invert prose-sm max-w-none 
+                      [&_strong]:text-white [&_strong]:font-black 
+                      [&_p]:mb-4 [&_p:last-child]:mb-0 
+                      [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-2
+                      [&_h1]:text-white [&_h1]:text-2xl [&_h1]:font-black [&_h1]:tracking-tighter [&_h1]:mb-6
+                      [&_h2]:text-white [&_h2]:text-xl [&_h2]:font-bold [&_h2]:tracking-tight [&_h2]:mb-4
+                      [&_h3]:text-white [&_h3]:text-lg [&_h3]:font-bold [&_h3]:mb-3">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 px-3">
+                  <div className={`w-1.5 h-1.5 rounded-full ${msg.role === 'user' ? 'bg-white/20' : 'bg-indigo-500 animate-pulse'}`} />
+                  <p className="text-[8px] text-white/10 uppercase tracking-[0.3em] font-black">
+                    {msg.role === 'user' ? 'Operational Focus' : 'Advisor Intel'}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
           
           {(isLoading || isResearching) && (
-            <div className="flex justify-start">
-              <div className="bg-white/[0.03] border border-white/[0.06] rounded-[1.5rem] px-6 py-4 flex items-center gap-3">
-                <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-                <span className="text-[10px] text-white/40 uppercase tracking-widest font-black">
-                  {isResearching ? 'Scouring Real-time Databases...' : 'Processing Query...'}
-                </span>
-              </div>
+            <div className="flex justify-start items-center gap-4">
+               <div className="relative">
+                  <div className="absolute inset-0 bg-indigo-500 blur-md opacity-20 animate-pulse" />
+                  <Loader2 className="relative w-5 h-5 animate-spin text-indigo-400" />
+               </div>
+               <span className="text-[10px] text-white/30 uppercase tracking-[0.4em] font-black">
+                  {isResearching ? 'Deep Scouring Databases...' : 'Processing Synthesis...'}
+               </span>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
-        <div className="p-10 border-t border-white/[0.04] space-y-6">
-          <form onSubmit={handleSubmit} className="relative group">
-            <div className="absolute -inset-[1px] bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative flex items-end gap-2 bg-[#0c0c0c] border border-white/[0.08] rounded-2xl p-2 transition-all group-focus-within:border-white/20">
+        <div className="p-10 border-t border-white/[0.04] bg-white/[0.01]">
+          <form onSubmit={handleSubmit} className="relative group max-w-3xl mx-auto">
+            <div className="absolute -inset-[2px] bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-[1.5rem] blur opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative flex items-center gap-2 bg-[#0c0c0c] border border-white/[0.1] rounded-[1.5rem] p-3 transition-all group-focus-within:border-white/30 shadow-2xl">
               <Textarea 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={`Ask about ${schoolName}'s culture, safety, or life...`}
-                className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/10 rounded-xl resize-none min-h-[44px] max-h-[160px] text-sm py-3 px-3 scrollbar-hide"
+                placeholder={`Strategic inquiries for ${schoolName}...`}
+                className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/10 rounded-xl resize-none min-h-[44px] max-h-[160px] text-sm py-3 px-4 scrollbar-hide"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -216,16 +298,16 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
               <Button 
                 type="submit" 
                 disabled={isLoading || isResearching || !input.trim()} 
-                className="h-11 w-11 rounded-xl bg-white text-black hover:bg-white/90 shadow-lg transition-all active:scale-95 disabled:opacity-20 flex-shrink-0"
+                className="h-12 w-12 rounded-xl bg-white text-black hover:bg-white/90 shadow-2xl transition-all active:scale-95 disabled:opacity-10 flex-shrink-0"
               >
-                <ArrowUpRight className="w-5 h-5" />
+                <ArrowUpRight className="w-6 h-6" />
               </Button>
             </div>
           </form>
-          <div className="flex items-center justify-center gap-2">
-            <AlertCircle className="w-3 h-3 text-white/10" />
-            <p className="text-[9px] text-white/20 font-bold uppercase tracking-tight">
-              Counselor uses real-time web search. Some location data may be estimated.
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <ShieldAlert className="w-3.5 h-3.5 text-white/10" />
+            <p className="text-[10px] text-white/20 font-bold uppercase tracking-tight">
+              AI uses Sonar Pro real-time consensus. Strategic briefings are advisory.
             </p>
           </div>
         </div>
