@@ -230,3 +230,4 @@ export function CookieConsent() {
     </div>
   );
 }
+export default CookieConsent;

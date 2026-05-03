@@ -125,3 +125,4 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
     </Dialog>
   );
 }
+export default AuthModal;
