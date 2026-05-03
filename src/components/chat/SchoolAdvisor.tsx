@@ -7,13 +7,6 @@ import remarkGfm from 'remark-gfm';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  ResponsiveContainer,
-} from 'recharts';
 
 interface SchoolAdvisorProps {
   schoolName: string;
@@ -33,18 +26,24 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResearching, setIsResearching] = useState(true);
-  const [metrics, setMetrics] = useState<Metrics>({ safety: 0, social: 0, local: 0, roi: 0 });
+  const [metrics, setMetrics] = useState<Metrics>({ safety: 40, social: 40, local: 40, roi: 40 }); // Initial state
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const parseMetrics = (content: string) => {
-    const match = content.match(/\[METRICS:\s*({.*?})\]/);
+  // Improved parser that scans content for metrics
+  const processMessageContent = (content: string) => {
+    // Look for [METRICS: { ... }] with potential newlines and spaces
+    const metricsRegex = /\[METRICS:?\s*(\{[\s\S]*?\})\]/i;
+    const match = content.match(metricsRegex);
+    
     if (match) {
       try {
-        const data = JSON.parse(match[1]);
+        const cleanedJson = match[1].replace(/\n/g, ' ');
+        const data = JSON.parse(cleanedJson);
         setMetrics(data);
-        return content.replace(match[0], '').trim();
+        // Remove the metrics block from the content
+        return content.replace(metricsRegex, '').trim();
       } catch (e) {
-        console.error('Failed to parse metrics:', e);
+        console.error('Failed to parse metrics JSON:', e);
       }
     }
     return content;
@@ -79,7 +78,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
         });
 
         const data = await response.json();
-        const cleanedContent = parseMetrics(data.message);
+        const cleanedContent = processMessageContent(data.message);
         
         setMessages(prev => [...prev, {
           id: `research-${Date.now()}`,
@@ -128,7 +127,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
       });
 
       const data = await response.json();
-      const cleanedContent = parseMetrics(data.message);
+      const cleanedContent = processMessageContent(data.message);
       
       setMessages(prev => [...prev, { 
         id: (Date.now() + 1).toString(), 
@@ -142,15 +141,21 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
     }
   };
 
-  const chartData = [
-    { subject: 'Safety', A: metrics.safety, fullMark: 100 },
-    { subject: 'Social', A: metrics.social, fullMark: 100 },
-    { subject: 'Local', A: metrics.local, fullMark: 100 },
-    { subject: 'ROI', A: metrics.roi, fullMark: 100 },
-  ];
+  // Custom SVG Radar Chart Calculation
+  const getRadarPath = (m: Metrics) => {
+    const center = 100;
+    const radius = 80;
+    const points = [
+      { x: center, y: center - (radius * m.safety) / 100 }, // Top (Safety)
+      { x: center + (radius * m.social) / 100, y: center }, // Right (Social)
+      { x: center, y: center + (radius * m.local) / 100 }, // Bottom (Local)
+      { x: center - (radius * m.roi) / 100, y: center }, // Left (ROI)
+    ];
+    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`;
+  };
 
   return (
-    <div className="w-full bg-[#050505] border border-white/[0.08] rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-[750px] shadow-2xl">
+    <div className="w-full bg-[#050505] border border-white/[0.08] rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-[780px] shadow-2xl">
       {/* Sidebar: Strategic Intel Summary */}
       <div className="w-full md:w-96 bg-white/[0.01] border-r border-white/[0.05] p-10 flex flex-col justify-between overflow-y-auto">
         <div className="space-y-12">
@@ -159,30 +164,45 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
             <p className="text-[10px] text-indigo-400 uppercase tracking-[0.3em] font-black">Strategic Focus Active</p>
           </div>
 
-          {/* Futuristic Visual Representation */}
-          <div className="relative aspect-square w-full py-4">
-             {/* Background Glow */}
-             <div className="absolute inset-0 bg-indigo-500/5 blur-[60px] rounded-full pointer-events-none" />
-             
-             <ResponsiveContainer width="100%" height="100%">
-               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                 <PolarGrid stroke="#ffffff10" strokeDasharray="3 3" />
-                 <PolarAngleAxis 
-                    dataKey="subject" 
-                    tick={{ fill: '#ffffff40', fontSize: 10, fontWeight: 900, textTransform: 'uppercase' }} 
-                 />
-                 <Radar
-                   name="School metrics"
-                   dataKey="A"
-                   stroke="#818cf8"
-                   fill="#818cf8"
-                   fillOpacity={0.4}
-                   animationDuration={1500}
-                 />
-               </RadarChart>
-             </ResponsiveContainer>
+          {/* Custom Futuristic Radar Chart */}
+          <div className="relative w-full aspect-square flex items-center justify-center">
+            <div className="absolute inset-0 bg-indigo-500/5 blur-[60px] rounded-full" />
+            
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-[0_0_15px_rgba(129,140,248,0.2)]">
+              {/* Background Grid */}
+              <circle cx="100" cy="100" r="80" fill="none" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />
+              <circle cx="100" cy="100" r="60" fill="none" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />
+              <circle cx="100" cy="100" r="40" fill="none" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />
+              <line x1="100" y1="20" x2="100" y2="180" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />
+              <line x1="20" y1="100" x2="180" y2="100" stroke="white" strokeWidth="0.5" strokeOpacity="0.05" />
+
+              {/* Labels */}
+              <text x="100" y="15" textAnchor="middle" className="text-[8px] fill-white/20 font-black uppercase tracking-widest">Safety</text>
+              <text x="185" y="103" textAnchor="start" className="text-[8px] fill-white/20 font-black uppercase tracking-widest">Social</text>
+              <text x="100" y="195" textAnchor="middle" className="text-[8px] fill-white/20 font-black uppercase tracking-widest">Local</text>
+              <text x="15" y="103" textAnchor="end" className="text-[8px] fill-white/20 font-black uppercase tracking-widest">ROI</text>
+
+              {/* Data Path */}
+              <motion.path
+                initial={{ d: getRadarPath({ safety: 40, social: 40, local: 40, roi: 40 }) }}
+                animate={{ d: getRadarPath(metrics) }}
+                transition={{ type: 'spring', stiffness: 50, damping: 20 }}
+                fill="url(#radarGradient)"
+                stroke="#818cf8"
+                strokeWidth="2"
+                className="drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+              />
+
+              <defs>
+                <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#818cf8" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#c084fc" stopOpacity="0.2" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
 
+          {/* Animated Stats List */}
           <div className="grid grid-cols-2 gap-4">
             {[
               { icon: ShieldAlert, label: 'Safety', value: metrics.safety, color: 'indigo' },
@@ -192,10 +212,10 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
             ].map((stat, i) => (
               <motion.div 
                 key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-3"
+                className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] space-y-3 hover:bg-white/[0.04] transition-colors"
               >
                  <div className="flex items-center gap-2">
                     <stat.icon className={`w-3.5 h-3.5 text-${stat.color}-400`} />
@@ -207,7 +227,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
                        <motion.div 
                          initial={{ width: 0 }}
                          animate={{ width: `${stat.value}%` }}
-                         className={`h-full bg-${stat.color}-400`}
+                         className={`h-full bg-${stat.color}-400 shadow-[0_0_10px_rgba(129,140,248,0.5)]`}
                        />
                     </div>
                  </div>
@@ -218,7 +238,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
 
         <div className="mt-12 p-6 bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem]">
           <p className="text-[10px] text-white/20 leading-relaxed font-bold uppercase tracking-tight">
-             Deep Research Mode: Using Perplexity Sonar Pro & Claude 3.5 Sonnet for real-time verification.
+             Neural Engine: Using Perplexity & Claude 3.5 for Strategic Synthesis.
           </p>
         </div>
       </div>
@@ -257,7 +277,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
                 <div className="flex items-center gap-3 px-3">
                   <div className={`w-1.5 h-1.5 rounded-full ${msg.role === 'user' ? 'bg-white/20' : 'bg-indigo-500 animate-pulse'}`} />
                   <p className="text-[8px] text-white/10 uppercase tracking-[0.3em] font-black">
-                    {msg.role === 'user' ? 'Operational Focus' : 'Advisor Intel'}
+                    {msg.role === 'user' ? 'Prospective Lead' : 'Advisor Intel'}
                   </p>
                 </div>
               </motion.div>
@@ -271,7 +291,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
                   <Loader2 className="relative w-5 h-5 animate-spin text-indigo-400" />
                </div>
                <span className="text-[10px] text-white/30 uppercase tracking-[0.4em] font-black">
-                  {isResearching ? 'Deep Scouring Databases...' : 'Processing Synthesis...'}
+                  {isResearching ? 'Synthesis In Progress...' : 'Synthesizing Insight...'}
                </span>
             </div>
           )}
@@ -286,7 +306,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
               <Textarea 
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={`Strategic inquiries for ${schoolName}...`}
+                placeholder={`Ask about ${schoolName}...`}
                 className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/10 rounded-xl resize-none min-h-[44px] max-h-[160px] text-sm py-3 px-4 scrollbar-hide"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -307,7 +327,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
           <div className="mt-6 flex items-center justify-center gap-3">
             <ShieldAlert className="w-3.5 h-3.5 text-white/10" />
             <p className="text-[10px] text-white/20 font-bold uppercase tracking-tight">
-              AI uses Sonar Pro real-time consensus. Strategic briefings are advisory.
+              Real-time consensus briefing. Data verified through strategic cross-referencing.
             </p>
           </div>
         </div>
