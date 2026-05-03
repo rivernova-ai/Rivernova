@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import { stripMarkdown, cleanText, calculateMatchScore, getMatchScoreColor, getMatchScoreLabel } from '@/lib/utils';
 import { ArrowLeft, MapPin, GraduationCap, DollarSign, TrendingUp, Award, Briefcase, Zap, Calendar, Heart, ShieldCheck, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SchoolAdvisor } from '@/components/chat/SchoolAdvisor';
 
 export default function SchoolProfile() {
   const router = useRouter();
@@ -338,6 +339,29 @@ export default function SchoolProfile() {
             <p className="text-sm text-white/40 mb-1">Employment Rate</p>
             <p className="text-2xl font-semibold">{school.employmentRate || 'N/A'}</p>
           </div>
+        </div>
+
+        {/* ── REAL-TIME AI COUNSELOR SECTION ── */}
+        <div className="space-y-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-6">
+            <div className="space-y-2">
+              <h2 className="text-4xl font-bold tracking-tight text-white">Strategic Intelligence</h2>
+              <p className="text-white/40 max-w-xl">
+                Consult with our AI Advisor to get real-time briefings on campus culture, city safety, and local student life. 
+                <span className="text-indigo-400 font-medium"> Powered by real-time web-scouring.</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+               <Zap className="w-5 h-5 animate-pulse" />
+               <span className="text-sm font-black uppercase tracking-widest">Active Search</span>
+            </div>
+          </div>
+          
+          <SchoolAdvisor 
+            schoolName={school.name} 
+            location={school.location} 
+            program={school.program} 
+          />
         </div>
 
         {/* ── Detailed Breakdown ── */}

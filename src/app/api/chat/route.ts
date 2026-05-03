@@ -3,59 +3,78 @@ import Anthropic from '@anthropic-ai/sdk';
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, userProfile } = await req.json();
+    const { messages, userProfile, context } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Messages array is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
     }
 
-    // Check if API key exists
+    let researchedData = '';
+    
+    // ── DEEP RESEARCH MODE (Perplexity Integration) ──
+    if (context?.type === 'deep-research' && process.env.PERPLEXITY_API_KEY) {
+      console.log('DEEP RESEARCH MODE: Calling Perplexity for real-time intel...');
+      try {
+        const perpResponse = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'sonar-pro',
+            messages: [{
+              role: 'system',
+              content: 'You are a high-fidelity intelligence researcher. Provide raw, brutally honest, and verified real-time data. Focus on student safety, crime rates in specific neighborhoods, campus culture (not marketing fluff), and actual cost of living for students. Be specific with names of neighborhoods and clubs.'
+            }, {
+              role: 'user',
+              content: `Research deep intel for ${context.schoolName} in ${context.location}. 
+              1. Detailed Crime & Safety: Recent incidents, areas to avoid near campus, and night safety sentiment.
+              2. Student Life Reality: Best clubs, social hierarchy, pressure levels, and "hidden gem" spots.
+              3. Local Vibe: Public transit efficiency for students and the actual local food/nightlife scene.
+              Return a concise but data-rich briefing.`
+            }],
+            max_tokens: 1500,
+            temperature: 0.2,
+          }),
+        });
+
+        if (perpResponse.ok) {
+          const perpData = await perpResponse.json();
+          researchedData = perpData.choices[0].message.content;
+          console.log('Perplexity Research Success');
+        }
+      } catch (err) {
+        console.error('Perplexity research failed:', err);
+      }
+    }
+
+    // ── CLAUDE SYNTHESIS ──
     if (!process.env.ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY is not set');
-      return NextResponse.json(
-        { error: 'API key not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
 
-    console.log('Using API key:', process.env.ANTHROPIC_API_KEY.substring(0, 20) + '...');
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-    const anthropic = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY,
-    });
+    const systemPrompt = `You are a high-level Strategic Education Advisor for Rivernova. 
+    You provide elite, data-backed intelligence to help students make life-changing decisions.
+    
+    ${researchedData ? `REAL-TIME INTEL FOUND (Prioritize this data):
+    ${researchedData}` : ''}
 
-    // Build system prompt with user context
-    const systemPrompt = `You are an AI education advisor for Rivernova, a platform helping students find their perfect schools. 
+    ${context?.schoolName ? `Focusing on: ${context.schoolName} (${context.location})` : ''}
+    
+    Rules:
+    1. Be brutally honest. If a city is dangerous or a school has a toxic culture, say it directly.
+    2. Use the provided real-time intel to back up your claims.
+    3. Keep responses professional, surgical, and actionable.
+    4. Start deep-research responses with a bold 'STRATEGIC BRIEFING' header.`;
 
-${userProfile ? `Student Profile:
-- Major: ${userProfile.academic_background?.major || 'Not specified'}
-- GPA: ${userProfile.academic_background?.gpa || 'Not specified'}
-- Budget: ${userProfile.budget?.min && userProfile.budget?.max ? `$${userProfile.budget.min}-$${userProfile.budget.max}` : 'Not specified'}
-- Preferred Location: ${userProfile.location_preferences?.preferredCountries || 'Not specified'}
-- Career Goals: ${userProfile.career_goals?.dreamJob || userProfile.career_goals?.careerField || 'Not specified'}
-` : ''}
-
-Your role:
-- Help students with school selection, application strategies, and education planning
-- Provide personalized advice based on their profile
-- Answer questions about programs, scholarships, admissions, and career paths
-- Be encouraging, supportive, and informative
-- Keep responses concise and actionable
-
-Always maintain a friendly, professional tone and focus on helping students achieve their educational goals.`;
-
-    // Convert messages to Anthropic format
     const anthropicMessages = messages.map((msg: any) => ({
       role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
       content: msg.content,
     }));
 
-    console.log('Calling Claude API with model: claude-sonnet-4-20250514');
-
-    // Call Claude API
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2048,
@@ -63,9 +82,7 @@ Always maintain a friendly, professional tone and focus on helping students achi
       messages: anthropicMessages,
     });
 
-    const assistantMessage = response.content[0].type === 'text' 
-      ? response.content[0].text 
-      : '';
+    const assistantMessage = response.content[0].type === 'text' ? response.content[0].text : '';
 
     return NextResponse.json({
       message: assistantMessage,
@@ -74,19 +91,6 @@ Always maintain a friendly, professional tone and focus on helping students achi
 
   } catch (error: any) {
     console.error('Chat API error:', error);
-    console.error('Error details:', JSON.stringify(error, null, 2));
-    
-    // Better error message for model not found
-    if (error.status === 404 && error.error?.error?.type === 'not_found_error') {
-      return NextResponse.json(
-        { error: 'Claude model not available. Please check your Anthropic API key has model access enabled and credits available at console.anthropic.com' },
-        { status: 500 }
-      );
-    }
-    
-    return NextResponse.json(
-      { error: error.message || 'Failed to process chat request' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message || 'Failed to process chat request' }, { status: 500 });
   }
 }

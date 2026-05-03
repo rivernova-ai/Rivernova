@@ -127,51 +127,52 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-3xl animate-in fade-in duration-500">
-      <div className="relative w-full max-w-6xl h-[85vh] bg-[#050505] md:rounded-[2rem] border border-white/[0.06] shadow-2xl overflow-hidden flex flex-col md:flex-row scale-in-center animate-in duration-700">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-2xl animate-in fade-in duration-500 p-0 md:p-6">
+      <div className="relative w-full h-full md:max-w-6xl md:h-[85vh] bg-[#050505] md:rounded-[2rem] border-0 md:border md:border-white/[0.06] shadow-2xl overflow-hidden flex flex-col md:flex-row scale-in-center animate-in duration-700">
         
         {/* LEFT: MINIMALIST REPORT */}
-        <div className="flex-1 flex flex-col border-r border-white/[0.05] overflow-hidden bg-[#050505]">
-          <div className="flex items-center justify-between px-12 py-10">
+        <div className="flex-1 flex flex-col border-b md:border-b-0 md:border-r border-white/[0.05] overflow-hidden bg-[#050505]">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-6 md:px-12 md:py-10">
             <div className="space-y-1">
-              <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold">Financial Intelligence</p>
-              <h2 className="text-3xl font-bold text-white tracking-tight">{school.name}</h2>
+              <p className="text-[9px] md:text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold">Financial Intelligence</p>
+              <h2 className="text-xl md:text-3xl font-bold text-white tracking-tight line-clamp-1">{school.name}</h2>
             </div>
-            <button onClick={onClose} className="md:hidden p-3 hover:bg-white/5 rounded-full transition-colors">
-              <X className="w-5 h-5 text-white/40" />
+            <button onClick={onClose} className="p-2.5 hover:bg-white/5 rounded-full transition-colors bg-white/5 md:bg-transparent">
+              <X className="w-5 h-5 text-white/60 md:text-white/40" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-12 pb-12 space-y-12">
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-6 pb-8 md:px-12 md:pb-12 space-y-8 md:space-y-12">
             {loading ? (
-              <div className="h-full flex flex-col items-center justify-center space-y-6">
+              <div className="h-full flex flex-col items-center justify-center space-y-6 py-20">
                 <div className="w-8 h-8 rounded-full border-2 border-white/5 border-t-white/40 animate-spin" />
                 <p className="text-xs text-white/20 font-bold tracking-widest uppercase">Analyzing Data</p>
               </div>
             ) : (
               <>
                 {report?.data_warning && (
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-5 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
-                    <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-amber-200/80 font-medium leading-relaxed">
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 md:p-5 flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-700">
+                    <AlertCircle className="w-4 h-4 md:w-5 md:h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10px] md:text-[11px] text-amber-200/80 font-medium leading-relaxed">
                       {report.data_warning}
                     </p>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="col-span-2 md:col-span-1 bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-10 flex flex-col justify-between">
-                    <div className="space-y-4">
-                      <p className="text-[10px] text-white/20 uppercase tracking-widest font-bold">ROI Match Score</p>
-                      <h1 className={`text-8xl font-black tracking-tighter ${colors?.text}`}>{Math.round(report.roi_score)}%</h1>
+                <div className="grid grid-cols-2 gap-4 md:gap-8">
+                  <div className="col-span-2 md:col-span-1 bg-white/[0.02] border border-white/[0.05] rounded-[1.2rem] md:rounded-[1.5rem] p-6 md:p-10 flex flex-col justify-between">
+                    <div className="space-y-2 md:space-y-4">
+                      <p className="text-[9px] md:text-[10px] text-white/20 uppercase tracking-widest font-bold">ROI Match Score</p>
+                      <h1 className={`text-6xl md:text-8xl font-black tracking-tighter ${colors?.text}`}>{Math.round(report.roi_score)}%</h1>
                     </div>
-                    <div className="pt-8">
-                      <p className="text-sm text-white/40 leading-relaxed font-light">A highly efficient match based on your academic profile and target major.</p>
+                    <div className="pt-4 md:pt-8">
+                      <p className="text-xs md:text-sm text-white/40 leading-relaxed font-light">Efficient match based on your academic profile.</p>
                     </div>
                   </div>
 
-                  <div className="col-span-2 md:col-span-1 bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-10 flex flex-col items-center justify-center">
-                    <div className="relative w-28 h-28">
+                  <div className="col-span-2 md:col-span-1 bg-white/[0.02] border border-white/[0.05] rounded-[1.2rem] md:rounded-[1.5rem] p-6 md:p-10 flex flex-col items-center justify-center">
+                    <div className="relative w-24 h-24 md:w-28 md:h-28">
                       <svg className="w-full h-full" viewBox="0 0 100 100">
                         <circle cx="50" cy="50" r="46" fill="none" stroke="white" strokeOpacity="0.03" strokeWidth="6" />
                         <circle cx="50" cy="50" r="46" fill="none" stroke={colors?.hex} strokeWidth="6" strokeLinecap="round"
@@ -182,47 +183,47 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-white">{report.breakeven_years.toFixed(1)}</span>
+                        <span className="text-xl md:text-2xl font-bold text-white">{report.breakeven_years.toFixed(1)}</span>
                         <span className="text-[8px] text-white/30 uppercase font-black">Years</span>
                       </div>
                     </div>
-                    <p className="mt-4 text-[10px] text-white/20 uppercase tracking-widest font-bold">Breakeven Point</p>
+                    <p className="mt-4 text-[9px] md:text-[10px] text-white/20 uppercase tracking-widest font-bold">Breakeven Point</p>
                   </div>
                 </div>
 
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-[1.5rem] p-10 space-y-10">
+                <div className="bg-white/[0.02] border border-white/[0.05] rounded-[1.2rem] md:rounded-[1.5rem] p-6 md:p-10 space-y-8 md:space-y-10">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-3">
+                    <h3 className="text-[10px] md:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-3">
                       <TrendingUp className="w-4 h-4 text-white/40" />
                       Outcome Simulation
                     </h3>
-                    <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-widest bg-emerald-400/5 px-2 py-1 rounded-md">Growth Phase</span>
+                    <span className="text-[8px] md:text-[9px] font-bold text-emerald-400/60 uppercase tracking-widest bg-emerald-400/5 px-2 py-1 rounded-md">Growth Phase</span>
                   </div>
                   <RevenueVsCostChart cost={report.total_cost_4yr} revenue={report.year1_salary + report.year3_salary * 2 + report.year5_salary * 2} />
-                  <div className="grid grid-cols-3 gap-6 pt-6 border-t border-white/[0.03]">
+                  <div className="grid grid-cols-3 gap-4 md:gap-6 pt-6 border-t border-white/[0.03]">
                     {[
                       { label: 'Year 1', val: report.year1_salary },
                       { label: 'Year 3', val: report.year3_salary },
                       { label: 'Year 5', val: report.year5_salary },
                     ].map((s, i) => (
                       <div key={i} className="space-y-1 text-center">
-                        <p className="text-[9px] text-white/20 uppercase font-bold">{s.label}</p>
-                        <p className="text-lg font-bold text-white tracking-tight">${Math.round(s.val/1000)}k</p>
+                        <p className="text-[8px] md:text-[9px] text-white/20 uppercase font-bold">{s.label}</p>
+                        <p className="text-sm md:text-lg font-bold text-white tracking-tight">${Math.round(s.val/1000)}k</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-3 md:gap-4">
                    {[
                      { label: 'Academic Fit', val: 'Match', icon: GraduationCap },
                      { label: 'Career Scale', val: 'High', icon: Briefcase },
                      { label: 'Data Status', val: 'Verified', icon: ShieldCheck },
                    ].map((m, i) => (
-                     <div key={i} className="flex flex-col items-center gap-2 p-5 bg-white/[0.01] border border-white/[0.03] rounded-2xl text-center">
+                     <div key={i} className="flex flex-col items-center gap-2 p-4 md:p-5 bg-white/[0.01] border border-white/[0.03] rounded-xl md:rounded-2xl text-center">
                        <m.icon className="w-3.5 h-3.5 text-white/20" />
-                       <p className="text-[8px] text-white/20 uppercase font-black tracking-widest">{m.label}</p>
-                       <p className="text-[11px] font-bold text-white/60">{m.val}</p>
+                       <p className="text-[7px] md:text-[8px] text-white/20 uppercase font-black tracking-widest">{m.label}</p>
+                       <p className="text-[10px] md:text-[11px] font-bold text-white/60">{m.val}</p>
                      </div>
                    ))}
                 </div>
@@ -232,23 +233,24 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
         </div>
 
         {/* RIGHT: CLEAN ADVISOR (30%) */}
-        <div className="w-full md:w-[380px] flex flex-col bg-[#080808]">
-          <div className="flex items-center justify-between px-10 py-10">
+        <div className="w-full md:w-[380px] h-[400px] md:h-full flex flex-col bg-[#080808]">
+          <div className="flex items-center justify-between px-6 py-6 md:px-10 md:py-10 border-b border-white/[0.03]">
             <div className="space-y-0.5">
-              <h3 className="text-lg font-bold text-white tracking-tight">Rivernova Advisor</h3>
-              <p className="text-[9px] text-white/20 uppercase font-black tracking-[0.2em]">Zero Commission Analysis</p>
+              <h3 className="text-base md:text-lg font-bold text-white tracking-tight">Advisor</h3>
+              <p className="text-[8px] md:text-[9px] text-white/20 uppercase font-black tracking-[0.2em]">Zero Commission</p>
             </div>
-            <button onClick={onClose} className="hidden md:block p-2 hover:bg-white/5 rounded-full transition-colors group">
-              <X className="w-4 h-4 text-white/20 group-hover:text-white" />
-            </button>
+            <div className="flex items-center gap-2">
+               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+               <span className="text-[8px] text-emerald-500/60 uppercase font-bold">Active</span>
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-10 py-2 space-y-8 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto px-6 py-6 md:px-10 md:py-4 space-y-6 md:space-y-8 custom-scrollbar">
             {chatMessages.map((msg) => (
               <div key={msg.id} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'} space-y-2`}>
-                <div className={`max-w-[100%] rounded-[1.2rem] px-5 py-4 text-[13px] leading-relaxed ${
+                <div className={`max-w-[90%] md:max-w-[100%] rounded-[1rem] md:rounded-[1.2rem] px-4 py-3 md:px-5 md:py-4 text-xs md:text-[13px] leading-relaxed ${
                   msg.role === 'user' 
-                    ? 'bg-white text-black' 
+                    ? 'bg-white text-black font-medium' 
                     : 'bg-white/[0.03] border border-white/[0.05] text-white/80'
                 }`}>
                   {msg.role === 'assistant' ? (
@@ -259,7 +261,7 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
-                    <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
+                    <p className="whitespace-pre-wrap">{msg.content}</p>
                   )}
                 </div>
               </div>
@@ -275,14 +277,14 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
             <div ref={chatEndRef} />
           </div>
 
-          <div className="p-10 space-y-6">
+          <div className="p-6 md:p-10 pt-4 md:pt-6 space-y-4 md:space-y-6">
             <form onSubmit={handleChatSubmit} className="relative">
-              <div className="flex items-end gap-2 bg-white/[0.03] border border-white/[0.08] rounded-2xl p-2 focus-within:border-white/20 transition-all">
+              <div className="flex items-end gap-2 bg-white/[0.03] border border-white/[0.08] rounded-xl md:rounded-2xl p-2 focus-within:border-white/20 transition-all">
                 <Textarea 
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask a question..."
-                  className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/10 rounded-xl resize-none min-h-[44px] max-h-[140px] text-xs py-3 px-3"
+                  className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/10 rounded-xl resize-none min-h-[40px] max-h-[120px] text-xs py-2 md:py-3 px-3"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault();
@@ -290,19 +292,18 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
                     }
                   }}
                 />
-                <Button 
+                <button 
                   type="submit" 
                   disabled={isChatLoading || !chatInput.trim()} 
-                  className="h-10 w-10 rounded-xl bg-white text-black hover:bg-white/90 shadow-lg transition-all active:scale-95 disabled:opacity-20 flex-shrink-0 p-0"
+                  className="h-9 w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl bg-white text-black hover:bg-white/90 shadow-lg transition-all active:scale-95 disabled:opacity-20 flex-shrink-0 flex items-center justify-center"
                 >
                   <ArrowUpRight className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             </form>
             
-            <div className="flex items-center justify-center gap-2">
-              <AlertCircle className="w-3 h-3 text-white/10" />
-              <p className="text-[9px] text-white/20 font-bold uppercase tracking-tight">
+            <div className="flex items-center justify-center gap-2 px-4 text-center">
+              <p className="text-[7px] md:text-[9px] text-white/20 font-bold uppercase tracking-tight">
                 AI advisor can make mistakes. Verify critical data.
               </p>
             </div>

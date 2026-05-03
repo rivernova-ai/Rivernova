@@ -7,33 +7,15 @@ interface ModeToggleProps {
   onChange: (mode: 'domestic' | 'international' | 'lifelong') => void;
 }
 
-export function ModeToggle({ currentMode, onChange }: ModeToggleProps) {
+export function ModeToggle({ currentMode, onModeChange }: { currentMode: string; onModeChange: (mode: any) => void }) {
   const modes = [
-    {
-      id: 'domestic' as const,
-      label: 'Domestic',
-      icon: Home,
-      desc: 'US Universities',
-      color: 'indigo',
-    },
-    {
-      id: 'international' as const,
-      label: 'International',
-      icon: Globe,
-      desc: 'Global Schools',
-      color: 'purple',
-    },
-    {
-      id: 'lifelong' as const,
-      label: 'Lifelong',
-      icon: TrendingUp,
-      desc: 'Career Growth',
-      color: 'emerald',
-    },
+    { id: 'domestic', label: 'Domestic', icon: Home, color: 'text-indigo-400', bg: 'bg-indigo-400/10', border: 'border-indigo-400/20' },
+    { id: 'international', label: 'Global', icon: Globe, color: 'text-purple-400', bg: 'bg-purple-400/10', border: 'border-purple-400/20' },
+    { id: 'lifelong', label: 'Career', icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-400/10', border: 'border-emerald-400/20' },
   ];
 
   return (
-    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-2xl backdrop-blur-xl">
+    <div className="flex items-center gap-1.5 bg-white/[0.03] border border-white/[0.08] p-1.5 rounded-2xl backdrop-blur-2xl">
       {modes.map((mode) => {
         const Icon = mode.icon;
         const isActive = currentMode === mode.id;
@@ -41,21 +23,20 @@ export function ModeToggle({ currentMode, onChange }: ModeToggleProps) {
         return (
           <button
             key={mode.id}
-            onClick={() => onChange(mode.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${
+            onClick={() => onModeChange(mode.id)}
+            className={`relative group flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${
               isActive
-                ? 'bg-white/10 text-white shadow-lg'
-                : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                ? `${mode.bg} ${mode.color} ${mode.border} border shadow-[0_0_20px_rgba(0,0,0,0.3)]`
+                : 'text-white/30 hover:text-white/60 hover:bg-white/[0.05]'
             }`}
           >
-            <Icon className="w-4 h-4" />
-            <div className="hidden md:block">
-              <div className="text-xs">{mode.label}</div>
-              <div className="text-[10px] font-normal normal-case tracking-normal opacity-60">
-                {mode.desc}
-              </div>
-            </div>
-            <div className="md:hidden">{mode.label}</div>
+            {isActive && (
+              <div className={`absolute inset-0 blur-xl opacity-30 ${mode.bg} rounded-xl`} />
+            )}
+            <Icon className={`relative z-10 w-4 h-4 transition-transform group-hover:scale-110`} />
+            <span className="relative z-10 text-[10px] font-black uppercase tracking-[0.2em]">
+              {mode.label}
+            </span>
           </button>
         );
       })}
