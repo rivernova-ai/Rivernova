@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ArrowUpRight, ShieldAlert, Users, Compass, Zap, ShieldCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform, animate as animateValue } from 'framer-motion';
 
 interface SchoolAdvisorProps {
   schoolName: string;
@@ -35,16 +35,55 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
   const [metrics, setMetrics] = useState<Metrics>({ safety: 40, social: 40, local: 40, roi: 40 });
   const [scanPhase, setScanPhase] = useState(0);
   const [researchComplete, setResearchComplete] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const hasStartedResearch = useRef(false);
   const prevResearchingRef = useRef(true);
   const apiHistory = useRef<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+
+  // Motion values for smooth radar chart animation
+  const safetyMV = useMotionValue(40);
+  const socialMV = useMotionValue(40);
+  const localMV  = useMotionValue(40);
+  const roiMV    = useMotionValue(40);
+
+  const radarPath = useTransform(
+    [safetyMV, socialMV, localMV, roiMV],
+    (vals: number[]) => {
+      const [s, so, l, r] = vals;
+      const c = 100, rad = 80;
+      return `M ${c} ${c - (rad * s) / 100} L ${c + (rad * so) / 100} ${c} L ${c} ${c + (rad * l) / 100} L ${c - (rad * r) / 100} ${c} Z`;
+    }
+  );
+
+  // Dot positions derived from motion values
+  const dotTopY    = useTransform(safetyMV, v => 100 - (80 * v) / 100);
+  const dotRightX  = useTransform(socialMV, v => 100 + (80 * v) / 100);
+  const dotBottomY = useTransform(localMV,  v => 100 + (80 * v) / 100);
+  const dotLeftX   = useTransform(roiMV,    v => 100 - (80 * v) / 100);
 
   const applyMetrics = (m: { safety: number; social: number; local: number; roi: number } | null | undefined) => {
     if (!m) return;
     const clamp = (v: unknown) => Math.min(100, Math.max(0, Number(v) || 40));
     setMetrics({ safety: clamp(m.safety), social: clamp(m.social), local: clamp(m.local), roi: clamp(m.roi) });
   };
+
+  // Animate radar motion values whenever metrics update
+  useEffect(() => {
+    const opts = { type: 'spring' as const, stiffness: 50, damping: 20 };
+    animateValue(safetyMV, metrics.safety, opts);
+    animateValue(socialMV, metrics.social, opts);
+    animateValue(localMV,  metrics.local,  opts);
+    animateValue(roiMV,    metrics.roi,    opts);
+  }, [metrics.safety, metrics.social, metrics.local, metrics.roi]);
+
+  // Elapsed scan timer
+  useEffect(() => {
+    if (!isResearching) return;
+    setElapsed(0);
+    const id = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(id);
+  }, [isResearching]);
 
   useEffect(() => {
     if (hasStartedResearch.current) return;
@@ -159,18 +198,6 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
     }
   };
 
-  const getRadarPath = (m: Metrics) => {
-    const center = 100;
-    const radius = 80;
-    const points = [
-      { x: center, y: center - (radius * m.safety) / 100 },
-      { x: center + (radius * m.social) / 100, y: center },
-      { x: center, y: center + (radius * m.local) / 100 },
-      { x: center - (radius * m.roi) / 100, y: center },
-    ];
-    return `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} L ${points[3].x} ${points[3].y} Z`;
-  };
-
   const statColors: Record<string, string> = {
     Safety: '#818cf8',
     Social: '#c084fc',
@@ -193,19 +220,31 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
           {/* Header */}
           <div className="space-y-1">
             <h3 style={{ color: '#f0f0f8' }} className="text-2xl font-bold tracking-tight">Intelligence</h3>
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={isResearching ? 'scanning' : 'active'}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.3 }}
-                className="text-[10px] uppercase tracking-[0.3em] font-black"
-                style={{ color: isResearching ? 'rgba(129,140,248,0.6)' : '#818cf8' }}
-              >
-                {isResearching ? `${SCAN_PHASES[scanPhase].split(' ')[0]}...` : 'Strategic Focus Active'}
-              </motion.p>
-            </AnimatePresence>
+            <div className="flex items-center justify-between gap-3">
+              <AnimatePresence mode="wait">
+                <motion.p
+                  key={isResearching ? 'scanning' : 'active'}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.3 }}
+                  className="text-[10px] uppercase tracking-[0.3em] font-black"
+                  style={{ color: isResearching ? 'rgba(129,140,248,0.6)' : '#818cf8' }}
+                >
+                  {isResearching ? `${SCAN_PHASES[scanPhase].split(' ')[0]}...` : 'Strategic Focus Active'}
+                </motion.p>
+              </AnimatePresence>
+              {isResearching && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-[10px] font-black tabular-nums"
+                  style={{ color: 'rgba(240,240,248,0.22)', fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, '0')}
+                </motion.span>
+              )}
+            </div>
           </div>
 
           {/* ── Radar Chart ── */}
@@ -332,67 +371,46 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
                 </>
               )}
 
-              {/* ── DATA SHAPE (faint during scan, full after) ── */}
+              {/* ── DATA SHAPE — driven by MotionValues so coords animate as numbers ── */}
               <motion.path
-                initial={{ d: getRadarPath({ safety: 40, social: 40, local: 40, roi: 40 }), opacity: 0.08 }}
-                animate={{
-                  d: getRadarPath(metrics),
-                  opacity: isResearching ? 0.08 : 1,
-                }}
-                transition={{ type: 'spring', stiffness: 50, damping: 20 }}
+                d={radarPath}
                 fill="url(#radarGradientDark)"
                 stroke="#6366f1"
                 strokeWidth="1.5"
+                animate={{ opacity: isResearching ? 0.08 : 1 }}
+                transition={{ duration: 0.6 }}
                 style={{ filter: 'drop-shadow(0 0 8px rgba(99,102,241,0.5))' }}
               />
 
-              {/* ── DATA DOTS (hidden during scan, animate in on complete) ── */}
-              <AnimatePresence>
-                {!isResearching && (
-                  <>
-                    <motion.circle
-                      initial={{ opacity: 0, r: 0 }}
-                      animate={{ opacity: 1, r: 3.5 }}
-                      exit={{ opacity: 0, r: 0 }}
-                      cx={100}
-                      cy={100 - (80 * metrics.safety) / 100}
-                      fill="#818cf8"
-                      style={{ filter: 'drop-shadow(0 0 5px rgba(129,140,248,0.9))' }}
-                      transition={{ type: 'spring', stiffness: 50, damping: 20, delay: 0.1 }}
-                    />
-                    <motion.circle
-                      initial={{ opacity: 0, r: 0 }}
-                      animate={{ opacity: 1, r: 3.5 }}
-                      exit={{ opacity: 0, r: 0 }}
-                      cx={100 + (80 * metrics.social) / 100}
-                      cy={100}
-                      fill="#c084fc"
-                      style={{ filter: 'drop-shadow(0 0 5px rgba(192,132,252,0.9))' }}
-                      transition={{ type: 'spring', stiffness: 50, damping: 20, delay: 0.15 }}
-                    />
-                    <motion.circle
-                      initial={{ opacity: 0, r: 0 }}
-                      animate={{ opacity: 1, r: 3.5 }}
-                      exit={{ opacity: 0, r: 0 }}
-                      cx={100}
-                      cy={100 + (80 * metrics.local) / 100}
-                      fill="#34d399"
-                      style={{ filter: 'drop-shadow(0 0 5px rgba(52,211,153,0.9))' }}
-                      transition={{ type: 'spring', stiffness: 50, damping: 20, delay: 0.2 }}
-                    />
-                    <motion.circle
-                      initial={{ opacity: 0, r: 0 }}
-                      animate={{ opacity: 1, r: 3.5 }}
-                      exit={{ opacity: 0, r: 0 }}
-                      cx={100 - (80 * metrics.roi) / 100}
-                      cy={100}
-                      fill="#fb923c"
-                      style={{ filter: 'drop-shadow(0 0 5px rgba(251,146,60,0.9))' }}
-                      transition={{ type: 'spring', stiffness: 50, damping: 20, delay: 0.25 }}
-                    />
-                  </>
-                )}
-              </AnimatePresence>
+              {/* ── DATA DOTS — positions driven by MotionValues ── */}
+              <motion.circle
+                cx={100} cy={dotTopY} r={3.5}
+                fill="#818cf8"
+                animate={{ opacity: isResearching ? 0 : 1 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                style={{ filter: 'drop-shadow(0 0 5px rgba(129,140,248,0.9))' }}
+              />
+              <motion.circle
+                cx={dotRightX} cy={100} r={3.5}
+                fill="#c084fc"
+                animate={{ opacity: isResearching ? 0 : 1 }}
+                transition={{ duration: 0.4, delay: 0.15 }}
+                style={{ filter: 'drop-shadow(0 0 5px rgba(192,132,252,0.9))' }}
+              />
+              <motion.circle
+                cx={100} cy={dotBottomY} r={3.5}
+                fill="#34d399"
+                animate={{ opacity: isResearching ? 0 : 1 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                style={{ filter: 'drop-shadow(0 0 5px rgba(52,211,153,0.9))' }}
+              />
+              <motion.circle
+                cx={dotLeftX} cy={100} r={3.5}
+                fill="#fb923c"
+                animate={{ opacity: isResearching ? 0 : 1 }}
+                transition={{ duration: 0.4, delay: 0.25 }}
+                style={{ filter: 'drop-shadow(0 0 5px rgba(251,146,60,0.9))' }}
+              />
             </svg>
           </motion.div>
 
