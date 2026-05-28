@@ -1,7 +1,6 @@
 'use client';
 
 import { X, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ComparisonSchool } from '@/lib/comparison';
 import { cleanText } from '@/lib/utils';
 
@@ -11,86 +10,129 @@ interface ComparisonBarProps {
   onRemoveSchool: (schoolName: string) => void;
 }
 
-export function ComparisonBar({
-  selectedSchools,
-  onViewComparison,
-  onRemoveSchool,
-}: ComparisonBarProps) {
+const SCHOOL_COLORS = ['#6366f1', '#10b981', '#a855f7', '#f59e0b'];
+
+export function ComparisonBar({ selectedSchools, onViewComparison, onRemoveSchool }: ComparisonBarProps) {
   if (selectedSchools.length < 1) return null;
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none animate-in slide-in-from-bottom-8 duration-700 ease-out">
-      <div className="max-w-7xl mx-auto px-6 pb-8">
-        <div className="pointer-events-auto">
-          {/* Subtle ambient glow */}
-          <div className="absolute inset-0 -top-32 bg-gradient-to-t from-indigo-500/10 to-transparent blur-3xl" />
-          
-          {/* Main Bar Container */}
-          <div className="relative">
-            {/* Ultra-subtle outer glow */}
-            <div className="absolute -inset-[0.5px] bg-gradient-to-r from-indigo-500/20 to-indigo-500/20 rounded-[22px] blur-md opacity-50" />
-            
-            {/* Glass container */}
-            <div className="relative bg-black/60 backdrop-blur-3xl border border-white/[0.08] rounded-[22px] shadow-2xl overflow-hidden">
-              {/* Minimal gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/[0.02] to-indigo-500/[0.02]" />
-              
-              {/* Content */}
-              <div className="relative px-8 py-5">
-                <div className="flex items-center justify-between gap-8">
-                  {/* Left: School Pills */}
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    {selectedSchools.map((school, idx) => (
-                      <div
-                        key={school.name}
-                        className="group relative animate-in fade-in slide-in-from-bottom-4 duration-500 ease-out"
-                        style={{ 
-                          animationDelay: `${idx * 100}ms`,
-                          animationFillMode: 'backwards'
-                        }}
-                      >
-                        {/* Pill container */}
-                        <div className="relative">
-                          {/* Minimal hover glow */}
-                          <div className="absolute -inset-[0.5px] bg-indigo-400/0 group-hover:bg-indigo-400/30 rounded-full blur-sm transition-all duration-500" />
-                          
-                          {/* Pill */}
-                          <div className="relative flex items-center gap-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-white/[0.12] rounded-full pl-5 pr-2 py-3 transition-all duration-500 ease-out">
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-sm font-light text-white/90 truncate max-w-[180px] tracking-tight">{cleanText(school.name)}</span>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <div className="w-1 h-1 rounded-full bg-indigo-400/60" />
-                                <span className="text-xs text-white/40 font-light tracking-wide">{school.matchScore}% match</span>
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => onRemoveSchool(school.name)}
-                              className="flex-shrink-0 w-7 h-7 rounded-full bg-white/[0.04] hover:bg-white/[0.12] flex items-center justify-center transition-all duration-300 ease-out hover:scale-110 hover:rotate-90"
-                            >
-                              <X className="w-3.5 h-3.5 text-white/50 group-hover:text-white/80 transition-colors duration-300" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+  const scoreColor = (s: number) => s >= 80 ? '#34d399' : s >= 60 ? '#fb923c' : '#f87171';
 
-                  {/* Right: Action Button */}
-                  <div className="flex-shrink-0 flex items-center gap-4">
-                    {selectedSchools.length < 2 && (
-                      <span className="text-xs text-white/30 font-light">Add {2 - selectedSchools.length} more to compare</span>
-                    )}
-                    <Button
-                      onClick={onViewComparison}
-                      disabled={selectedSchools.length < 2}
-                      className="group relative rounded-full bg-white text-black hover:bg-white/95 border-0 font-normal px-7 h-12 shadow-lg hover:shadow-xl transition-all duration-500 ease-out hover:scale-[1.02] flex items-center gap-2.5 overflow-hidden disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+  return (
+    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
+      {/* Ambient glow from below */}
+      <div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-56 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%)' }}
+      />
+
+      <div className="max-w-7xl mx-auto px-6 pb-6">
+        <div
+          className="pointer-events-auto relative rounded-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-500 ease-out"
+          style={{
+            background: 'rgba(8,8,16,0.93)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(40px) saturate(180%)',
+          }}
+        >
+          {/* Top indigo shimmer line */}
+          <div
+            className="absolute top-0 left-0 right-0 h-px"
+            style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.7) 50%, transparent 100%)' }}
+          />
+
+          <div className="px-6 py-4">
+            <div className="flex items-center gap-5">
+              {/* Label */}
+              <div className="flex-shrink-0 hidden md:flex flex-col">
+                <span className="text-[9px] font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(240,240,248,0.3)' }}>Comparison</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(240,240,248,0.3)' }}>Engine</span>
+              </div>
+              <div className="hidden md:block w-px h-8 self-center" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+              {/* School pills */}
+              <div className="flex items-center gap-3 flex-1 min-w-0 overflow-x-auto">
+                {selectedSchools.map((school, idx) => {
+                  const sc = scoreColor(school.matchScore || 0);
+                  const accent = SCHOOL_COLORS[idx % SCHOOL_COLORS.length];
+                  return (
+                    <div
+                      key={school.name}
+                      className="flex-shrink-0 flex items-center gap-2.5 rounded-full px-4 py-2.5 transition-all animate-in fade-in slide-in-from-left-2 duration-400"
+                      style={{
+                        background: `${accent}0f`,
+                        border: `1px solid ${accent}35`,
+                        animationDelay: `${idx * 70}ms`,
+                        animationFillMode: 'backwards',
+                      }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-                      <span className="relative text-[15px] tracking-tight">Compare {selectedSchools.length > 1 ? `${selectedSchools.length} Schools` : ''}</span>
-                      <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform duration-500 ease-out" />
-                    </Button>
+                      {/* Letter badge */}
+                      <div
+                        className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+                        style={{ background: `${accent}28`, color: accent }}
+                      >
+                        {String.fromCharCode(65 + idx)}
+                      </div>
+
+                      {/* Name */}
+                      <span className="text-sm font-light truncate max-w-[150px]" style={{ color: '#f0f0f8' }}>
+                        {cleanText(school.name)}
+                      </span>
+
+                      {/* Match score */}
+                      {(school.matchScore || 0) > 0 && (
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: sc }} />
+                          <span className="text-[11px] font-semibold" style={{ color: sc }}>{school.matchScore}%</span>
+                        </div>
+                      )}
+
+                      {/* Remove */}
+                      <button
+                        onClick={() => onRemoveSchool(school.name)}
+                        className="w-5 h-5 rounded-full flex items-center justify-center transition-all hover:rotate-90 duration-200 flex-shrink-0"
+                        style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.4)' }}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  );
+                })}
+
+                {/* Empty slot hints */}
+                {selectedSchools.length === 1 && (
+                  <div
+                    className="flex-shrink-0 flex items-center gap-2 rounded-full px-4 py-2.5"
+                    style={{ border: '1px dashed rgba(255,255,255,0.15)' }}
+                  >
+                    <span className="text-xs" style={{ color: 'rgba(240,240,248,0.28)' }}>+ Add one more school</span>
                   </div>
-                </div>
+                )}
+              </div>
+
+              {/* CTA */}
+              <div className="flex-shrink-0 flex items-center gap-4">
+                {selectedSchools.length < 2 && (
+                  <span className="text-xs hidden sm:block" style={{ color: 'rgba(240,240,248,0.38)' }}>
+                    Add {2 - selectedSchools.length} more
+                  </span>
+                )}
+                <button
+                  onClick={onViewComparison}
+                  disabled={selectedSchools.length < 2}
+                  className="group relative flex items-center gap-2.5 rounded-full px-6 h-11 font-semibold text-sm transition-all duration-300 hover:scale-[1.04] active:scale-[0.97] disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                    color: '#fff',
+                    boxShadow: '0 0 28px rgba(99,102,241,0.45)',
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.12),transparent)' }} />
+                  <span className="relative tracking-tight">
+                    Compare{selectedSchools.length > 1 ? ` ${selectedSchools.length} Schools` : ''}
+                  </span>
+                  <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+                </button>
               </div>
             </div>
           </div>

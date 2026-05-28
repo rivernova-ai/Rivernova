@@ -1,276 +1,297 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { CookieConsent } from '@/components/layout/CookieConsent';
-import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle2, Sparkles, TrendingDown, ShieldCheck, Zap, Brain, Lock, Lightbulb, Target, Rocket, BarChart3, Search, Bookmark, MessageSquare } from 'lucide-react';
+import { ArrowRight, ShieldCheck, Target, Brain, Rocket, Search, BarChart3, Bookmark, MessageSquare, X, TrendingDown, Lock } from 'lucide-react';
 import { AuthModal } from '@/components/auth/AuthModal';
 
 export default function Home() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   return (
-    <main className="min-h-screen relative flex flex-col bg-black">
+    <main className="min-h-screen relative flex flex-col" style={{ background: '#080810' }}>
       <Navbar />
 
-      {/* Hero Section - Apple Style */}
-      <section className="relative pt-20 pb-24 md:pt-32 md:pb-40 px-6 flex flex-col items-center justify-center text-center z-10">
-        <div className="max-w-[900px] mx-auto flex flex-col items-center space-y-8">
-          {/* Main Headline */}
-          <div className="space-y-6">
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-light tracking-tight text-white leading-tight">
-              Democratizing<br />
-              <span className="font-semibold bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 bg-clip-text text-transparent">Education</span>
+      {/* Ambient glow */}
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.14) 0%, transparent 60%)' }} />
+
+      {/* ── HERO ── */}
+      <section className="relative pt-20 pb-24 md:pt-32 md:pb-40 px-6 flex flex-col items-center text-center z-10">
+        <div className="max-w-[980px] mx-auto flex flex-col items-center space-y-10">
+
+          {/* Headline */}
+          <div className="space-y-5">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-semibold tracking-tighter leading-[0.92]" style={{ color: '#f0f0f8' }}>
+              Education consulting<br />
+              <span style={{ background: 'linear-gradient(135deg,#818cf8,#c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                is broken.
+              </span>
             </h1>
-            
-            <p className="text-lg md:text-xl text-white/60 font-light max-w-2xl mx-auto leading-relaxed">
-              AI-powered education consulting that puts your goals first — not commission deals. Get unbiased, data-driven school recommendations in minutes.
+            <p className="text-xl md:text-2xl font-light max-w-2xl mx-auto leading-relaxed" style={{ color: 'rgba(240,240,248,0.55)' }}>
+              We fixed it. AI school matching with{' '}
+              <span style={{ color: '#34d399', fontWeight: 500 }}>$0.00 commission</span>
+              {' '}— cryptographically verified on every recommendation.
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-            <Button 
-              size="lg" 
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
+            <button
               onClick={() => setAuthModalOpen(true)}
-              className="rounded-full bg-white text-black hover:bg-white/90 text-base font-medium h-12 px-8 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="group relative flex items-center gap-2.5 rounded-full px-8 font-semibold text-base transition-all duration-300 hover:scale-[1.04] active:scale-[0.97] overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                color: '#fff',
+                height: '52px',
+                boxShadow: '0 0 32px rgba(99,102,241,0.45)',
+              }}
             >
-              Start Your Journey
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.1),transparent)' }} />
+              <span className="relative">Get Your Free Match Report</span>
+              <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </button>
+            <button
               onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })}
-              className="rounded-full border border-white/20 bg-transparent hover:bg-white/5 text-white font-medium h-12 px-8 transition-all duration-300"
+              className="flex items-center gap-2 rounded-full px-8 font-medium text-base transition-all duration-300"
+              style={{ height: '52px', border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(240,240,248,0.6)' }}
             >
               See How It Works
-            </Button>
+            </button>
           </div>
 
-          {/* Stats - Minimal */}
-          <div className="pt-12 flex items-center justify-center gap-12 md:gap-20">
+          {/* Price contrast */}
+          <div className="pt-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-12">
             <div className="text-center">
-              <p className="text-4xl md:text-5xl font-light text-white">90%</p>
-              <p className="text-sm text-white/50 font-light mt-2 tracking-wide">Lower Fees</p>
+              <p className="text-3xl md:text-4xl font-light line-through" style={{ color: 'rgba(239,68,68,0.6)' }}>$4K–$12K</p>
+              <p className="text-xs font-medium uppercase tracking-widest mt-1" style={{ color: 'rgba(240,240,248,0.3)' }}>Traditional consultant</p>
             </div>
-            <div className="w-px h-12 bg-white/10" />
+            <div className="text-3xl font-light" style={{ color: 'rgba(240,240,248,0.3)' }}>→</div>
             <div className="text-center">
-              <p className="text-4xl md:text-5xl font-light text-white">100%</p>
-              <p className="text-sm text-white/50 font-light mt-2 tracking-wide">Unbiased</p>
+              <p className="text-3xl md:text-4xl font-semibold" style={{ color: '#34d399' }}>$49/mo</p>
+              <p className="text-xs font-medium uppercase tracking-widest mt-1" style={{ color: 'rgba(52,211,153,0.7)' }}>Rivernova · 99% less</p>
             </div>
-            <div className="w-px h-12 bg-white/10" />
+            <div className="hidden sm:block w-px h-10" style={{ background: 'rgba(255,255,255,0.1)' }} />
             <div className="text-center">
-              <p className="text-4xl md:text-5xl font-light text-white">AI</p>
-              <p className="text-sm text-white/50 font-light mt-2 tracking-wide">Powered</p>
+              <p className="text-3xl md:text-4xl font-light" style={{ color: '#f0f0f8' }}>6.9M+</p>
+              <p className="text-xs font-medium uppercase tracking-widest mt-1" style={{ color: 'rgba(240,240,248,0.3)' }}>Students affected yearly</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      {/* Problem Section - Apple Style */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="mb-20 md:mb-32">
-            <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">The Problem</p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              Traditional consultants<br />
-              <span className="font-semibold">are broken.</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 md:gap-16">
-            {[
-              { icon: TrendingDown, title: 'Insane Fees', desc: 'Traditional consultants charge thousands of dollars for basic guidance that should be accessible to everyone.' },
-              { icon: Sparkles, title: 'Hidden Commissions', desc: 'They only recommend schools that pay them commissions, not what\'s actually best for your future.' },
-              { icon: ShieldCheck, title: 'Biased Advice', desc: 'Your success takes a backseat to their financial incentives and partnership deals.' }
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} className="space-y-6 group">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-indigo-400 group-hover:bg-white/10 transition-colors duration-300">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-light text-white mb-3">{item.title}</h3>
-                    <p className="text-base text-white/60 font-light leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      {/* Solution Section - Apple Style */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="mb-20 md:mb-32">
-            <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">Our Solution</p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              AI-powered,<br />
-              <span className="font-semibold">unbiased guidance.</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 md:gap-16">
-            {[
-              { icon: Brain, title: 'AI-Driven Matching', desc: 'Advanced algorithms analyze your profile and match you with schools that truly fit your goals and aspirations.' },
-              { icon: Lock, title: 'Zero Bias', desc: 'No commission deals, no hidden agendas — just honest recommendations based on your unique needs.' },
-              { icon: Zap, title: 'Affordable Pricing', desc: 'Pay a fraction of what traditional consultants charge for better, unbiased, AI-driven results.' }
-            ].map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={i} className="space-y-6 group">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-indigo-400 group-hover:bg-white/10 transition-colors duration-300">
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-light text-white mb-3">{item.title}</h3>
-                    <p className="text-base text-white/60 font-light leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      {/* Transparency Section - Enhanced */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="mb-20 md:mb-32">
-            <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">Transparency</p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              <span className="font-semibold">100% unbiased.</span>
-            </h2>
-          </div>
-
-          <div className="max-w-3xl mx-auto">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative bg-white/5 border border-white/10 p-16 rounded-3xl hover:border-white/20 transition-all duration-300 backdrop-blur-sm">
-                <div className="flex flex-col items-center justify-center space-y-8">
-                  <div className="space-y-4 text-center">
-                    <p className="text-7xl md:text-8xl font-light text-white tracking-tight">0%</p>
-                    <p className="text-lg text-white/60 font-light">Commission Rate</p>
-                  </div>
-                  <div className="w-12 h-px bg-gradient-to-r from-transparent via-indigo-400 to-transparent" />
-                  <p className="text-sm text-white/50 font-light text-center max-w-md leading-relaxed">
-                    We never accept commissions from schools. Your recommendations are based purely on what's best for you.
-                  </p>
-                </div>
+      {/* ── THE $0.00 COMMISSION HERO ── */}
+      <section className="py-32 md:py-48 px-6 relative z-10">
+        <div className="max-w-[900px] mx-auto text-center">
+          <div className="relative group">
+            <div className="absolute inset-0 rounded-3xl blur-3xl pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(52,211,153,0.1) 0%, transparent 70%)' }} />
+            <div
+              className="relative py-20 px-12 rounded-3xl"
+              style={{ background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.18)' }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-8">
+                <ShieldCheck className="w-8 h-8" style={{ color: '#34d399' }} />
+                <p className="text-sm font-black uppercase tracking-[0.3em]" style={{ color: '#34d399' }}>Cryptographically Verified</p>
               </div>
+              <p className="text-9xl md:text-[11rem] font-semibold tracking-tighter leading-none mb-6" style={{ color: '#f0f0f8' }}>
+                $0.00
+              </p>
+              <p className="text-2xl md:text-3xl font-light mb-6" style={{ color: 'rgba(240,240,248,0.6)' }}>
+                Commission received. Ever.
+              </p>
+              <p className="text-base font-light max-w-xl mx-auto" style={{ color: 'rgba(240,240,248,0.4)' }}>
+                Every school recommendation Rivernova makes is on the public ledger. We have never received a payment from any school. That is our moat.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)' }} />
 
-      {/* Dashboard Preview Section */}
+      {/* ── THE PROBLEM ── */}
       <section className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[1400px] mx-auto">
-          <div className="mb-20 md:mb-32">
-            <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">Your Experience</p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              Intuitive dashboard<br />
-              <span className="font-semibold">designed for you.</span>
+        <div className="max-w-[1200px] mx-auto">
+          <div className="mb-20">
+            <p className="text-sm font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(240,240,248,0.3)' }}>The Problem</p>
+            <h2 className="text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight leading-[0.95]" style={{ color: '#f0f0f8' }}>
+              A $7 billion industry<br />
+              <span style={{ color: 'rgba(240,240,248,0.45)', fontWeight: 300 }}>built on hidden conflicts<br />of interest.</span>
             </h2>
           </div>
+          <div className="grid md:grid-cols-3 gap-10">
+            {[
+              {
+                icon: TrendingDown,
+                color: '#f87171',
+                bg: 'rgba(248,113,113,0.12)',
+                title: 'Exorbitant Pricing',
+                desc: 'Consultants charge $500–$12K per student. Families in developing countries spend their life savings on advice that may be completely biased.',
+              },
+              {
+                icon: X,
+                color: '#fb923c',
+                bg: 'rgba(251,146,60,0.12)',
+                title: 'Commission Bias',
+                desc: "Schools pay consultants $1K–$5K per enrolled international student. The advice you're paying for is structurally corrupted before you walk in the door.",
+              },
+              {
+                icon: Lock,
+                color: '#a78bfa',
+                bg: 'rgba(167,139,250,0.12)',
+                title: 'Zero Accountability',
+                desc: 'No tracking of outcomes. Did the student graduate? Get a job? Nobody knows. Nobody cares. You paid, they moved on.',
+              },
+            ].map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div key={i} className="space-y-5">
+                  <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: item.bg }}>
+                    <Icon className="w-6 h-6" style={{ color: item.color }} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-3" style={{ color: '#f0f0f8' }}>{item.title}</h3>
+                    <p className="text-base font-light leading-relaxed" style={{ color: 'rgba(240,240,248,0.5)' }}>{item.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            {/* Left - Features */}
-            <div className="space-y-8">
-              {[
-                { icon: Search, title: 'Smart Search', desc: 'Find schools that match your profile with intelligent filtering and sorting.' },
-                { icon: BarChart3, title: 'Detailed Analytics', desc: 'See acceptance rates, average scores, and detailed insights for each school.' },
-                { icon: Bookmark, title: 'Save & Compare', desc: 'Bookmark your favorites and compare schools side-by-side effortlessly.' },
-                { icon: MessageSquare, title: 'AI Chat Support', desc: 'Get instant answers to your questions from our AI education advisor.' }
-              ].map((feature, i) => {
-                const Icon = feature.icon;
-                return (
-                  <div key={i} className="flex gap-6 group cursor-pointer">
-                    <div className="flex-shrink-0">
-                      <div className="flex items-center justify-center h-12 w-12 rounded-xl bg-white/5 group-hover:bg-indigo-500/20 transition-colors duration-300">
-                        <Icon className="h-6 w-6 text-indigo-400" />
-                      </div>
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)' }} />
+
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className="py-32 md:py-40 px-6 relative z-10">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="mb-20">
+            <p className="text-sm font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(240,240,248,0.3)' }}>How It Works</p>
+            <h2 className="text-5xl md:text-6xl font-semibold tracking-tight" style={{ color: '#f0f0f8' }}>
+              Four steps.<br />
+              <span style={{ color: 'rgba(240,240,248,0.45)', fontWeight: 300 }}>One honest answer.</span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-4 gap-8">
+            {[
+              { step: '01', title: 'Share Your Profile', desc: 'GPA, budget, career goals, preferred countries. 3 minutes.', icon: Target, color: '#818cf8', bg: 'rgba(129,140,248,0.12)' },
+              { step: '02', title: 'AI Matches You', desc: 'Claude AI + Perplexity pull real-time school data and rank your best-fit programs.', icon: Brain, color: '#c084fc', bg: 'rgba(192,132,252,0.12)' },
+              { step: '03', title: 'Transparent Results', desc: 'Every card shows $0.00 commission received — cryptographically verified.', icon: ShieldCheck, color: '#34d399', bg: 'rgba(52,211,153,0.12)' },
+              { step: '04', title: 'Apply with Confidence', desc: 'Essay coach, ROI report, deadline tracker, school comparison — all included.', icon: Rocket, color: '#fb923c', bg: 'rgba(251,146,60,0.12)' },
+            ].map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={i} className="space-y-5">
+                  <div className="flex items-start gap-4">
+                    <div className="w-11 h-11 rounded-2xl flex-shrink-0 flex items-center justify-center" style={{ background: s.bg }}>
+                      <Icon className="w-5 h-5" style={{ color: s.color }} />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-light text-white mb-2">{feature.title}</h3>
-                      <p className="text-sm text-white/60 font-light leading-relaxed">{feature.desc}</p>
+                    <span className="text-4xl font-light mt-0.5" style={{ color: 'rgba(255,255,255,0.08)' }}>{s.step}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: '#f0f0f8' }}>{s.title}</h3>
+                    <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(240,240,248,0.5)' }}>{s.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)' }} />
+
+      {/* ── PRODUCT PREVIEW ── */}
+      <section className="py-32 md:py-40 px-6 relative z-10">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <div>
+                <p className="text-sm font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(240,240,248,0.3)' }}>The Dashboard</p>
+                <h2 className="text-4xl md:text-5xl font-semibold tracking-tight mb-5" style={{ color: '#f0f0f8' }}>
+                  Everything a consultant charges $8,000 for.<br />
+                  <span style={{ color: 'rgba(240,240,248,0.45)', fontWeight: 300 }}>In one dashboard.</span>
+                </h2>
+              </div>
+              {[
+                { icon: Search,        title: 'AI School Matching',   desc: 'Real-time match scores based on your GPA, budget, major, and goals.',          color: '#818cf8' },
+                { icon: BarChart3,     title: 'Financial ROI Report', desc: "See the expected salary vs tuition cost for every school you're considering.", color: '#34d399' },
+                { icon: Bookmark,      title: 'School Deep Dive',     desc: 'Safety intel, campus culture, city data — all real-time, AI-synthesized.',      color: '#c084fc' },
+                { icon: MessageSquare, title: 'Essay Position Coach', desc: 'AI advisor trained on successful application strategies.',                        color: '#fb923c' },
+              ].map((f, i) => {
+                const Icon = f.icon;
+                return (
+                  <div key={i} className="flex gap-5">
+                    <div className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: `${f.color}18` }}>
+                      <Icon className="w-5 h-5" style={{ color: f.color }} />
+                    </div>
+                    <div>
+                      <p className="font-semibold mb-1" style={{ color: '#f0f0f8' }}>{f.title}</p>
+                      <p className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.5)' }}>{f.desc}</p>
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Right - Dashboard Preview */}
+            {/* Dashboard mockup */}
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 rounded-3xl blur-3xl" />
-              <div className="relative bg-white/5 border border-white/10 rounded-3xl p-8 backdrop-blur-sm overflow-hidden">
-                {/* Dashboard Header */}
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-2">
-                      <p className="text-xs text-white/50 font-light uppercase tracking-wide">Your Matches</p>
-                      <p className="text-2xl font-light text-white">12 Schools</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                      <Sparkles className="w-5 h-5 text-indigo-400" />
-                    </div>
+              <div className="absolute inset-0 rounded-3xl pointer-events-none blur-3xl" style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%)' }} />
+              <div className="relative rounded-3xl p-7" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.28em] mb-1" style={{ color: 'rgba(240,240,248,0.3)' }}>Your Matches</p>
+                    <p className="text-xl font-light" style={{ color: '#f0f0f8' }}>12 Schools Found</p>
                   </div>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)' }}>
+                    <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#34d399' }} />
+                    <span className="text-[10px] font-black" style={{ color: '#34d399' }}>$0.00 Commission</span>
+                  </div>
+                </div>
 
-                  {/* School Cards */}
-                  <div className="space-y-3">
-                    {[
-                      { name: 'Stanford University', match: '98%', color: 'from-indigo-500/20' },
-                      { name: 'MIT', match: '95%', color: 'from-purple-500/20' },
-                      { name: 'Harvard University', match: '92%', color: 'from-indigo-500/20' }
-                    ].map((school, i) => (
-                      <div key={i} className="bg-white/5 hover:bg-white/10 transition-colors duration-300 p-4 rounded-xl border border-white/5 group cursor-pointer">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-sm font-light text-white">{school.name}</p>
-                            <div className="mt-2 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                              <div className={`h-full bg-gradient-to-r ${school.color} to-transparent`} style={{width: school.match}} />
-                            </div>
-                          </div>
-                          <p className="text-sm font-light text-indigo-400 ml-4">{school.match}</p>
+                <div className="space-y-3">
+                  {[
+                    { name: 'University of Toronto',   match: 94, color: '#34d399', tuition: '$28K/yr', tier: 'Target' },
+                    { name: 'University of Melbourne', match: 87, color: '#818cf8', tuition: '$32K/yr', tier: 'Reach'  },
+                    { name: 'RMIT University',         match: 79, color: '#fb923c', tuition: '$18K/yr', tier: 'Safety' },
+                  ].map((school, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-4 p-4 rounded-xl"
+                      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    >
+                      <div className="relative w-12 h-12 flex-shrink-0">
+                        <svg className="w-full h-full -rotate-90">
+                          <circle cx="24" cy="24" r="20" stroke="rgba(255,255,255,0.07)" strokeWidth="4" fill="none" />
+                          <circle cx="24" cy="24" r="20" stroke={school.color} strokeWidth="4" fill="none" strokeLinecap="round"
+                            style={{ strokeDasharray: 2 * Math.PI * 20, strokeDashoffset: 2 * Math.PI * 20 * (1 - school.match / 100), filter: `drop-shadow(0 0 4px ${school.color}80)` }} />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-[10px] font-bold" style={{ color: school.color }}>{school.match}</span>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate" style={{ color: '#f0f0f8' }}>{school.name}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{school.tuition}</p>
+                      </div>
+                      <div className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: `${school.color}18`, color: school.color }}>
+                        {school.tier}
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-3 pt-4 border-t border-white/5">
-                    <div className="bg-white/5 p-3 rounded-lg text-center">
-                      <p className="text-xs text-white/50 font-light">Avg Score</p>
-                      <p className="text-lg font-light text-white mt-1">1520</p>
+                <div className="mt-5 pt-5 grid grid-cols-3 gap-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  {[
+                    { label: 'Avg Match',        value: '87%'  },
+                    { label: 'Avg Tuition',       value: '$26k' },
+                    { label: 'With Scholarships', value: '9'   },
+                  ].map((stat, i) => (
+                    <div key={i} className="text-center p-2 rounded-lg" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                      <p className="text-[10px] font-light mb-1" style={{ color: 'rgba(240,240,248,0.35)' }}>{stat.label}</p>
+                      <p className="text-sm font-semibold" style={{ color: '#f0f0f8' }}>{stat.value}</p>
                     </div>
-                    <div className="bg-white/5 p-3 rounded-lg text-center">
-                      <p className="text-xs text-white/50 font-light">Acceptance</p>
-                      <p className="text-lg font-light text-white mt-1">8.2%</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -278,113 +299,90 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)' }} />
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[1200px] mx-auto">
-          <div className="mb-20 md:mb-32">
-            <p className="text-sm text-white/50 font-light tracking-wide uppercase mb-4">How It Works</p>
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              Four simple steps<br />
-              <span className="font-semibold">to your perfect school.</span>
-            </h2>
-          </div>
+      {/* ── FINAL CTA ── */}
+      <section className="py-32 md:py-48 px-6 relative z-10">
+        <div className="max-w-[800px] mx-auto text-center">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-3xl pointer-events-none blur-3xl" style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.15) 0%, transparent 70%)' }} />
+            <div className="space-y-8">
+              <h2 className="text-5xl md:text-7xl font-semibold tracking-tight leading-[0.92]" style={{ color: '#f0f0f8' }}>
+                Your family deserves<br />
+                <span style={{ background: 'linear-gradient(135deg,#818cf8,#c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  honest advice.
+                </span>
+              </h2>
+              <p className="text-xl font-light" style={{ color: 'rgba(240,240,248,0.5)' }}>
+                Not advice that was bought by the school before you walked in the door.
+              </p>
 
-          <div className="grid md:grid-cols-4 gap-8 md:gap-12">
-            {[
-              { step: 1, title: 'Share Your Profile', desc: 'Tell us about your academic background, goals, budget, and preferences.', icon: Target },
-              { step: 2, title: 'AI Analysis', desc: 'Our AI analyzes thousands of schools to find your perfect matches instantly.', icon: Brain },
-              { step: 3, title: 'Get Recommendations', desc: 'Receive personalized, unbiased school recommendations with detailed insights.', icon: Lightbulb },
-              { step: 4, title: 'Apply with Confidence', desc: 'Make informed decisions and apply to schools that truly align with your future.', icon: Rocket },
-            ].map((s) => {
-              const Icon = s.icon;
-              return (
-                <div key={s.step} className="space-y-6">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-indigo-400">
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <p className="text-sm text-white/50 font-light tracking-wide">Step {s.step}</p>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-light text-white mb-3">{s.title}</h3>
-                    <p className="text-base text-white/60 font-light leading-relaxed">{s.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="group relative flex items-center gap-2.5 rounded-full px-10 font-semibold text-lg transition-all duration-300 hover:scale-[1.04] active:scale-[0.97] overflow-hidden"
+                  style={{
+                    height: '60px',
+                    background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                    color: '#fff',
+                    boxShadow: '0 0 40px rgba(99,102,241,0.5)',
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.12),transparent)' }} />
+                  <span className="relative">Start Free — $49/mo after</span>
+                  <ArrowRight className="relative w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
 
-      {/* Divider */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-      {/* Final CTA Section */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
-        <div className="max-w-[900px] mx-auto text-center space-y-12">
-          <div className="space-y-6">
-            <h2 className="text-5xl md:text-6xl lg:text-7xl font-light text-white leading-tight">
-              Ready to find your<br />
-              <span className="font-semibold">perfect school?</span>
-            </h2>
-            <p className="text-lg text-white/60 font-light max-w-2xl mx-auto">
-              Join students who are taking control of their education journey with AI-powered, unbiased guidance.
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button 
-              size="lg" 
-              onClick={() => setAuthModalOpen(true)}
-              className="rounded-full bg-white text-black hover:bg-white/90 text-base font-medium h-12 px-8 transition-all duration-300 shadow-lg hover:shadow-xl"
-            >
-              Get Started — It's Free
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+              <p className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.3)' }}>
+                No credit card required · Cancel anytime · $0.00 commission · Always
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/5 relative z-10">
+      {/* ── FOOTER ── */}
+      <footer className="py-14 px-6 relative z-10" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <div className="max-w-[1200px] mx-auto">
           <div className="grid md:grid-cols-4 gap-12 mb-12">
             <div>
-              <p className="text-sm font-light text-white mb-4">Rivernova</p>
-              <p className="text-sm text-white/50 font-light">Empowering students with unbiased, AI-powered education consulting.</p>
+              <p className="text-sm font-semibold mb-3" style={{ color: '#f0f0f8' }}>Rivernova</p>
+              <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(240,240,248,0.35)' }}>
+                Zero-commission AI school matching. Fighting the $7B education consulting industry's hidden conflicts.
+              </p>
+              <div className="flex items-center gap-1.5 mt-4">
+                <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#34d399' }} />
+                <span className="text-[11px] font-semibold" style={{ color: '#34d399' }}>$0.00 Commission</span>
+              </div>
             </div>
             <div>
-              <p className="text-sm font-light text-white mb-4">Product</p>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-sm text-white/60 font-light hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="text-sm text-white/60 font-light hover:text-white transition-colors">Pricing</a></li>
-                <li><a href="#" className="text-sm text-white/60 font-light hover:text-white transition-colors">FAQ</a></li>
+              <p className="text-sm font-semibold mb-4" style={{ color: '#f0f0f8' }}>Product</p>
+              <ul className="space-y-2.5">
+                {['Features', 'Pricing', 'FAQ'].map(l => (
+                  <li key={l}><a href="#" className="text-sm font-light transition-colors" style={{ color: 'rgba(240,240,248,0.35)' }}>{l}</a></li>
+                ))}
               </ul>
             </div>
             <div>
-              <p className="text-sm font-light text-white mb-4">Legal</p>
-              <ul className="space-y-2">
-                <li><a href="/privacy" className="text-sm text-white/60 font-light hover:text-white transition-colors">Privacy</a></li>
-                <li><a href="/terms" className="text-sm text-white/60 font-light hover:text-white transition-colors">Terms</a></li>
-                <li><a href="/ledger" className="text-sm text-white/60 font-light hover:text-white transition-colors">Ledger</a></li>
+              <p className="text-sm font-semibold mb-4" style={{ color: '#f0f0f8' }}>Legal</p>
+              <ul className="space-y-2.5">
+                {[['Privacy', '/privacy'], ['Terms', '/terms'], ['Commission Ledger', '/ledger']].map(([l, h]) => (
+                  <li key={l}><a href={h} className="text-sm font-light transition-colors" style={{ color: 'rgba(240,240,248,0.35)' }}>{l}</a></li>
+                ))}
               </ul>
             </div>
             <div>
-              <p className="text-sm font-light text-white mb-4">Contact</p>
-              <ul className="space-y-2">
-                <li><a href="mailto:support@rivernova.com" className="text-sm text-white/60 font-light hover:text-white transition-colors">Email</a></li>
-                <li><a href="#" className="text-sm text-white/60 font-light hover:text-white transition-colors">Twitter</a></li>
-                <li><a href="#" className="text-sm text-white/60 font-light hover:text-white transition-colors">LinkedIn</a></li>
+              <p className="text-sm font-semibold mb-4" style={{ color: '#f0f0f8' }}>Contact</p>
+              <ul className="space-y-2.5">
+                {[['Email', 'mailto:roman.kdk1599@gmail.com'], ['Twitter', '#'], ['LinkedIn', '#']].map(([l, h]) => (
+                  <li key={l}><a href={h} className="text-sm font-light transition-colors" style={{ color: 'rgba(240,240,248,0.35)' }}>{l}</a></li>
+                ))}
               </ul>
             </div>
           </div>
-          <div className="h-px bg-white/5 mb-8" />
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-white/50 font-light">© 2026 Rivernova. All rights reserved.</p>
-            <p className="text-sm text-white/50 font-light">Made with care for students everywhere.</p>
+          <div className="pt-8" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-sm font-light text-center" style={{ color: 'rgba(240,240,248,0.3)' }}>© 2026 Rivernova. All rights reserved.</p>
           </div>
         </div>
       </footer>

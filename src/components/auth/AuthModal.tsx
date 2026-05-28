@@ -54,11 +54,11 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-[#0c0c10] border-white/10 text-white rounded-3xl shadow-2xl">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-50" />
+      <DialogContent className="sm:max-w-[425px] bg-white border-gray-200 text-gray-900 rounded-3xl shadow-2xl">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-60" />
         
         <DialogHeader className="pt-6 pb-2 text-center flex flex-col items-center">
-          <div className="mb-4 w-12 h-12 flex items-center justify-center text-white drop-shadow-[0_0_10px_rgba(99,102,241,0.6)]">
+          <div className="mb-4 w-12 h-12 flex items-center justify-center text-indigo-600 drop-shadow-[0_0_10px_rgba(79,70,229,0.3)]">
              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="8" strokeLinejoin="round" className="w-12 h-12">
                <polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" />
                <text x="50" y="55" fontSize="46" fontWeight="bold" fontFamily="sans-serif" fill="currentColor" stroke="none" textAnchor="middle" dominantBaseline="middle">R</text>
@@ -67,7 +67,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
           <DialogTitle className="text-2xl font-bold tracking-tight">
             Welcome to Rivernova
           </DialogTitle>
-          <DialogDescription className="text-white/60">
+          <DialogDescription className="text-gray-500">
             Sign in to continue
           </DialogDescription>
         </DialogHeader>
@@ -78,7 +78,7 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
             variant="outline" 
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full bg-white/5 border-white/10 hover:bg-white/10 text-white h-12 rounded-xl"
+            className="w-full bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700 h-12 rounded-xl"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none">
                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -91,16 +91,16 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
+              <span className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[#0c0c10] px-2 text-white/40">Or continue with</span>
+              <span className="bg-white px-2 text-gray-400">Or continue with</span>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white/80">Email</Label>
+              <Label htmlFor="email" className="text-gray-700">Email</Label>
               <Input 
                 id="email" 
                 type="email"
@@ -108,14 +108,14 @@ export function AuthModal({ open, onOpenChange }: AuthModalProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@example.com" 
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/30 h-12 rounded-xl focus-visible:ring-indigo-500"
+                className="bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 h-12 rounded-xl focus-visible:ring-indigo-500"
               />
             </div>
             
             <Button 
                type="submit" 
                disabled={loading}
-               className="w-full h-12 mt-2 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+               className="w-full h-12 mt-2 rounded-xl font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 shadow-[0_0_20px_rgba(79,70,229,0.2)] hover:shadow-[0_0_30px_rgba(79,70,229,0.35)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
             </Button>

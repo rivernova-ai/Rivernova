@@ -9,53 +9,28 @@ interface ModeToggleProps {
 
 export function ModeToggle({ currentMode, onChange }: ModeToggleProps) {
   const modes = [
-    {
-      id: 'domestic' as const,
-      label: 'Domestic',
-      icon: Home,
-      desc: 'US Universities',
-      color: 'indigo',
-    },
-    {
-      id: 'international' as const,
-      label: 'International',
-      icon: Globe,
-      desc: 'Global Schools',
-      color: 'purple',
-    },
-    {
-      id: 'lifelong' as const,
-      label: 'Lifelong',
-      icon: TrendingUp,
-      desc: 'Career Growth',
-      color: 'emerald',
-    },
+    { id: 'domestic' as const, label: 'Domestic', icon: Home },
+    { id: 'international' as const, label: 'International', icon: Globe },
+    { id: 'lifelong' as const, label: 'Lifelong', icon: TrendingUp },
   ];
 
   return (
-    <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-2 rounded-2xl backdrop-blur-xl">
+    <div className="flex items-center p-1 rounded-xl" style={{ background: 'rgba(255,255,255,0.06)' }}>
       {modes.map((mode) => {
         const Icon = mode.icon;
         const isActive = currentMode === mode.id;
-
         return (
           <button
             key={mode.id}
             onClick={() => onChange(mode.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${
-              isActive
-                ? 'bg-white/10 text-white shadow-lg'
-                : 'text-white/40 hover:text-white/70 hover:bg-white/5'
-            }`}
+            className="flex items-center gap-1.5 px-4 py-[7px] rounded-lg text-[13px] font-medium transition-all duration-200"
+            style={{
+              background: isActive ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: isActive ? '#f0f0f8' : 'rgba(240,240,248,0.4)',
+            }}
           >
-            <Icon className="w-4 h-4" />
-            <div className="hidden md:block">
-              <div className="text-xs">{mode.label}</div>
-              <div className="text-[10px] font-normal normal-case tracking-normal opacity-60">
-                {mode.desc}
-              </div>
-            </div>
-            <div className="md:hidden">{mode.label}</div>
+            <Icon className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{mode.label}</span>
           </button>
         );
       })}

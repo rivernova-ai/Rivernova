@@ -16,16 +16,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased font-sans">
-        {/* Ambient Background Orbs */}
-        <div className="ambient-bg" aria-hidden="true">
-          <div className="orb orb-1"></div>
-          <div className="orb orb-2"></div>
-          <div className="orb orb-3"></div>
-        </div>
-        
-        {/* Noise Overlay */}
-        <div className="noise-overlay" aria-hidden="true"></div>
-
         <AuthProvider>
           {children}
           <AICounselor />

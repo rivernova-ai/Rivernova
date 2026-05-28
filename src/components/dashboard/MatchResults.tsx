@@ -1,11 +1,9 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Sparkles, MapPin, DollarSign, TrendingUp, ExternalLink, Info } from 'lucide-react';
+import { MapPin, DollarSign, TrendingUp, ExternalLink, Award, Briefcase, Calendar } from 'lucide-react';
 import MatchFilters from '@/components/matches/MatchFilters';
-import { stripMarkdown, getMatchScoreColor, getMatchScoreLabel } from '@/lib/utils';
+import { stripMarkdown } from '@/lib/utils';
 
 interface MatchResultsProps {
   matches: any[];
@@ -51,100 +49,141 @@ export default function MatchResults({ matches, citations }: MatchResultsProps) 
 
   if (!matches || matches.length === 0) return null;
 
+  const scoreColor = (s: number) => s >= 80 ? '#34d399' : s >= 60 ? '#fb923c' : '#f87171';
+  const scoreLabel = (s: number) => s >= 80 ? 'Excellent' : s >= 60 ? 'Good' : 'Reach';
+
   return (
-    <div className="space-y-10 animate-in fade-in duration-1000">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-8">
+    <div className="space-y-8" style={{ color: '#f0f0f8' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between pb-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div>
-          <h2 className="text-3xl font-black text-white italic uppercase tracking-tight mb-2">
-            Optimized <span className="gradient-text">Matches</span>
+          <p className="text-[11px] font-light uppercase tracking-widest mb-1" style={{ color: 'rgba(240,240,248,0.3)' }}>Zero Commission Verified</p>
+          <h2 className="text-3xl font-light tracking-tight" style={{ color: '#f0f0f8' }}>
+            {filteredMatches.length} <span className="font-semibold">matches</span>
           </h2>
-          <p className="text-white/40 font-medium">
-            AI has synthesized {filteredMatches.length} programs based on your ROI goals.
-          </p>
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-400 bg-indigo-500/5 px-4 py-2 rounded-xl border border-indigo-500/10">
-          <Sparkles className="w-3.5 h-3.5" />
-          Zero-Commission Verified
+        <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-full"
+          style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8' }}>
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 inline-block animate-pulse" />
+          AI-Matched
         </div>
       </div>
 
       <MatchFilters onFilterChange={setFilters} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredMatches.map((match, i) => (
-          <Card key={i} className="bg-[#0c0c10] border-white/10 rounded-[32px] p-8 hover:border-white/20 transition-all group relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8">
-              <div className={`w-24 h-24 rounded-2xl border-2 flex flex-col items-center justify-center ${getMatchScoreColor(match.match_score || match.matchScore || 0)} backdrop-blur-sm`}>
-                 <span className="text-2xl font-black">{match.match_score || match.matchScore}%</span>
-                 <span className="text-xs font-bold uppercase tracking-wider opacity-80">{getMatchScoreLabel(match.match_score || match.matchScore || 0)}</span>
-              </div>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {filteredMatches.map((match, i) => {
+          const score = match.match_score || match.matchScore || 0;
+          const col = scoreColor(score);
+          return (
+            <div key={i}
+              className="group rounded-[22px] p-6 flex flex-col gap-5 transition-all duration-300"
+              style={{
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(20px)',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.03)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.06)'; }}>
 
-            <div className="flex flex-col h-full">
-              <div className="mb-6">
-                <Badge variant="outline" className="mb-3 border-indigo-500/20 bg-indigo-500/5 text-indigo-400 uppercase text-[9px] tracking-[0.2em] font-black">
-                  {match.category || 'Target'}
-                </Badge>
-                <h3 className="text-2xl font-black text-white tracking-tight group-hover:text-indigo-400 transition-colors">
-                  {stripMarkdown(match.name)}
-                </h3>
-                <div className="flex items-center gap-2 text-white/40 text-sm mt-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {stripMarkdown(match.location)}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-white/5 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">
-                    <DollarSign className="w-3 h-3" />
-                    Est. Tuition
+              {/* Top row: name + score ring */}
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] font-medium uppercase tracking-widest px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(99,102,241,0.12)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
+                      {match.category || 'Target'}
+                    </span>
                   </div>
-                  <div className="text-lg font-bold text-white">{stripMarkdown(match.tuition)}</div>
+                  <h3 className="text-[19px] font-semibold tracking-tight leading-snug" style={{ color: '#f0f0f8' }}>
+                    {stripMarkdown(match.name)}
+                  </h3>
+                  {match.location && (
+                    <div className="flex items-center gap-1.5 mt-1.5 text-[13px] font-light" style={{ color: 'rgba(240,240,248,0.45)' }}>
+                      <MapPin className="w-3.5 h-3.5 opacity-60" />
+                      {stripMarkdown(match.location)}
+                    </div>
+                  )}
                 </div>
-                <div className="bg-emerald-500/5 rounded-2xl p-4 border border-emerald-500/10">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-emerald-400/50 uppercase tracking-widest mb-1">
-                    <TrendingUp className="w-3 h-3" />
-                    Projected ROI
+
+                {/* Score ring */}
+                <div className="flex-shrink-0 w-[60px] h-[60px] relative">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="15" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" strokeWidth="2" />
+                    <circle cx="18" cy="18" r="15" fill="none" stroke={col} strokeWidth="2" strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 15}
+                      strokeDashoffset={2 * Math.PI * 15 - (score / 100) * (2 * Math.PI * 15)}
+                      style={{ filter: `drop-shadow(0 0 6px ${col}80)` }} />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-[13px] font-bold leading-none" style={{ color: '#f0f0f8' }}>{score}</span>
+                    <span className="text-[9px] font-light leading-none mt-0.5" style={{ color: col }}>{scoreLabel(score)}</span>
                   </div>
-                  <div className="text-lg font-bold text-emerald-400">{stripMarkdown(match.roi)}</div>
                 </div>
               </div>
 
-              <div className="flex-1">
-                <p className="text-sm text-white/50 leading-relaxed italic border-l-2 border-indigo-500/20 pl-4 py-2">
+              {/* Metrics */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="flex items-center gap-1.5 text-[10px] font-light uppercase tracking-widest mb-1.5" style={{ color: 'rgba(240,240,248,0.35)' }}>
+                    <DollarSign className="w-3 h-3" /> Tuition
+                  </div>
+                  <p className="text-[15px] font-semibold" style={{ color: '#f0f0f8' }}>{stripMarkdown(match.tuition) || '—'}</p>
+                </div>
+                {match.roi && (
+                  <div className="rounded-xl p-3" style={{ background: 'rgba(52,211,153,0.07)', border: '1px solid rgba(52,211,153,0.15)' }}>
+                    <div className="flex items-center gap-1.5 text-[10px] font-light uppercase tracking-widest mb-1.5" style={{ color: 'rgba(52,211,153,0.6)' }}>
+                      <TrendingUp className="w-3 h-3" /> ROI
+                    </div>
+                    <p className="text-[15px] font-semibold" style={{ color: '#34d399' }}>{stripMarkdown(match.roi)}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Metrics row */}
+              {(match.admissionRate || match.employmentRate || match.scholarships || match.deadline) && (
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                  {match.admissionRate && <span className="text-[12px] font-light flex items-center gap-1.5" style={{ color: 'rgba(240,240,248,0.65)' }}><TrendingUp className="w-3.5 h-3.5 text-emerald-400" />{stripMarkdown(match.admissionRate)}</span>}
+                  {match.employmentRate && <span className="text-[12px] font-light flex items-center gap-1.5" style={{ color: 'rgba(240,240,248,0.65)' }}><Briefcase className="w-3.5 h-3.5 text-indigo-400" />{stripMarkdown(match.employmentRate)}</span>}
+                  {match.scholarships && <span className="text-[12px] font-light flex items-center gap-1.5" style={{ color: 'rgba(240,240,248,0.65)' }}><Award className="w-3.5 h-3.5 text-amber-400" />{stripMarkdown(match.scholarships)}</span>}
+                  {match.deadline && <span className="text-[12px] font-light flex items-center gap-1.5" style={{ color: 'rgba(240,240,248,0.65)' }}><Calendar className="w-3.5 h-3.5 text-rose-400" />{stripMarkdown(match.deadline)}</span>}
+                </div>
+              )}
+
+              {/* Reasoning */}
+              {match.reasoning && (
+                <p className="text-[13px] font-light leading-relaxed italic pl-3"
+                  style={{ color: 'rgba(240,240,248,0.45)', borderLeft: '2px solid rgba(99,102,241,0.3)' }}>
                   "{stripMarkdown(match.reasoning)}"
                 </p>
-              </div>
+              )}
 
-              <div className="mt-8 pt-6 border-t border-white/5 flex justify-between items-center">
-                <button className="text-xs font-bold text-indigo-400 hover:text-white flex items-center gap-2 transition-colors">
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                <button className="flex items-center gap-1.5 text-[12px] font-medium transition-colors"
+                  style={{ color: '#818cf8' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = '#c084fc')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#818cf8')}>
                   Explore Program <ExternalLink className="w-3 h-3" />
                 </button>
-                <div className="flex items-center gap-1">
-                   <Info className="w-3 h-3 text-white/20" />
-                   <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">Public Ledger Proof</span>
-                </div>
+                <span className="text-[10px] font-light uppercase tracking-widest" style={{ color: 'rgba(240,240,248,0.2)' }}>Public Ledger Proof</span>
               </div>
             </div>
-          </Card>
-        ))}
+          );
+        })}
       </div>
-      
+
       {citations && citations.length > 0 && (
-        <div className="mt-12 bg-white/5 border border-white/10 rounded-[24px] p-6">
-          <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] mb-4">Research Sources</h4>
-          <div className="flex flex-wrap gap-3">
+        <div className="rounded-[20px] p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <h4 className="text-[10px] font-light uppercase tracking-widest mb-4" style={{ color: 'rgba(240,240,248,0.3)' }}>Research Sources</h4>
+          <div className="flex flex-wrap gap-2">
             {citations.map((url, i) => (
-              <a 
-                key={i} 
-                href={url} 
-                target="_blank" 
-                rel="noreferrer"
-                className="text-[10px] text-indigo-400/60 hover:text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 hover:border-indigo-500/20 transition-all flex items-center gap-2"
-              >
-                <ExternalLink className="w-3 h-3" />
-                Source {i + 1}
+              <a key={i} href={url} target="_blank" rel="noreferrer"
+                className="flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all"
+                style={{ background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'rgba(99,102,241,0.2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'rgba(99,102,241,0.1)')}>
+                <ExternalLink className="w-3 h-3" /> Source {i + 1}
               </a>
             ))}
           </div>

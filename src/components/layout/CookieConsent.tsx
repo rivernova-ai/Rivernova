@@ -74,25 +74,25 @@ export function CookieConsent() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 animate-in slide-in-from-bottom duration-500">
       <div className="max-w-[1200px] mx-auto">
-        <div className="bg-[#0c0c10] border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-2xl backdrop-blur-xl">
           {!showSettings ? (
             // Main Banner
             <div className="p-6 md:p-8">
               <div className="flex items-start gap-4 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-                  <Cookie className="w-6 h-6 text-indigo-400" />
+                <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                  <Cookie className="w-6 h-6 text-indigo-500" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-white mb-2">We Value Your Privacy</h3>
-                  <p className="text-white/70 text-sm leading-relaxed">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">We Value Your Privacy</h3>
+                  <p className="text-gray-500 text-sm leading-relaxed">
                     We use cookies to enhance your experience, analyze site traffic, and personalize content. 
                     By clicking &quot;Accept All&quot;, you consent to our use of cookies. You can manage your preferences or learn more in our{' '}
-                    <a href="/privacy" className="text-indigo-400 hover:underline">Privacy Policy</a>.
+                    <a href="/privacy" className="text-indigo-500 hover:underline">Privacy Policy</a>.
                   </p>
                 </div>
                 <button
                   onClick={() => setShowBanner(false)}
-                  className="text-white/40 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-gray-700 transition-colors"
                   aria-label="Close"
                 >
                   <X className="w-5 h-5" />
@@ -109,14 +109,14 @@ export function CookieConsent() {
                 <Button
                   onClick={acceptNecessary}
                   variant="outline"
-                  className="flex-1 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white h-11"
+                  className="flex-1 rounded-xl border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 h-11"
                 >
                   Necessary Only
                 </Button>
                 <Button
                   onClick={() => setShowSettings(true)}
                   variant="outline"
-                  className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white h-11 px-6"
+                  className="rounded-xl border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 h-11 px-6"
                 >
                   <Settings className="w-4 h-4 mr-2" />
                   Customize
@@ -128,14 +128,14 @@ export function CookieConsent() {
             <div className="p-6 md:p-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                    <Settings className="w-5 h-5 text-indigo-400" />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <Settings className="w-5 h-5 text-indigo-500" />
                   </div>
-                  <h3 className="text-xl font-bold text-white">Cookie Preferences</h3>
+                  <h3 className="text-xl font-bold text-gray-900">Cookie Preferences</h3>
                 </div>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="text-white/40 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-gray-700 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -143,27 +143,27 @@ export function CookieConsent() {
 
               <div className="space-y-4 mb-6">
                 {/* Necessary Cookies */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-emerald-400" />
-                      <h4 className="text-white font-bold">Necessary Cookies</h4>
+                      <h4 className="text-gray-900 font-bold">Necessary Cookies</h4>
                     </div>
                     <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold">
                       Always Active
                     </div>
                   </div>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-gray-500 text-sm">
                     Essential for the website to function. These cookies enable core functionality such as security, authentication, and accessibility.
                   </p>
                 </div>
 
                 {/* Analytics Cookies */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <Cookie className="w-5 h-5 text-indigo-400" />
-                      <h4 className="text-white font-bold">Analytics Cookies</h4>
+                      <h4 className="text-gray-900 font-bold">Analytics Cookies</h4>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -172,20 +172,20 @@ export function CookieConsent() {
                         onChange={(e) => setPreferences({ ...preferences, analytics: e.target.checked })}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
                     </label>
                   </div>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-gray-500 text-sm">
                     Help us understand how visitors interact with our website by collecting and reporting information anonymously.
                   </p>
                 </div>
 
                 {/* Marketing Cookies */}
-                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <Cookie className="w-5 h-5 text-purple-400" />
-                      <h4 className="text-white font-bold">Marketing Cookies</h4>
+                      <h4 className="text-gray-900 font-bold">Marketing Cookies</h4>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -194,10 +194,10 @@ export function CookieConsent() {
                         onChange={(e) => setPreferences({ ...preferences, marketing: e.target.checked })}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-500"></div>
                     </label>
                   </div>
-                  <p className="text-white/60 text-sm">
+                  <p className="text-gray-500 text-sm">
                     Used to track visitors across websites to display relevant advertisements and measure campaign effectiveness.
                   </p>
                 </div>
@@ -213,15 +213,15 @@ export function CookieConsent() {
                 <Button
                   onClick={() => setShowSettings(false)}
                   variant="outline"
-                  className="rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-white h-11 px-6"
+                  className="rounded-xl border-gray-200 bg-gray-50 hover:bg-gray-100 text-gray-700 h-11 px-6"
                 >
                   Cancel
                 </Button>
               </div>
 
-              <p className="text-white/40 text-xs text-center mt-4">
+              <p className="text-gray-400 text-xs text-center mt-4">
                 You can change your preferences at any time in your account settings or by visiting our{' '}
-                <a href="/privacy" className="text-indigo-400 hover:underline">Privacy Policy</a>.
+                <a href="/privacy" className="text-indigo-500 hover:underline">Privacy Policy</a>.
               </p>
             </div>
           )}
