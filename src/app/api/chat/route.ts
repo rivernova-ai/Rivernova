@@ -117,7 +117,7 @@ Rules:
       (callParams as any).tool_choice = { type: 'any' };
     }
 
-    const response = await anthropic.messages.create(callParams);
+    const response = await anthropic.messages.create(callParams) as Awaited<ReturnType<typeof anthropic.messages.create>> & { content: Anthropic.ContentBlock[] };
 
     // ── EXTRACT TEXT + METRICS FROM RESPONSE BLOCKS ──
     let assistantText = '';
