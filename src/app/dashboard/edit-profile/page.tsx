@@ -4,458 +4,926 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Loader2, ArrowLeft, Check, GraduationCap, Target, DollarSign, Globe, Sparkles, AlertCircle } from 'lucide-react';
-import {
-  validateGPA,
-  validateSATScore,
-  validateACTScore,
-  validateDreamJob,
-  validateCareerField,
-  validateBudgetRange,
-} from '@/lib/validation';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2, ArrowLeft, Check, ChevronDown } from 'lucide-react';
 
-interface Profile {
-  id: string;
-  full_name: string;
-  academic_background: {
-    currentEducation: string;
-    gpa: string;
-    satScore?: string;
-    actScore?: string;
-    major: string;
-  };
-  career_goals: {
-    careerField: string;
-    dreamJob: string;
-    industries: string;
-  };
-  budget: {
-    min: string;
-    max: string;
-    scholarshipNeeded: boolean;
-    financialAid: boolean;
-  };
-  location_preferences: {
-    preferredCountries: string;
-    visaNeeded: boolean;
-  };
-  mode: 'domestic' | 'international' | 'lifelong';
+// ─── Data (mirrors OnboardingWizard) ─────────────────────────────────────────
+
+const COUNTRIES = [
+  { code: 'US', name: 'United States', flag: '🇺🇸', hasStates: true },
+  { code: 'CA', name: 'Canada', flag: '🇨🇦', hasStates: true },
+  { code: 'AU', name: 'Australia', flag: '🇦🇺', hasStates: true },
+  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', hasStates: false },
+  { code: 'DE', name: 'Germany', flag: '🇩🇪', hasStates: false },
+  { code: 'FR', name: 'France', flag: '🇫🇷', hasStates: false },
+  { code: 'NL', name: 'Netherlands', flag: '🇳🇱', hasStates: false },
+  { code: 'SE', name: 'Sweden', flag: '🇸🇪', hasStates: false },
+  { code: 'CH', name: 'Switzerland', flag: '🇨🇭', hasStates: false },
+  { code: 'SG', name: 'Singapore', flag: '🇸🇬', hasStates: false },
+  { code: 'JP', name: 'Japan', flag: '🇯🇵', hasStates: false },
+  { code: 'KR', name: 'South Korea', flag: '🇰🇷', hasStates: false },
+  { code: 'CN', name: 'China', flag: '🇨🇳', hasStates: false },
+  { code: 'IN', name: 'India', flag: '🇮🇳', hasStates: false },
+  { code: 'MM', name: 'Myanmar', flag: '🇲🇲', hasStates: false },
+  { code: 'TH', name: 'Thailand', flag: '🇹🇭', hasStates: false },
+  { code: 'PH', name: 'Philippines', flag: '🇵🇭', hasStates: false },
+  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', hasStates: false },
+  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', hasStates: false },
+  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', hasStates: false },
+  { code: 'PK', name: 'Pakistan', flag: '🇵🇰', hasStates: false },
+  { code: 'BD', name: 'Bangladesh', flag: '🇧🇩', hasStates: false },
+  { code: 'LK', name: 'Sri Lanka', flag: '🇱🇰', hasStates: false },
+  { code: 'NP', name: 'Nepal', flag: '🇳🇵', hasStates: false },
+  { code: 'NG', name: 'Nigeria', flag: '🇳🇬', hasStates: false },
+  { code: 'ZA', name: 'South Africa', flag: '🇿🇦', hasStates: false },
+  { code: 'KE', name: 'Kenya', flag: '🇰🇪', hasStates: false },
+  { code: 'BR', name: 'Brazil', flag: '🇧🇷', hasStates: false },
+  { code: 'MX', name: 'Mexico', flag: '🇲🇽', hasStates: false },
+  { code: 'AE', name: 'UAE', flag: '🇦🇪', hasStates: false },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', hasStates: false },
+  { code: 'TR', name: 'Turkey', flag: '🇹🇷', hasStates: false },
+  { code: 'EG', name: 'Egypt', flag: '🇪🇬', hasStates: false },
+  { code: 'OTHER', name: 'Other', flag: '🌐', hasStates: false },
+];
+
+const STATES: Record<string, string[]> = {
+  'United States': [
+    'Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut',
+    'Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa',
+    'Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan',
+    'Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire',
+    'New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio',
+    'Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota',
+    'Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia',
+    'Wisconsin','Wyoming',
+  ],
+  'Canada': [
+    'Alberta','British Columbia','Manitoba','New Brunswick',
+    'Newfoundland and Labrador','Nova Scotia','Ontario',
+    'Prince Edward Island','Quebec','Saskatchewan',
+  ],
+  'Australia': [
+    'New South Wales','Victoria','Queensland','Western Australia',
+    'South Australia','Tasmania','Australian Capital Territory','Northern Territory',
+  ],
+};
+
+const EDUCATION_LEVELS = [
+  { id: 'hs-9', label: 'Grade 9' },
+  { id: 'hs-10', label: 'Grade 10' },
+  { id: 'hs-11', label: 'Grade 11' },
+  { id: 'hs-12', label: 'Grade 12' },
+  { id: 'gap', label: 'Gap Year' },
+  { id: 'bachelors', label: "Bachelor's Student" },
+  { id: 'bachelors-grad', label: "Bachelor's Graduate" },
+  { id: 'masters', label: "Master's / Graduate" },
+  { id: 'professional', label: 'Working Professional' },
+];
+
+const CAREER_FIELDS = [
+  { id: 'tech', label: 'Technology', icon: '💻' },
+  { id: 'medicine', label: 'Medicine & Health', icon: '🏥' },
+  { id: 'business', label: 'Business & Finance', icon: '📈' },
+  { id: 'law', label: 'Law', icon: '⚖️' },
+  { id: 'engineering', label: 'Engineering', icon: '⚙️' },
+  { id: 'science', label: 'Science & Research', icon: '🔬' },
+  { id: 'arts', label: 'Arts & Design', icon: '🎨' },
+  { id: 'education', label: 'Education', icon: '📚' },
+  { id: 'policy', label: 'Government & Policy', icon: '🏛' },
+  { id: 'entrepreneurship', label: 'Entrepreneurship', icon: '🚀' },
+  { id: 'media', label: 'Media & Entertainment', icon: '🎬' },
+  { id: 'social', label: 'Social Impact / NGO', icon: '🌍' },
+];
+
+const CAMPUS_ENVIRONMENTS = [
+  { id: 'urban', label: 'Major City', icon: '🏙' },
+  { id: 'college-town', label: 'College Town', icon: '🎓' },
+  { id: 'suburban', label: 'Suburban', icon: '🏡' },
+  { id: 'anywhere', label: 'No Preference', icon: '🌐' },
+];
+
+const SCHOOL_SIZES = [
+  { id: 'small', label: 'Small', sub: '< 5,000' },
+  { id: 'medium', label: 'Medium', sub: '5K – 20K' },
+  { id: 'large', label: 'Large', sub: '20,000+' },
+  { id: 'any', label: 'Any Size', sub: "No pref" },
+];
+
+const ENGLISH_PROFICIENCY_TYPES = [
+  { id: 'ielts', label: 'IELTS' },
+  { id: 'toefl', label: 'TOEFL' },
+  { id: 'det', label: 'Duolingo (DET)' },
+  { id: 'cambridge', label: 'Cambridge' },
+  { id: 'native', label: 'Native Speaker' },
+];
+
+const FUNDING_SOURCES_INTL = [
+  { id: 'parents', label: 'Parents / Family', icon: '👨‍👩‍👧' },
+  { id: 'self', label: 'Self-funded', icon: '💪' },
+  { id: 'home-scholarship', label: 'Home Gov. Scholarship', icon: '🏛️' },
+  { id: 'full-aid', label: 'Full Merit Scholarship', icon: '🎯' },
+];
+
+const FUNDING_SOURCES_DOMESTIC = [
+  { id: 'parents', label: 'Parents / Family', icon: '👨‍👩‍👧' },
+  { id: 'self', label: 'Self-funded', icon: '💪' },
+  { id: 'partial-aid', label: 'Partial Aid Needed', icon: '🤝' },
+  { id: 'full-aid', label: 'Full Scholarship Required', icon: '🎯' },
+];
+
+const STUDY_TIMELINES = [
+  { id: 'this-fall', label: 'This Fall' },
+  { id: 'next-year', label: 'Next Year' },
+  { id: '2-years', label: 'In 2 Years' },
+  { id: 'exploring', label: 'Just Exploring' },
+];
+
+const MODES = [
+  { value: 'international' as const, icon: '🌐', label: 'International Student', tagline: 'Applying from abroad', accentColor: '#6366f1', tagColor: '#818cf8' },
+  { value: 'domestic' as const, icon: '🏛️', label: 'US Domestic Student', tagline: 'Applying within America', accentColor: '#10b981', tagColor: '#34d399' },
+];
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface EditData {
+  firstName: string;
+  citizenshipCountry: string;
+  residenceCountry: string;
+  residenceState: string;
+  residenceCity: string;
+  currentEducation: string;
+  schoolName: string;
+  gpa: string;
+  gpaScale: string;
+  satScore: string;
+  actScore: string;
+  ibScore: string;
+  ieltsToeflScore: string;
+  englishProficiencyType: string;
+  firstGenStudent: boolean;
+  major: string;
+  dreamJob: string;
+  dreamCompany: string;
+  careerField: string;
+  studyTimeline: string;
+  budgetPerYear: number;
+  fundingSource: string;
+  scholarshipNeeded: boolean;
+  financialAid: boolean;
+  fafsaFiled: boolean;
+  inStateTuition: boolean;
+  preferredCountries: string[];
+  preferredUSStates: string[];
+  campusEnvironment: string;
+  visaNeeded: boolean;
+  mode: 'domestic' | 'international';
+  schoolSize: string;
 }
 
-interface FieldErrors {
-  [key: string]: string;
-}
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function EditProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  const [savedField, setSavedField] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [saved, setSaved] = useState(false);
+  const [data, setData] = useState<EditData>({
+    firstName: '',
+    citizenshipCountry: '',
+    residenceCountry: '',
+    residenceState: '',
+    residenceCity: '',
+    currentEducation: '',
+    schoolName: '',
+    gpa: '',
+    gpaScale: '4.0',
+    satScore: '',
+    actScore: '',
+    ibScore: '',
+    ieltsToeflScore: '',
+    englishProficiencyType: '',
+    firstGenStudent: false,
+    major: '',
+    dreamJob: '',
+    dreamCompany: '',
+    careerField: '',
+    studyTimeline: '',
+    budgetPerYear: 30000,
+    fundingSource: '',
+    scholarshipNeeded: false,
+    financialAid: false,
+    fafsaFiled: false,
+    inStateTuition: false,
+    preferredCountries: [],
+    preferredUSStates: [],
+    campusEnvironment: '',
+    visaNeeded: false,
+    mode: 'international',
+    schoolSize: 'any',
+  });
 
   useEffect(() => {
-    const loadProfile = async () => {
+    const load = async () => {
       if (authLoading) return;
-
-      if (!user) {
-        router.push('/');
-        return;
-      }
+      if (!user) { router.push('/'); return; }
 
       const supabase = createClient();
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single();
 
-      if (profileData) {
-        setProfile(profileData);
+      if (p) {
+        const ab = p.academic_background || {};
+        const cg = p.career_goals || {};
+        const b = p.budget || {};
+        const lp = p.location_preferences || {};
+        const sp = p.school_preferences || {};
+
+        setData({
+          firstName: p.full_name || '',
+          citizenshipCountry: lp.citizenshipCountry || '',
+          residenceCountry: lp.residenceCountry || '',
+          residenceState: lp.residenceState || '',
+          residenceCity: lp.residenceCity || '',
+          currentEducation: ab.currentEducation || '',
+          schoolName: ab.schoolName || '',
+          gpa: ab.gpa || '',
+          gpaScale: ab.gpaScale || '4.0',
+          satScore: ab.satScore || '',
+          actScore: ab.actScore || '',
+          ibScore: ab.ibScore || '',
+          ieltsToeflScore: ab.ieltsToeflScore || '',
+          englishProficiencyType: ab.englishProficiencyType || '',
+          firstGenStudent: ab.firstGenStudent || false,
+          major: ab.major || '',
+          dreamJob: cg.dreamJob || '',
+          dreamCompany: cg.dreamCompany || '',
+          careerField: cg.careerField || '',
+          studyTimeline: cg.studyTimeline || '',
+          budgetPerYear: b.perYear ?? (b.max ? parseInt(b.max) : 30000),
+          fundingSource: b.fundingSource || '',
+          scholarshipNeeded: b.scholarshipNeeded || false,
+          financialAid: b.financialAid || false,
+          fafsaFiled: b.fafsaFiled || false,
+          inStateTuition: b.inStateTuition || false,
+          preferredCountries: lp.preferredCountries || [],
+          preferredUSStates: lp.preferredUSStates || [],
+          campusEnvironment: lp.campusEnvironment || '',
+          visaNeeded: lp.visaNeeded || false,
+          mode: (p.mode === 'domestic' ? 'domestic' : 'international') as 'domestic' | 'international',
+          schoolSize: sp.schoolSize || 'any',
+        });
       }
-      setLoading(false);
+      setPageLoading(false);
     };
-
-    loadProfile();
+    load();
   }, [user, authLoading, router]);
 
-  const updateField = (section: string, field: string, value: any) => {
-    if (!profile) return;
-
-    setProfile(prev => {
-      if (!prev) return prev;
-      if (section === 'mode') {
-        return { ...prev, mode: value };
-      }
-      return {
-        ...prev,
-        [section]: {
-          ...(prev[section as keyof Profile] as object),
-          [field]: value,
-        },
-      };
-    });
+  const upd = (field: keyof EditData, value: any) => {
+    setData(prev => ({ ...prev, [field]: value }));
     setHasChanges(true);
-    
-    // Clear error for this field when user starts typing
-    setFieldErrors(prev => {
-      const newErrors = { ...prev };
-      delete newErrors[`${section}.${field}`];
-      return newErrors;
-    });
-    
-    // Validate field on change
-    validateField(section, field, value);
   };
 
-  const validateField = (section: string, field: string, value: string) => {
-    const fieldKey = `${section}.${field}`;
-    let error: string | undefined;
+  const toggleCountry = (name: string) =>
+    upd('preferredCountries',
+      data.preferredCountries.includes(name)
+        ? data.preferredCountries.filter(c => c !== name)
+        : [...data.preferredCountries, name]
+    );
 
-    if (section === 'academic_background') {
-      if (field === 'gpa') {
-        const validation = validateGPA(value);
-        error = validation.error;
-      } else if (field === 'satScore') {
-        const validation = validateSATScore(value);
-        error = validation.error;
-      } else if (field === 'actScore') {
-        const validation = validateACTScore(value);
-        error = validation.error;
-      }
-    } else if (section === 'career_goals') {
-      if (field === 'dreamJob') {
-        const validation = validateDreamJob(value);
-        error = validation.error;
-      } else if (field === 'careerField') {
-        const validation = validateCareerField(value);
-        error = validation.error;
-      }
-    }
+  const toggleUSState = (state: string) =>
+    upd('preferredUSStates',
+      data.preferredUSStates.includes(state)
+        ? data.preferredUSStates.filter(s => s !== state)
+        : [...data.preferredUSStates, state]
+    );
 
-    setFieldErrors(prev => {
-      if (error) {
-        return { ...prev, [fieldKey]: error };
-      } else {
-        const newErrors = { ...prev };
-        delete newErrors[fieldKey];
-        return newErrors;
-      }
-    });
-  };
-
-  const validateBudgetFields = () => {
-    if (!profile) return true;
-    
-    const validation = validateBudgetRange(profile.budget.min, profile.budget.max);
-    if (!validation.isValid) {
-      setFieldErrors(prev => ({
-        ...prev,
-        'budget.range': validation.error || 'Invalid budget range',
-      }));
-      return false;
-    } else {
-      setFieldErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors['budget.range'];
-        return newErrors;
-      });
-      return true;
-    }
-  };
-
-  const saveAllChanges = async () => {
-    if (!profile || !user) return;
-
-    // Validate all fields before saving
-    if (!validateBudgetFields()) {
-      return;
-    }
-
-    // Check for any existing errors
-    if (Object.keys(fieldErrors).length > 0) {
-      alert('Please fix all validation errors before saving.');
-      return;
-    }
-
+  const handleSave = async () => {
+    if (!user) return;
     setSaving(true);
     try {
       const supabase = createClient();
-      await supabase
-        .from('profiles')
-        .update({
-          academic_background: profile.academic_background,
-          career_goals: profile.career_goals,
-          budget: profile.budget,
-          location_preferences: profile.location_preferences,
-          mode: profile.mode,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+      await supabase.from('profiles').update({
+        full_name: data.firstName,
+        academic_background: {
+          currentEducation: data.currentEducation,
+          schoolName: data.schoolName,
+          gpa: data.gpa,
+          gpaScale: data.gpaScale,
+          satScore: data.satScore,
+          actScore: data.actScore,
+          ibScore: data.ibScore,
+          ieltsToeflScore: data.ieltsToeflScore,
+          englishProficiencyType: data.englishProficiencyType,
+          firstGenStudent: data.firstGenStudent,
+          major: data.major,
+        },
+        career_goals: {
+          careerField: data.careerField,
+          dreamJob: data.dreamJob,
+          dreamCompany: data.dreamCompany,
+          studyTimeline: data.studyTimeline,
+          industries: data.careerField,
+        },
+        budget: {
+          perYear: data.budgetPerYear,
+          min: String(Math.round(data.budgetPerYear * 0.85)),
+          max: String(data.budgetPerYear),
+          fundingSource: data.fundingSource,
+          scholarshipNeeded: data.scholarshipNeeded,
+          financialAid: data.financialAid,
+          fafsaFiled: data.fafsaFiled,
+          inStateTuition: data.inStateTuition,
+        },
+        location_preferences: {
+          citizenshipCountry: data.citizenshipCountry,
+          residenceCountry: data.residenceCountry,
+          residenceState: data.residenceState,
+          residenceCity: data.residenceCity,
+          preferredCountries: data.preferredCountries,
+          preferredCountriesStr: data.preferredCountries.join(', '),
+          preferredUSStates: data.preferredUSStates,
+          campusEnvironment: data.campusEnvironment,
+          visaNeeded: data.visaNeeded,
+        },
+        mode: data.mode,
+        school_preferences: { schoolSize: data.schoolSize },
+        updated_at: new Date().toISOString(),
+      }).eq('id', user.id);
 
       setHasChanges(false);
-      setSavedField('all');
-      setTimeout(() => setSavedField(null), 2000);
-    } catch (error) {
-      console.error('Error saving profile:', error);
-      alert('Failed to save changes. Please try again.');
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
-  if (authLoading || loading) {
+  // ── Shared primitives ────────────────────────────────────────────────────
+
+  const accent = data.mode === 'domestic' ? '#10b981' : '#6366f1';
+
+  const inputCls = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none transition-all";
+  const inputStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
+  const labelCls = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
+  const labelStyle = { color: 'rgba(240,240,248,0.38)' };
+
+  const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
+    <div className="flex items-center gap-3 pb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <span className="text-xl">{icon}</span>
+      <h2 className="text-lg font-bold" style={{ color: '#f0f0f8' }}>{title}</h2>
+    </div>
+  );
+
+  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div className="space-y-1.5">
+      <label className={labelCls} style={labelStyle}>{label}</label>
+      {children}
+    </div>
+  );
+
+  const TextInput = ({ value, onChange, placeholder, type = 'text' }: any) => (
+    <input
+      type={type}
+      value={value}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={inputCls}
+      style={inputStyle}
+    />
+  );
+
+  const SelectInput = ({ value, onChange, options, placeholder }: {
+    value: string; onChange: (v: string) => void;
+    options: { value: string; label: string }[]; placeholder: string;
+  }) => (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={`${inputCls} appearance-none pr-10`}
+        style={{ ...inputStyle, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
+      >
+        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
+        {options.map(o => (
+          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
+    </div>
+  );
+
+  const Chip = ({ label, selected, onClick, accentColor = '#6366f1' }: { label: string; selected: boolean; onClick: () => void; accentColor?: string }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+      style={selected
+        ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
+        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
+      }
+    >
+      {label}
+    </button>
+  );
+
+  const OptionCard = ({ selected, onClick, children, accentColor = '#6366f1' }: any) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
+      style={selected
+        ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
+        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
+      }
+    >
+      {children}
+    </button>
+  );
+
+  const Toggle = ({ checked, onChange, label, sub, accentColor = '#6366f1' }: any) => (
+    <div
+      className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+      onClick={() => onChange(!checked)}
+    >
+      <div className="pr-4">
+        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
+        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
+      </div>
+      <div className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200"
+        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      </div>
+    </div>
+  );
+
+  if (authLoading || pageLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-400" />
+      <div className="flex items-center justify-center min-h-screen" style={{ background: '#080810' }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: accent }} />
       </div>
     );
   }
 
-  if (!profile) return null;
-
-  const renderFormField = ({ label, field, section, type = 'text', placeholder, hint, error }: any) => (
-    <div className="space-y-2">
-      <Label className="text-sm text-white/60 font-light">{label}</Label>
-      {type === 'textarea' ? (
-        <Textarea
-          value={(profile as any)[section]?.[field] || ''}
-          onChange={(e) => updateField(section, field, e.target.value)}
-          placeholder={placeholder}
-          className={`bg-white/5 border rounded-xl min-h-[100px] font-light text-white placeholder:text-white/30 ${
-            error ? 'border-red-500/50' : 'border-white/10'
-          }`}
-        />
-      ) : (
-        <Input
-          type={type}
-          value={(profile as any)[section]?.[field] || ''}
-          onChange={(e) => updateField(section, field, e.target.value)}
-          placeholder={placeholder}
-          className={`bg-white/5 border h-11 rounded-xl font-light text-white placeholder:text-white/30 ${
-            error ? 'border-red-500/50' : 'border-white/10'
-          }`}
-        />
-      )}
-      {error && (
-        <div className="flex items-center gap-2 text-red-400 text-sm font-light">
-          <AlertCircle className="w-4 h-4" />
-          {error}
-        </div>
-      )}
-      {hint && !error && <p className="text-xs text-white/40 font-light">{hint}</p>}
-    </div>
-  );
-
-  const renderEditSection = ({ title, icon: Icon, fields, section }: any) => (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-          <Icon className="w-5 h-5 text-indigo-400" />
-        </div>
-        <h2 className="text-2xl font-light text-white">{title}</h2>
-      </div>
-
-      <div className="space-y-4">
-        {fields.map((field: any) => (
-          <div key={field.key}>
-            {renderFormField({
-              label: field.label,
-              field: field.key,
-              section: section,
-              type: field.type,
-              placeholder: field.placeholder,
-              hint: field.hint,
-              error: fieldErrors[`${section}.${field.key}`]
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="border-b border-white/5 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-[900px] mx-auto px-6 md:px-8 py-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+    <div className="min-h-screen" style={{ background: '#080810' }}>
+      {/* Ambient */}
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.1) 0%, transparent 60%)' }} />
+
+      {/* Sticky header */}
+      <div className="sticky top-0 z-50" style={{ background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(40px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-white/5 rounded-lg transition-colors"
+              className="p-2 rounded-xl transition-all"
+              style={{ color: 'rgba(240,240,248,0.4)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >
-              <ArrowLeft className="w-5 h-5 text-white/60" />
+              <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <p className="text-xs text-white/40 font-light uppercase tracking-wider">Edit</p>
-              <h1 className="text-2xl font-light text-white">Your Profile</h1>
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(240,240,248,0.3)' }}>RIVERNOVA</p>
+              <h1 className="text-lg font-bold leading-tight" style={{ color: '#f0f0f8' }}>Edit Profile</h1>
             </div>
           </div>
-          {hasChanges && (
-            <Button
-              onClick={saveAllChanges}
-              disabled={saving || Object.keys(fieldErrors).length > 0}
-              className="rounded-full bg-white text-black hover:bg-white/90 text-sm font-medium h-10 px-6 transition-all disabled:opacity-50"
-            >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  <Check className="w-4 h-4 mr-2" />
-                  Save All
-                </>
-              )}
-            </Button>
-          )}
+
+          <AnimatePresence>
+            {hasChanges && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                onClick={handleSave}
+                disabled={saving}
+                className="flex items-center gap-2 text-sm font-bold h-10 px-6 rounded-2xl transition-all disabled:opacity-50"
+                style={{ background: `linear-gradient(135deg, ${accent}, ${accent}bb)`, color: '#fff', boxShadow: `0 0 20px ${accent}35` }}
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Save</>}
+              </motion.button>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-[900px] mx-auto px-6 md:px-8 py-12 space-y-16">
-        {/* Academic Background */}
-        {renderEditSection({
-          title: "Academic Background",
-          icon: GraduationCap,
-          section: "academic_background",
-          fields: [
-            { key: 'currentEducation', label: 'Current Education Level', placeholder: 'e.g., High School Senior' },
-            { key: 'gpa', label: 'GPA / Grade', type: 'number', placeholder: '0.0 - 4.0', hint: 'Enter a number between 0.0 and 4.0' },
-            { key: 'satScore', label: 'SAT Score (Optional)', type: 'number', placeholder: '400 - 1600', hint: 'Enter a number between 400 and 1600' },
-            { key: 'actScore', label: 'ACT Score (Optional)', type: 'number', placeholder: '1 - 36', hint: 'Enter a number between 1 and 36' },
-            { key: 'major', label: 'Intended Major / Field of Study', placeholder: 'e.g., Computer Science' },
-          ]
-        })}
+      <div className="max-w-[720px] mx-auto px-6 py-10 space-y-12 relative">
 
-        {/* Career Goals */}
-        {renderEditSection({
-          title: "Career Goals",
-          icon: Target,
-          section: "career_goals",
-          fields: [
-            { key: 'careerField', label: 'Career Field', placeholder: 'e.g., Technology, Healthcare', hint: 'Text only, no numbers' },
-            { key: 'dreamJob', label: 'Dream Job', placeholder: 'e.g., Software Engineer', hint: 'Text only, minimum 3 characters, no numbers' },
-            { key: 'industries', label: 'Industries of Interest', type: 'textarea', placeholder: 'Tell us about your interests...' },
-          ]
-        })}
-
-        {/* Budget & Financial */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-indigo-400" />
-            </div>
-            <h2 className="text-2xl font-light text-white">Budget & Financial</h2>
-          </div>
-
-          <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              {renderFormField({
-                label: "Minimum Budget (USD/year)",
-                field: "min",
-                section: "budget",
-                type: "number",
-                placeholder: "e.g., 10000",
-                hint: "Numbers only",
-                error: fieldErrors['budget.min']
-              })}
-              {renderFormField({
-                label: "Maximum Budget (USD/year)",
-                field: "max",
-                section: "budget",
-                type: "number",
-                placeholder: "e.g., 50000",
-                hint: "Must be greater than minimum",
-                error: fieldErrors['budget.max'] || fieldErrors['budget.range']
-              })}
-            </div>
-
-            <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
-              <input
-                type="checkbox"
-                checked={profile.budget.scholarshipNeeded || false}
-                onChange={(e) => updateField('budget', 'scholarshipNeeded', e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
-              />
-              <span className="text-white/80 font-light">I need scholarship opportunities</span>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
-              <input
-                type="checkbox"
-                checked={profile.budget.financialAid || false}
-                onChange={(e) => updateField('budget', 'financialAid', e.target.checked)}
-                className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
-              />
-              <span className="text-white/80 font-light">I need financial aid</span>
-            </label>
+        {/* ── Profile Type ──────────────────────────────────────────────── */}
+        <div className="space-y-4">
+          <SectionHeader icon="🎯" title="Profile Type" />
+          <div className="grid grid-cols-3 gap-3">
+            {MODES.map(m => {
+              const isSelected = data.mode === m.value;
+              return (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => upd('mode', m.value)}
+                  className="p-4 rounded-2xl text-left transition-all duration-200 active:scale-[0.98]"
+                  style={isSelected
+                    ? { background: `${m.accentColor}12`, border: `1px solid ${m.accentColor}55`, boxShadow: `0 0 16px ${m.accentColor}18` }
+                    : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }
+                  }
+                >
+                  <div className="text-xl mb-2">{m.icon}</div>
+                  <div className="text-xs font-bold leading-tight mb-0.5" style={{ color: isSelected ? m.accentColor : '#f0f0f8' }}>{m.label}</div>
+                  <div className="text-[10px] font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{m.tagline}</div>
+                  <div className="mt-2 flex items-center justify-center">
+                    <div
+                      className="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
+                      style={isSelected ? { borderColor: m.accentColor, background: m.accentColor } : { borderColor: 'rgba(255,255,255,0.2)' }}
+                    >
+                      {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Location Preferences */}
-        {renderEditSection({
-          title: "Location Preferences",
-          icon: Globe,
-          section: "location_preferences",
-          fields: [
-            { key: 'preferredCountries', label: 'Preferred Countries', type: 'textarea', placeholder: 'e.g., United States, United Kingdom, Canada', hint: 'Separate multiple countries with commas' },
-          ]
-        })}
+        {/* ── Identity ──────────────────────────────────────────────────── */}
+        <div className="space-y-5">
+          <SectionHeader icon="👤" title="Identity & Location" />
 
-        <label className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-colors">
-          <input
-            type="checkbox"
-            checked={profile.location_preferences.visaNeeded || false}
-            onChange={(e) => updateField('location_preferences', 'visaNeeded', e.target.checked)}
-            className="w-4 h-4 rounded border-white/20 bg-white/5 text-indigo-500"
-          />
-          <span className="text-white/80 font-light">I will need visa assistance</span>
-        </label>
+          <Field label="First Name">
+            <TextInput value={data.firstName} onChange={(v: string) => upd('firstName', v)} placeholder="Your first name" />
+          </Field>
 
-        {/* Mode Selection */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
+          {data.mode !== 'domestic' ? (
+            <>
+              <Field label="Citizenship / Nationality">
+                <SelectInput
+                  value={data.citizenshipCountry}
+                  onChange={v => upd('citizenshipCountry', v)}
+                  placeholder="Which country are you a citizen of?"
+                  options={COUNTRIES.map(c => ({ value: c.name, label: `${c.flag}  ${c.name}` }))}
+                />
+              </Field>
+
+              <Field label="Country You Currently Live In">
+                <SelectInput
+                  value={data.residenceCountry}
+                  onChange={v => { upd('residenceCountry', v); upd('residenceState', ''); upd('residenceCity', ''); }}
+                  placeholder="Select your current country"
+                  options={COUNTRIES.map(c => ({ value: c.name, label: `${c.flag}  ${c.name}` }))}
+                />
+              </Field>
+
+              <AnimatePresence>
+                {data.residenceCountry && STATES[data.residenceCountry] && (
+                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <Field label={data.residenceCountry === 'Canada' ? 'Province' : 'State'}>
+                      <SelectInput
+                        value={data.residenceState}
+                        onChange={v => upd('residenceState', v)}
+                        placeholder="Select your state"
+                        options={STATES[data.residenceCountry].map(s => ({ value: s, label: s }))}
+                      />
+                    </Field>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {data.residenceCountry && (
+                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <Field label="City">
+                      <TextInput value={data.residenceCity} onChange={(v: string) => upd('residenceCity', v)} placeholder="Your city" />
+                    </Field>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          ) : (
+            <>
+              <Field label="Home State">
+                <SelectInput
+                  value={data.residenceState}
+                  onChange={v => { upd('residenceState', v); upd('residenceCountry', 'United States'); }}
+                  placeholder="Which state are you from?"
+                  options={STATES['United States'].map(s => ({ value: s, label: s }))}
+                />
+              </Field>
+              <AnimatePresence>
+                {data.residenceState && (
+                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <Field label="City / Town">
+                      <TextInput value={data.residenceCity} onChange={(v: string) => upd('residenceCity', v)} placeholder={`Your city in ${data.residenceState}`} />
+                    </Field>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          )}
+        </div>
+
+        {/* ── Academic ──────────────────────────────────────────────────── */}
+        <div className="space-y-5">
+          <SectionHeader icon="🎓" title="Academic Profile" />
+
+          <Field label="Current Education Level">
+            <div className="grid grid-cols-3 gap-2">
+              {EDUCATION_LEVELS.map(e => (
+                <OptionCard key={e.id} selected={data.currentEducation === e.id} onClick={() => upd('currentEducation', e.id)} accentColor={accent}>
+                  <div className="text-xs font-bold" style={{ color: '#f0f0f8' }}>{e.label}</div>
+                </OptionCard>
+              ))}
             </div>
-            <h2 className="text-2xl font-light text-white">Study Mode</h2>
+          </Field>
+
+          <Field label="School / Institution Name">
+            <TextInput value={data.schoolName} onChange={(v: string) => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
+          </Field>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="GPA">
+              <TextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
+            </Field>
+            <Field label="GPA Scale">
+              <div className="flex gap-2 h-12 items-center">
+                {['4.0', '5.0', '100', 'Letter'].map(scale => (
+                  <button
+                    key={scale}
+                    type="button"
+                    onClick={() => upd('gpaScale', scale)}
+                    className="flex-1 h-full rounded-xl text-xs font-bold transition-all"
+                    style={data.gpaScale === scale
+                      ? { background: `${accent}28`, border: `1px solid ${accent}80`, color: accent }
+                      : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.4)' }
+                    }
+                  >{scale}</button>
+                ))}
+              </div>
+            </Field>
           </div>
 
-          <div className="grid gap-3">
-            {[
-              { value: 'domestic', label: '🇺🇸 Domestic (US)', desc: 'Focus on US universities' },
-              { value: 'international', label: '🌍 International', desc: 'Global university matching' },
-              { value: 'lifelong', label: '🚀 Lifelong / Career', desc: 'Professional upskilling' },
-            ].map((mode) => (
+          {data.mode === 'domestic' ? (
+            <>
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="SAT Score">
+                  <TextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+                </Field>
+                <Field label="ACT Score">
+                  <TextInput value={data.actScore} onChange={(v: string) => upd('actScore', v)} placeholder="1 – 36" type="number" />
+                </Field>
+              </div>
+              <Toggle
+                checked={data.firstGenStudent}
+                onChange={(v: boolean) => upd('firstGenStudent', v)}
+                label="First-Generation College Student"
+                sub="Neither parent completed a 4-year degree — unlocks major aid opportunities"
+                accentColor="#10b981"
+              />
+            </>
+          ) : (
+            <>
+              <Field label="English Proficiency Test">
+                <div className="flex flex-wrap gap-2">
+                  {ENGLISH_PROFICIENCY_TYPES.map(e => (
+                    <Chip key={e.id} label={e.label} selected={data.englishProficiencyType === e.id} onClick={() => upd('englishProficiencyType', e.id)} accentColor={accent} />
+                  ))}
+                </div>
+              </Field>
+
+              <AnimatePresence>
+                {data.englishProficiencyType && data.englishProficiencyType !== 'native' && (
+                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <Field label={`${ENGLISH_PROFICIENCY_TYPES.find(e => e.id === data.englishProficiencyType)?.label || 'Test'} Score`}>
+                      <TextInput
+                        value={data.ieltsToeflScore}
+                        onChange={(v: string) => upd('ieltsToeflScore', v)}
+                        placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : 'Your score'}
+                      />
+                    </Field>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="IB Score (optional)">
+                  <TextInput value={data.ibScore} onChange={(v: string) => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
+                </Field>
+                <Field label="SAT Score (optional)">
+                  <TextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+                </Field>
+              </div>
+            </>
+          )}
+
+          <Field label="Intended Major / Field of Study">
+            <TextInput value={data.major} onChange={(v: string) => upd('major', v)} placeholder="e.g., Computer Science, Biochemistry" />
+          </Field>
+        </div>
+
+        {/* ── Career Vision ─────────────────────────────────────────────── */}
+        <div className="space-y-5">
+          <SectionHeader icon="🚀" title="Career Vision" />
+
+          <Field label="Dream Job Title">
+            <TextInput value={data.dreamJob} onChange={(v: string) => upd('dreamJob', v)} placeholder="e.g., AI Research Scientist, Neurosurgeon, VC Partner" />
+          </Field>
+
+          <Field label="Dream Company or Sector">
+            <TextInput value={data.dreamCompany} onChange={(v: string) => upd('dreamCompany', v)} placeholder="e.g., Google DeepMind, McKinsey, my own startup" />
+          </Field>
+
+          <Field label="Career Field">
+            <div className="grid grid-cols-2 gap-2">
+              {CAREER_FIELDS.map(f => (
+                <OptionCard key={f.id} selected={data.careerField === f.id} onClick={() => upd('careerField', f.id)} accentColor={accent}>
+                  <span className="text-base">{f.icon}</span>
+                  <span className="text-sm font-medium ml-2" style={{ color: '#f0f0f8' }}>{f.label}</span>
+                </OptionCard>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="When Do You Plan to Start?">
+            <div className="grid grid-cols-2 gap-2">
+              {STUDY_TIMELINES.map(t => (
+                <OptionCard key={t.id} selected={data.studyTimeline === t.id} onClick={() => upd('studyTimeline', t.id)} accentColor={accent}>
+                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{t.label}</div>
+                </OptionCard>
+              ))}
+            </div>
+          </Field>
+        </div>
+
+        {/* ── Budget ────────────────────────────────────────────────────── */}
+        <div className="space-y-5">
+          <SectionHeader icon="💰" title="Budget & Funding" />
+
+          <Field label="Annual Budget (USD per year, all-in)">
+            <div className="space-y-4 p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-baseline justify-center gap-1">
+                <span className="text-4xl font-black" style={{ color: accent }}>
+                  ${data.budgetPerYear >= 100000 ? '100K+' : data.budgetPerYear.toLocaleString()}
+                </span>
+                <span className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>/year</span>
+              </div>
+              <input
+                type="range"
+                min={5000}
+                max={100000}
+                step={2500}
+                value={data.budgetPerYear}
+                onChange={e => upd('budgetPerYear', Number(e.target.value))}
+                className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: accent, background: `linear-gradient(to right, ${accent} ${((data.budgetPerYear - 5000) / 95000) * 100}%, rgba(255,255,255,0.1) 0%)` }}
+              />
+              <div className="flex justify-between text-xs font-light" style={{ color: 'rgba(240,240,248,0.3)' }}>
+                <span>$5K</span><span>$100K+</span>
+              </div>
+            </div>
+          </Field>
+
+          <Field label="Who's Covering the Cost?">
+            <div className="grid grid-cols-2 gap-2">
+              {(data.mode === 'domestic' ? FUNDING_SOURCES_DOMESTIC : FUNDING_SOURCES_INTL).map(f => (
+                <OptionCard key={f.id} selected={data.fundingSource === f.id} onClick={() => upd('fundingSource', f.id)} accentColor={accent}>
+                  <span className="text-xl">{f.icon}</span>
+                  <div className="text-sm font-medium mt-1.5" style={{ color: '#f0f0f8' }}>{f.label}</div>
+                </OptionCard>
+              ))}
+            </div>
+          </Field>
+
+          <div className="space-y-2">
+            {data.mode === 'domestic' ? (
+              <>
+                <Toggle checked={data.fafsaFiled} onChange={(v: boolean) => upd('fafsaFiled', v)} label="I've filed or plan to file FAFSA" sub="Federal aid eligibility — highly recommended for US students" accentColor="#10b981" />
+                <Toggle checked={data.inStateTuition} onChange={(v: boolean) => upd('inStateTuition', v)} label="Prioritize in-state tuition savings" sub="Show me schools where I qualify for in-state rates" accentColor="#10b981" />
+                <Toggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need financial aid" sub="Prioritize schools with generous need-based aid" accentColor="#10b981" />
+              </>
+            ) : (
+              <>
+                <Toggle checked={data.scholarshipNeeded} onChange={(v: boolean) => upd('scholarshipNeeded', v)} label="I need international scholarship opportunities" sub="Show schools with merit-based scholarships for international students" accentColor={accent} />
+                <Toggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need need-based financial aid" sub="Prioritize schools with strong international aid programs" accentColor={accent} />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ── Location Preferences ──────────────────────────────────────── */}
+        <div className="space-y-5">
+          <SectionHeader icon="📍" title="Location Preferences" />
+
+          {data.mode === 'domestic' ? (
+            <>
+              <Field label="Target US States">
+                <div className="flex flex-wrap gap-1.5 max-h-52 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(16,185,129,0.3) transparent' }}>
+                  {STATES['United States'].map(s => (
+                    <Chip key={s} label={s} selected={data.preferredUSStates.includes(s)} onClick={() => toggleUSState(s)} accentColor="#10b981" />
+                  ))}
+                </div>
+              </Field>
+
+              <Field label="Open to Other Countries? (optional)">
+                <div className="flex flex-wrap gap-2">
+                  {COUNTRIES.filter(c => c.code !== 'US' && c.code !== 'OTHER').map(c => (
+                    <Chip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor="#10b981" />
+                  ))}
+                </div>
+              </Field>
+            </>
+          ) : (
+            <>
+              <Field label="Preferred Study Countries">
+                <div className="flex flex-wrap gap-2">
+                  {COUNTRIES.filter(c => c.code !== 'OTHER').map(c => (
+                    <Chip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor={accent} />
+                  ))}
+                </div>
+              </Field>
+
+              <AnimatePresence>
+                {data.preferredCountries.includes('United States') && (
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                    <Field label="Preferred US States">
+                      <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: `${accent}44 transparent` }}>
+                        {STATES['United States'].map(s => (
+                          <Chip key={s} label={s} selected={data.preferredUSStates.includes(s)} onClick={() => toggleUSState(s)} accentColor={accent} />
+                        ))}
+                      </div>
+                    </Field>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Toggle checked={data.visaNeeded} onChange={(v: boolean) => upd('visaNeeded', v)} label="I will need visa assistance" sub="Show visa acceptance rates and F-1 / student visa pathways" accentColor={accent} />
+            </>
+          )}
+
+          <Field label="Campus Environment">
+            <div className="grid grid-cols-2 gap-2">
+              {CAMPUS_ENVIRONMENTS.map(env => (
+                <OptionCard key={env.id} selected={data.campusEnvironment === env.id} onClick={() => upd('campusEnvironment', env.id)} accentColor={accent}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{env.icon}</span>
+                    <span className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{env.label}</span>
+                  </div>
+                </OptionCard>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Preferred School Size">
+            <div className="grid grid-cols-4 gap-2">
+              {SCHOOL_SIZES.map(s => (
+                <OptionCard key={s.id} selected={data.schoolSize === s.id} onClick={() => upd('schoolSize', s.id)} accentColor={accent}>
+                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{s.label}</div>
+                  <div className="text-xs font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{s.sub}</div>
+                </OptionCard>
+              ))}
+            </div>
+          </Field>
+        </div>
+
+        {/* Bottom save button for scroll convenience */}
+        <AnimatePresence>
+          {hasChanges && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              className="pb-4"
+            >
               <button
-                key={mode.value}
-                onClick={() => updateField('mode', '', mode.value)}
-                className={`p-4 rounded-xl border text-left transition-all ${
-                  profile.mode === mode.value
-                    ? 'border-indigo-500 bg-indigo-500/10'
-                    : 'border-white/10 bg-white/5 hover:border-white/20'
-                }`}
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full h-14 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold transition-all disabled:opacity-50"
+                style={{ background: `linear-gradient(135deg, ${accent}, ${accent}bb)`, color: '#fff', boxShadow: `0 0 32px ${accent}35` }}
               >
-                <div className="font-light text-white">{mode.label}</div>
-                <div className="text-sm text-white/50 font-light">{mode.desc}</div>
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Check className="w-5 h-5" /> Save Changes</>}
               </button>
-            ))}
-          </div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-        {/* Save Indicator */}
-        {savedField && (
-          <div className="fixed bottom-6 right-6 bg-emerald-500/20 border border-emerald-500/30 rounded-full px-4 py-2 flex items-center gap-2 text-emerald-400 text-sm font-light animate-in fade-in slide-in-from-bottom-4">
+      {/* Save toast */}
+      <AnimatePresence>
+        {saved && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            className="fixed bottom-6 right-6 flex items-center gap-2 text-sm font-medium px-5 py-3 rounded-full"
+            style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', color: '#34d399' }}
+          >
             <Check className="w-4 h-4" />
             Changes saved
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
