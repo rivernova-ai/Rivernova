@@ -245,20 +245,6 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: {
   );
 }
 
-function TextArea({ value, onChange, placeholder, rows = 2 }: {
-  value: string; onChange: (v: string) => void; placeholder?: string; rows?: number;
-}) {
-  return (
-    <textarea
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={rows}
-      className="w-full px-4 py-3 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
-      style={INPUT_STYLE}
-    />
-  );
-}
 
 function OSelect({ value, onChange, options, placeholder }: {
   value: string; onChange: (v: string) => void;
@@ -497,7 +483,7 @@ export function OnboardingWizard() {
           residenceState: data.residenceState,
           residenceCity: data.residenceCity,
           preferredCountries: data.preferredCountries,
-          preferredCountriesStr: data.preferredCountries.join(', '),
+          preferredCountriesStr: (Array.isArray(data.preferredCountries) ? data.preferredCountries : []).join(', '),
           preferredUSStates: usStates,
           preferredUSStatesText: data.preferredUSStatesText,
           preferredLocations: data.preferredLocations,
