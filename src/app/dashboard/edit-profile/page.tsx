@@ -174,10 +174,123 @@ interface EditData {
   inStateTuition: boolean;
   preferredCountries: string[];
   preferredUSStates: string[];
+  preferredUSStatesText: string;
+  preferredLocations: string;
   campusEnvironment: string;
   visaNeeded: boolean;
   mode: 'domestic' | 'international';
   schoolSize: string;
+}
+
+// ─── Stable UI primitives — defined OUTSIDE the component to prevent
+//     re-mount on each keystroke (would lose focus after every character) ────
+
+const EP_INPUT_CLS = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none transition-all";
+const EP_INPUT_STYLE = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
+const EP_LABEL_CLS = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
+const EP_LABEL_STYLE = { color: 'rgba(240,240,248,0.38)' };
+
+function EPField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-1.5">
+      <label className={EP_LABEL_CLS} style={EP_LABEL_STYLE}>{label}</label>
+      {children}
+    </div>
+  );
+}
+
+function EPTextInput({ value, onChange, placeholder, type = 'text' }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={EP_INPUT_CLS}
+      style={EP_INPUT_STYLE}
+    />
+  );
+}
+
+function EPSelect({ value, onChange, options, placeholder }: {
+  value: string; onChange: (v: string) => void;
+  options: { value: string; label: string }[]; placeholder: string;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={`${EP_INPUT_CLS} appearance-none pr-10`}
+        style={{ ...EP_INPUT_STYLE, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
+      >
+        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
+        {options.map(o => (
+          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
+    </div>
+  );
+}
+
+function EPChip({ label, selected, onClick, accentColor = '#6366f1' }: {
+  label: string; selected: boolean; onClick: () => void; accentColor?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+      style={selected
+        ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
+        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
+      }
+    >
+      {label}
+    </button>
+  );
+}
+
+function EPOptionCard({ selected, onClick, children, accentColor = '#6366f1' }: {
+  selected: boolean; onClick: () => void; children: React.ReactNode; accentColor?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
+      style={selected
+        ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
+        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function EPToggle({ checked, onChange, label, sub, accentColor = '#6366f1' }: {
+  checked: boolean; onChange: (v: boolean) => void; label: string; sub?: string; accentColor?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+      onClick={() => onChange(!checked)}
+    >
+      <div className="pr-4">
+        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
+        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
+      </div>
+      <div className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200"
+        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      </div>
+    </div>
+  );
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -218,6 +331,8 @@ export default function EditProfilePage() {
     inStateTuition: false,
     preferredCountries: [],
     preferredUSStates: [],
+    preferredUSStatesText: '',
+    preferredLocations: '',
     campusEnvironment: '',
     visaNeeded: false,
     mode: 'international',
@@ -268,6 +383,8 @@ export default function EditProfilePage() {
           inStateTuition: b.inStateTuition || false,
           preferredCountries: lp.preferredCountries || [],
           preferredUSStates: lp.preferredUSStates || [],
+          preferredUSStatesText: lp.preferredUSStatesText || (lp.preferredUSStates || []).join(', '),
+          preferredLocations: lp.preferredLocations || '',
           campusEnvironment: lp.campusEnvironment || '',
           visaNeeded: lp.visaNeeded || false,
           mode: (p.mode === 'domestic' ? 'domestic' : 'international') as 'domestic' | 'international',
@@ -291,19 +408,14 @@ export default function EditProfilePage() {
         : [...data.preferredCountries, name]
     );
 
-  const toggleUSState = (state: string) =>
-    upd('preferredUSStates',
-      data.preferredUSStates.includes(state)
-        ? data.preferredUSStates.filter(s => s !== state)
-        : [...data.preferredUSStates, state]
-    );
-
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
     try {
       const supabase = createClient();
-      await supabase.from('profiles').update({
+      const usStates = data.preferredUSStatesText
+        .split(',').map(s => s.trim()).filter(Boolean);
+      const { error: saveError } = await supabase.from('profiles').update({
         full_name: data.firstName,
         academic_background: {
           currentEducation: data.currentEducation,
@@ -342,7 +454,9 @@ export default function EditProfilePage() {
           residenceCity: data.residenceCity,
           preferredCountries: data.preferredCountries,
           preferredCountriesStr: data.preferredCountries.join(', '),
-          preferredUSStates: data.preferredUSStates,
+          preferredUSStates: usStates,
+          preferredUSStatesText: data.preferredUSStatesText,
+          preferredLocations: data.preferredLocations,
           campusEnvironment: data.campusEnvironment,
           visaNeeded: data.visaNeeded,
         },
@@ -351,6 +465,7 @@ export default function EditProfilePage() {
         updated_at: new Date().toISOString(),
       }).eq('id', user.id);
 
+      if (saveError) throw new Error(saveError.message);
       setHasChanges(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
@@ -362,102 +477,12 @@ export default function EditProfilePage() {
     }
   };
 
-  // ── Shared primitives ────────────────────────────────────────────────────
-
   const accent = data.mode === 'domestic' ? '#10b981' : '#6366f1';
-
-  const inputCls = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none transition-all";
-  const inputStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
-  const labelCls = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
-  const labelStyle = { color: 'rgba(240,240,248,0.38)' };
 
   const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
     <div className="flex items-center gap-3 pb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
       <span className="text-xl">{icon}</span>
       <h2 className="text-lg font-bold" style={{ color: '#f0f0f8' }}>{title}</h2>
-    </div>
-  );
-
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div className="space-y-1.5">
-      <label className={labelCls} style={labelStyle}>{label}</label>
-      {children}
-    </div>
-  );
-
-  const TextInput = ({ value, onChange, placeholder, type = 'text' }: any) => (
-    <input
-      type={type}
-      value={value}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={inputCls}
-      style={inputStyle}
-    />
-  );
-
-  const SelectInput = ({ value, onChange, options, placeholder }: {
-    value: string; onChange: (v: string) => void;
-    options: { value: string; label: string }[]; placeholder: string;
-  }) => (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`${inputCls} appearance-none pr-10`}
-        style={{ ...inputStyle, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
-      >
-        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
-        {options.map(o => (
-          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
-    </div>
-  );
-
-  const Chip = ({ label, selected, onClick, accentColor = '#6366f1' }: { label: string; selected: boolean; onClick: () => void; accentColor?: string }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
-      style={selected
-        ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
-      }
-    >
-      {label}
-    </button>
-  );
-
-  const OptionCard = ({ selected, onClick, children, accentColor = '#6366f1' }: any) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
-      style={selected
-        ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
-      }
-    >
-      {children}
-    </button>
-  );
-
-  const Toggle = ({ checked, onChange, label, sub, accentColor = '#6366f1' }: any) => (
-    <div
-      className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-      onClick={() => onChange(!checked)}
-    >
-      <div className="pr-4">
-        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
-        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
-      </div>
-      <div className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200"
-        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-      </div>
     </div>
   );
 
@@ -552,41 +577,41 @@ export default function EditProfilePage() {
         <div className="space-y-5">
           <SectionHeader icon="👤" title="Identity & Location" />
 
-          <Field label="First Name">
-            <TextInput value={data.firstName} onChange={(v: string) => upd('firstName', v)} placeholder="Your first name" />
-          </Field>
+          <EPField label="First Name">
+            <EPTextInput value={data.firstName} onChange={(v: string) => upd('firstName', v)} placeholder="Your first name" />
+          </EPField>
 
           {data.mode !== 'domestic' ? (
             <>
-              <Field label="Citizenship / Nationality">
-                <SelectInput
+              <EPField label="Citizenship / Nationality">
+                <EPSelect
                   value={data.citizenshipCountry}
                   onChange={v => upd('citizenshipCountry', v)}
                   placeholder="Which country are you a citizen of?"
                   options={COUNTRIES.map(c => ({ value: c.name, label: `${c.flag}  ${c.name}` }))}
                 />
-              </Field>
+              </EPField>
 
-              <Field label="Country You Currently Live In">
-                <SelectInput
+              <EPField label="Country You Currently Live In">
+                <EPSelect
                   value={data.residenceCountry}
                   onChange={v => { upd('residenceCountry', v); upd('residenceState', ''); upd('residenceCity', ''); }}
                   placeholder="Select your current country"
                   options={COUNTRIES.map(c => ({ value: c.name, label: `${c.flag}  ${c.name}` }))}
                 />
-              </Field>
+              </EPField>
 
               <AnimatePresence>
                 {data.residenceCountry && STATES[data.residenceCountry] && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
-                    <Field label={data.residenceCountry === 'Canada' ? 'Province' : 'State'}>
-                      <SelectInput
+                    <EPField label={data.residenceCountry === 'Canada' ? 'Province' : 'State'}>
+                      <EPSelect
                         value={data.residenceState}
                         onChange={v => upd('residenceState', v)}
                         placeholder="Select your state"
                         options={STATES[data.residenceCountry].map(s => ({ value: s, label: s }))}
                       />
-                    </Field>
+                    </EPField>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -594,29 +619,29 @@ export default function EditProfilePage() {
               <AnimatePresence>
                 {data.residenceCountry && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
-                    <Field label="City">
-                      <TextInput value={data.residenceCity} onChange={(v: string) => upd('residenceCity', v)} placeholder="Your city" />
-                    </Field>
+                    <EPField label="City">
+                      <EPTextInput value={data.residenceCity} onChange={(v: string) => upd('residenceCity', v)} placeholder="Your city" />
+                    </EPField>
                   </motion.div>
                 )}
               </AnimatePresence>
             </>
           ) : (
             <>
-              <Field label="Home State">
-                <SelectInput
+              <EPField label="Home State">
+                <EPSelect
                   value={data.residenceState}
                   onChange={v => { upd('residenceState', v); upd('residenceCountry', 'United States'); }}
                   placeholder="Which state are you from?"
                   options={STATES['United States'].map(s => ({ value: s, label: s }))}
                 />
-              </Field>
+              </EPField>
               <AnimatePresence>
                 {data.residenceState && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
-                    <Field label="City / Town">
-                      <TextInput value={data.residenceCity} onChange={(v: string) => upd('residenceCity', v)} placeholder={`Your city in ${data.residenceState}`} />
-                    </Field>
+                    <EPField label="City / Town">
+                      <EPTextInput value={data.residenceCity} onChange={(v: string) => upd('residenceCity', v)} placeholder={`Your city in ${data.residenceState}`} />
+                    </EPField>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -628,25 +653,25 @@ export default function EditProfilePage() {
         <div className="space-y-5">
           <SectionHeader icon="🎓" title="Academic Profile" />
 
-          <Field label="Current Education Level">
+          <EPField label="Current Education Level">
             <div className="grid grid-cols-3 gap-2">
               {EDUCATION_LEVELS.map(e => (
-                <OptionCard key={e.id} selected={data.currentEducation === e.id} onClick={() => upd('currentEducation', e.id)} accentColor={accent}>
+                <EPOptionCard key={e.id} selected={data.currentEducation === e.id} onClick={() => upd('currentEducation', e.id)} accentColor={accent}>
                   <div className="text-xs font-bold" style={{ color: '#f0f0f8' }}>{e.label}</div>
-                </OptionCard>
+                </EPOptionCard>
               ))}
             </div>
-          </Field>
+          </EPField>
 
-          <Field label="School / Institution Name">
-            <TextInput value={data.schoolName} onChange={(v: string) => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
-          </Field>
+          <EPField label="School / Institution Name">
+            <EPTextInput value={data.schoolName} onChange={(v: string) => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
+          </EPField>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="GPA">
-              <TextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
-            </Field>
-            <Field label="GPA Scale">
+            <EPField label="GPA">
+              <EPTextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
+            </EPField>
+            <EPField label="GPA Scale">
               <div className="flex gap-2 h-12 items-center">
                 {['4.0', '5.0', '100', 'Letter'].map(scale => (
                   <button
@@ -661,20 +686,20 @@ export default function EditProfilePage() {
                   >{scale}</button>
                 ))}
               </div>
-            </Field>
+            </EPField>
           </div>
 
           {data.mode === 'domestic' ? (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="SAT Score">
-                  <TextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
-                </Field>
-                <Field label="ACT Score">
-                  <TextInput value={data.actScore} onChange={(v: string) => upd('actScore', v)} placeholder="1 – 36" type="number" />
-                </Field>
+                <EPField label="SAT Score">
+                  <EPTextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+                </EPField>
+                <EPField label="ACT Score">
+                  <EPTextInput value={data.actScore} onChange={(v: string) => upd('actScore', v)} placeholder="1 – 36" type="number" />
+                </EPField>
               </div>
-              <Toggle
+              <EPToggle
                 checked={data.firstGenStudent}
                 onChange={(v: boolean) => upd('firstGenStudent', v)}
                 label="First-Generation College Student"
@@ -684,83 +709,83 @@ export default function EditProfilePage() {
             </>
           ) : (
             <>
-              <Field label="English Proficiency Test">
+              <EPField label="English Proficiency Test">
                 <div className="flex flex-wrap gap-2">
                   {ENGLISH_PROFICIENCY_TYPES.map(e => (
-                    <Chip key={e.id} label={e.label} selected={data.englishProficiencyType === e.id} onClick={() => upd('englishProficiencyType', e.id)} accentColor={accent} />
+                    <EPChip key={e.id} label={e.label} selected={data.englishProficiencyType === e.id} onClick={() => upd('englishProficiencyType', e.id)} accentColor={accent} />
                   ))}
                 </div>
-              </Field>
+              </EPField>
 
               <AnimatePresence>
                 {data.englishProficiencyType && data.englishProficiencyType !== 'native' && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
-                    <Field label={`${ENGLISH_PROFICIENCY_TYPES.find(e => e.id === data.englishProficiencyType)?.label || 'Test'} Score`}>
-                      <TextInput
+                    <EPField label={`${ENGLISH_PROFICIENCY_TYPES.find(e => e.id === data.englishProficiencyType)?.label || 'Test'} Score`}>
+                      <EPTextInput
                         value={data.ieltsToeflScore}
                         onChange={(v: string) => upd('ieltsToeflScore', v)}
                         placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : 'Your score'}
                       />
-                    </Field>
+                    </EPField>
                   </motion.div>
                 )}
               </AnimatePresence>
 
               <div className="grid grid-cols-2 gap-4">
-                <Field label="IB Score (optional)">
-                  <TextInput value={data.ibScore} onChange={(v: string) => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
-                </Field>
-                <Field label="SAT Score (optional)">
-                  <TextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
-                </Field>
+                <EPField label="IB Score (optional)">
+                  <EPTextInput value={data.ibScore} onChange={(v: string) => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
+                </EPField>
+                <EPField label="SAT Score (optional)">
+                  <EPTextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+                </EPField>
               </div>
             </>
           )}
 
-          <Field label="Intended Major / Field of Study">
-            <TextInput value={data.major} onChange={(v: string) => upd('major', v)} placeholder="e.g., Computer Science, Biochemistry" />
-          </Field>
+          <EPField label="Intended Major / Field of Study">
+            <EPTextInput value={data.major} onChange={(v: string) => upd('major', v)} placeholder="e.g., Computer Science, Biochemistry" />
+          </EPField>
         </div>
 
         {/* ── Career Vision ─────────────────────────────────────────────── */}
         <div className="space-y-5">
           <SectionHeader icon="🚀" title="Career Vision" />
 
-          <Field label="Dream Job Title">
-            <TextInput value={data.dreamJob} onChange={(v: string) => upd('dreamJob', v)} placeholder="e.g., AI Research Scientist, Neurosurgeon, VC Partner" />
-          </Field>
+          <EPField label="Dream Job Title">
+            <EPTextInput value={data.dreamJob} onChange={(v: string) => upd('dreamJob', v)} placeholder="e.g., AI Research Scientist, Neurosurgeon, VC Partner" />
+          </EPField>
 
-          <Field label="Dream Company or Sector">
-            <TextInput value={data.dreamCompany} onChange={(v: string) => upd('dreamCompany', v)} placeholder="e.g., Google DeepMind, McKinsey, my own startup" />
-          </Field>
+          <EPField label="Dream Company or Sector">
+            <EPTextInput value={data.dreamCompany} onChange={(v: string) => upd('dreamCompany', v)} placeholder="e.g., Google DeepMind, McKinsey, my own startup" />
+          </EPField>
 
-          <Field label="Career Field">
+          <EPField label="Career Field">
             <div className="grid grid-cols-2 gap-2">
               {CAREER_FIELDS.map(f => (
-                <OptionCard key={f.id} selected={data.careerField === f.id} onClick={() => upd('careerField', f.id)} accentColor={accent}>
+                <EPOptionCard key={f.id} selected={data.careerField === f.id} onClick={() => upd('careerField', f.id)} accentColor={accent}>
                   <span className="text-base">{f.icon}</span>
                   <span className="text-sm font-medium ml-2" style={{ color: '#f0f0f8' }}>{f.label}</span>
-                </OptionCard>
+                </EPOptionCard>
               ))}
             </div>
-          </Field>
+          </EPField>
 
-          <Field label="When Do You Plan to Start?">
+          <EPField label="When Do You Plan to Start?">
             <div className="grid grid-cols-2 gap-2">
               {STUDY_TIMELINES.map(t => (
-                <OptionCard key={t.id} selected={data.studyTimeline === t.id} onClick={() => upd('studyTimeline', t.id)} accentColor={accent}>
+                <EPOptionCard key={t.id} selected={data.studyTimeline === t.id} onClick={() => upd('studyTimeline', t.id)} accentColor={accent}>
                   <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{t.label}</div>
-                </OptionCard>
+                </EPOptionCard>
               ))}
             </div>
-          </Field>
+          </EPField>
         </div>
 
         {/* ── Budget ────────────────────────────────────────────────────── */}
         <div className="space-y-5">
           <SectionHeader icon="💰" title="Budget & Funding" />
 
-          <Field label="Annual Budget (USD per year, all-in)">
+          <EPField label="Annual Budget (USD per year, all-in)">
             <div className="space-y-4 p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-4xl font-black" style={{ color: accent }}>
@@ -782,30 +807,30 @@ export default function EditProfilePage() {
                 <span>$5K</span><span>$100K+</span>
               </div>
             </div>
-          </Field>
+          </EPField>
 
-          <Field label="Who's Covering the Cost?">
+          <EPField label="Who's Covering the Cost?">
             <div className="grid grid-cols-2 gap-2">
               {(data.mode === 'domestic' ? FUNDING_SOURCES_DOMESTIC : FUNDING_SOURCES_INTL).map(f => (
-                <OptionCard key={f.id} selected={data.fundingSource === f.id} onClick={() => upd('fundingSource', f.id)} accentColor={accent}>
+                <EPOptionCard key={f.id} selected={data.fundingSource === f.id} onClick={() => upd('fundingSource', f.id)} accentColor={accent}>
                   <span className="text-xl">{f.icon}</span>
                   <div className="text-sm font-medium mt-1.5" style={{ color: '#f0f0f8' }}>{f.label}</div>
-                </OptionCard>
+                </EPOptionCard>
               ))}
             </div>
-          </Field>
+          </EPField>
 
           <div className="space-y-2">
             {data.mode === 'domestic' ? (
               <>
-                <Toggle checked={data.fafsaFiled} onChange={(v: boolean) => upd('fafsaFiled', v)} label="I've filed or plan to file FAFSA" sub="Federal aid eligibility — highly recommended for US students" accentColor="#10b981" />
-                <Toggle checked={data.inStateTuition} onChange={(v: boolean) => upd('inStateTuition', v)} label="Prioritize in-state tuition savings" sub="Show me schools where I qualify for in-state rates" accentColor="#10b981" />
-                <Toggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need financial aid" sub="Prioritize schools with generous need-based aid" accentColor="#10b981" />
+                <EPToggle checked={data.fafsaFiled} onChange={(v: boolean) => upd('fafsaFiled', v)} label="I've filed or plan to file FAFSA" sub="Federal aid eligibility — highly recommended for US students" accentColor="#10b981" />
+                <EPToggle checked={data.inStateTuition} onChange={(v: boolean) => upd('inStateTuition', v)} label="Prioritize in-state tuition savings" sub="Show me schools where I qualify for in-state rates" accentColor="#10b981" />
+                <EPToggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need financial aid" sub="Prioritize schools with generous need-based aid" accentColor="#10b981" />
               </>
             ) : (
               <>
-                <Toggle checked={data.scholarshipNeeded} onChange={(v: boolean) => upd('scholarshipNeeded', v)} label="I need international scholarship opportunities" sub="Show schools with merit-based scholarships for international students" accentColor={accent} />
-                <Toggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need need-based financial aid" sub="Prioritize schools with strong international aid programs" accentColor={accent} />
+                <EPToggle checked={data.scholarshipNeeded} onChange={(v: boolean) => upd('scholarshipNeeded', v)} label="I need international scholarship opportunities" sub="Show schools with merit-based scholarships for international students" accentColor={accent} />
+                <EPToggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need need-based financial aid" sub="Prioritize schools with strong international aid programs" accentColor={accent} />
               </>
             )}
           </div>
@@ -817,73 +842,91 @@ export default function EditProfilePage() {
 
           {data.mode === 'domestic' ? (
             <>
-              <Field label="Target US States">
-                <div className="flex flex-wrap gap-1.5 max-h-52 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(16,185,129,0.3) transparent' }}>
-                  {STATES['United States'].map(s => (
-                    <Chip key={s} label={s} selected={data.preferredUSStates.includes(s)} onClick={() => toggleUSState(s)} accentColor="#10b981" />
-                  ))}
-                </div>
-              </Field>
+              <EPField label="Target US States / Locations">
+                <EPTextInput
+                  value={data.preferredUSStatesText}
+                  onChange={v => upd('preferredUSStatesText', v)}
+                  placeholder="e.g., California, Texas, New York"
+                />
+                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states with commas</p>
+              </EPField>
 
-              <Field label="Open to Other Countries? (optional)">
+              <EPField label="Specific City or Area (optional)">
+                <EPTextInput
+                  value={data.preferredLocations}
+                  onChange={v => upd('preferredLocations', v)}
+                  placeholder="e.g., Bay Area, Austin TX, Chicago IL"
+                />
+              </EPField>
+
+              <EPField label="Open to Other Countries? (optional)">
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.filter(c => c.code !== 'US' && c.code !== 'OTHER').map(c => (
-                    <Chip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor="#10b981" />
+                    <EPChip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor="#10b981" />
                   ))}
                 </div>
-              </Field>
+              </EPField>
             </>
           ) : (
             <>
-              <Field label="Preferred Study Countries">
+              <EPField label="Preferred Study Countries">
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.filter(c => c.code !== 'OTHER').map(c => (
-                    <Chip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor={accent} />
+                    <EPChip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor={accent} />
                   ))}
                 </div>
-              </Field>
+              </EPField>
 
               <AnimatePresence>
                 {data.preferredCountries.includes('United States') && (
                   <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                    <Field label="Preferred US States">
-                      <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: `${accent}44 transparent` }}>
-                        {STATES['United States'].map(s => (
-                          <Chip key={s} label={s} selected={data.preferredUSStates.includes(s)} onClick={() => toggleUSState(s)} accentColor={accent} />
-                        ))}
-                      </div>
-                    </Field>
+                    <EPField label="Preferred US States / Cities">
+                      <EPTextInput
+                        value={data.preferredUSStatesText}
+                        onChange={v => upd('preferredUSStatesText', v)}
+                        placeholder="e.g., California, New York, Texas"
+                      />
+                      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states or cities with commas</p>
+                    </EPField>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <Toggle checked={data.visaNeeded} onChange={(v: boolean) => upd('visaNeeded', v)} label="I will need visa assistance" sub="Show visa acceptance rates and F-1 / student visa pathways" accentColor={accent} />
+              <EPField label="Specific Areas or Cities (optional)">
+                <EPTextInput
+                  value={data.preferredLocations}
+                  onChange={v => upd('preferredLocations', v)}
+                  placeholder="e.g., Boston MA, London UK, Toronto Ontario"
+                />
+              </EPField>
+
+              <EPToggle checked={data.visaNeeded} onChange={(v: boolean) => upd('visaNeeded', v)} label="I will need visa assistance" sub="Show visa acceptance rates and F-1 / student visa pathways" accentColor={accent} />
             </>
           )}
 
-          <Field label="Campus Environment">
+          <EPField label="Campus Environment">
             <div className="grid grid-cols-2 gap-2">
               {CAMPUS_ENVIRONMENTS.map(env => (
-                <OptionCard key={env.id} selected={data.campusEnvironment === env.id} onClick={() => upd('campusEnvironment', env.id)} accentColor={accent}>
+                <EPOptionCard key={env.id} selected={data.campusEnvironment === env.id} onClick={() => upd('campusEnvironment', env.id)} accentColor={accent}>
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{env.icon}</span>
                     <span className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{env.label}</span>
                   </div>
-                </OptionCard>
+                </EPOptionCard>
               ))}
             </div>
-          </Field>
+          </EPField>
 
-          <Field label="Preferred School Size">
+          <EPField label="Preferred School Size">
             <div className="grid grid-cols-4 gap-2">
               {SCHOOL_SIZES.map(s => (
-                <OptionCard key={s.id} selected={data.schoolSize === s.id} onClick={() => upd('schoolSize', s.id)} accentColor={accent}>
+                <EPOptionCard key={s.id} selected={data.schoolSize === s.id} onClick={() => upd('schoolSize', s.id)} accentColor={accent}>
                   <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{s.label}</div>
                   <div className="text-xs font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{s.sub}</div>
-                </OptionCard>
+                </EPOptionCard>
               ))}
             </div>
-          </Field>
+          </EPField>
         </div>
 
         {/* Bottom save button for scroll convenience */}
@@ -927,3 +970,4 @@ export default function EditProfilePage() {
     </div>
   );
 }
+

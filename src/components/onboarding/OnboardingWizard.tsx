@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/utils/supabase/client';
-import { ArrowRight, ArrowLeft, Loader2, ChevronDown } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2, ChevronDown, AlertCircle } from 'lucide-react';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -74,17 +74,9 @@ const MODES = [
     label: 'International Student',
     tagline: 'Applying from abroad',
     desc: 'From another country, targeting US, UK, Canada, Australia, Germany, or beyond.',
-    bullets: [
-      'Visa pathway & acceptance rates',
-      'IELTS / TOEFL school cutoffs',
-      'International merit scholarships',
-      'Cross-border ROI analysis',
-    ],
-    accentColor: '#6366f1',
-    accentBg: 'rgba(99,102,241,0.08)',
-    accentBorder: 'rgba(99,102,241,0.45)',
-    tagColor: '#818cf8',
-    selectedBg: 'rgba(99,102,241,0.1)',
+    bullets: ['Visa pathway & acceptance rates','IELTS / TOEFL school cutoffs','International merit scholarships','Cross-border ROI analysis'],
+    accentColor: '#6366f1', accentBg: 'rgba(99,102,241,0.08)', accentBorder: 'rgba(99,102,241,0.45)',
+    tagColor: '#818cf8', selectedBg: 'rgba(99,102,241,0.1)',
   },
   {
     value: 'domestic' as const,
@@ -92,17 +84,9 @@ const MODES = [
     label: 'US Domestic Student',
     tagline: 'Applying within America',
     desc: 'US citizen or permanent resident applying to American colleges and universities.',
-    bullets: [
-      'In-state vs out-of-state tuition',
-      'FAFSA & need-based aid',
-      'SAT / ACT school matching',
-      'State scholarship programs',
-    ],
-    accentColor: '#10b981',
-    accentBg: 'rgba(16,185,129,0.07)',
-    accentBorder: 'rgba(16,185,129,0.4)',
-    tagColor: '#34d399',
-    selectedBg: 'rgba(16,185,129,0.08)',
+    bullets: ['In-state vs out-of-state tuition','FAFSA & need-based aid','SAT / ACT school matching','State scholarship programs'],
+    accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.07)', accentBorder: 'rgba(16,185,129,0.4)',
+    tagColor: '#34d399', selectedBg: 'rgba(16,185,129,0.08)',
   },
 ];
 
@@ -209,10 +193,150 @@ interface OnboardingData {
   inStateTuition: boolean;
   preferredCountries: string[];
   preferredUSStates: string[];
+  preferredUSStatesText: string;
+  preferredLocations: string;
   campusEnvironment: string;
   visaNeeded: boolean;
   mode: 'domestic' | 'international';
   schoolSize: string;
+}
+
+// ─── Shared UI primitives — DEFINED OUTSIDE the main component so they are
+//     stable across renders. If defined inside, every keystroke re-creates
+//     them as new component types, causing React to unmount the input. ─────────
+
+const INPUT_CLS = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all";
+const INPUT_STYLE = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
+const LABEL_CLS = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
+const LABEL_STYLE = { color: 'rgba(240,240,248,0.4)' };
+
+function Field({ label, required, error, children }: {
+  label: string; required?: boolean; error?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className={LABEL_CLS} style={LABEL_STYLE}>
+        {label}
+        {required && <span style={{ color: '#f87171', marginLeft: '3px' }}>*</span>}
+      </label>
+      {children}
+      {error && (
+        <div className="flex items-center gap-1.5 mt-1">
+          <AlertCircle style={{ width: '12px', height: '12px', color: '#f87171', flexShrink: 0 }} />
+          <p style={{ fontSize: '11px', color: '#f87171' }}>{error}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TextInput({ value, onChange, placeholder, type = 'text' }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={INPUT_CLS}
+      style={INPUT_STYLE}
+    />
+  );
+}
+
+function TextArea({ value, onChange, placeholder, rows = 2 }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; rows?: number;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full px-4 py-3 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all resize-none"
+      style={INPUT_STYLE}
+    />
+  );
+}
+
+function OSelect({ value, onChange, options, placeholder }: {
+  value: string; onChange: (v: string) => void;
+  options: { value: string; label: string }[]; placeholder: string;
+}) {
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={`${INPUT_CLS} appearance-none pr-10`}
+        style={{ ...INPUT_STYLE, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
+      >
+        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
+        {options.map(o => (
+          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
+    </div>
+  );
+}
+
+function Chip({ label, selected, onClick, accentColor = '#6366f1' }: {
+  label: string; selected: boolean; onClick: () => void; accentColor?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+      style={selected
+        ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
+        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
+      }
+    >
+      {label}
+    </button>
+  );
+}
+
+function OptionCard({ selected, onClick, children, accentColor = '#6366f1' }: {
+  selected: boolean; onClick: () => void; children: React.ReactNode; accentColor?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
+      style={selected
+        ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
+        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
+      }
+    >
+      {children}
+    </button>
+  );
+}
+
+function Toggle({ checked, onChange, label, sub, accentColor = '#6366f1' }: {
+  checked: boolean; onChange: (v: boolean) => void; label: string; sub?: string; accentColor?: string;
+}) {
+  return (
+    <div
+      className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
+      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+      onClick={() => onChange(!checked)}
+    >
+      <div>
+        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
+        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
+      </div>
+      <div className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200"
+        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
+        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+      </div>
+    </div>
+  );
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -221,6 +345,8 @@ export function OnboardingWizard() {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [data, setData] = useState<OnboardingData>({
     firstName: '',
     citizenshipCountry: '',
@@ -250,14 +376,18 @@ export function OnboardingWizard() {
     inStateTuition: false,
     preferredCountries: [],
     preferredUSStates: [],
+    preferredUSStatesText: '',
+    preferredLocations: '',
     campusEnvironment: '',
     visaNeeded: false,
     mode: 'international',
     schoolSize: 'any',
   });
 
-  const upd = (field: keyof OnboardingData, value: any) =>
+  const upd = (field: keyof OnboardingData, value: any) => {
     setData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
+  };
 
   const toggleCountry = (name: string) =>
     upd('preferredCountries',
@@ -266,19 +396,54 @@ export function OnboardingWizard() {
         : [...data.preferredCountries, name]
     );
 
-  const toggleUSState = (state: string) =>
-    upd('preferredUSStates',
-      data.preferredUSStates.includes(state)
-        ? data.preferredUSStates.filter(s => s !== state)
-        : [...data.preferredUSStates, state]
-    );
+  // ── Validation ───────────────────────────────────────────────────────────
+
+  const validateStep = (step: number): boolean => {
+    const errs: Record<string, string> = {};
+
+    if (step === 2) {
+      if (!data.firstName.trim()) errs.firstName = 'Please enter your first name.';
+      if (data.mode !== 'domestic') {
+        if (!data.citizenshipCountry) errs.citizenshipCountry = 'Please select your citizenship country.';
+        if (!data.residenceCountry) errs.residenceCountry = 'Please select your current country.';
+      } else {
+        if (!data.residenceState) errs.residenceState = 'Please select your home state.';
+      }
+    }
+
+    if (step === 3) {
+      if (!data.currentEducation) errs.currentEducation = 'Please select your education level.';
+      if (!data.gpa.trim()) errs.gpa = 'Please enter your GPA.';
+      if (!data.major.trim()) errs.major = 'Please enter your intended major.';
+    }
+
+    if (step === 4) {
+      if (!data.careerField) errs.careerField = 'Please select a career field.';
+      if (!data.studyTimeline) errs.studyTimeline = 'Please select your study timeline.';
+    }
+
+    if (step === 6) {
+      if (!data.campusEnvironment) errs.campusEnvironment = 'Please select a campus environment.';
+      if (data.mode === 'domestic' && !data.preferredUSStatesText.trim() && data.preferredCountries.length === 0) {
+        errs.preferredUSStatesText = 'Please enter at least one preferred state or location.';
+      }
+      if (data.mode !== 'domestic' && data.preferredCountries.length === 0) {
+        errs.preferredCountries = 'Please select at least one preferred country.';
+      }
+    }
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
 
   const handleNext = () => {
+    if (!validateStep(currentStep)) return;
     if (currentStep < STEPS.length) setCurrentStep(p => p + 1);
     else handleSubmit();
   };
 
   const handleBack = () => {
+    setErrors({});
     if (currentStep > 1) setCurrentStep(p => p - 1);
   };
 
@@ -289,7 +454,10 @@ export function OnboardingWizard() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.push('/'); return; }
 
-      await supabase.from('profiles').upsert({
+      const usStates = data.preferredUSStatesText
+        .split(',').map(s => s.trim()).filter(Boolean);
+
+      const { error: upsertError } = await supabase.from('profiles').upsert({
         id: user.id,
         email: user.email,
         full_name: data.firstName,
@@ -330,7 +498,9 @@ export function OnboardingWizard() {
           residenceCity: data.residenceCity,
           preferredCountries: data.preferredCountries,
           preferredCountriesStr: data.preferredCountries.join(', '),
-          preferredUSStates: data.preferredUSStates,
+          preferredUSStates: usStates,
+          preferredUSStatesText: data.preferredUSStatesText,
+          preferredLocations: data.preferredLocations,
           campusEnvironment: data.campusEnvironment,
           visaNeeded: data.visaNeeded,
         },
@@ -340,106 +510,16 @@ export function OnboardingWizard() {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'id' });
 
+      if (upsertError) throw new Error(upsertError.message);
+
       router.push('/dashboard');
-    } catch (err) {
+    } catch (err: unknown) {
       console.error(err);
-      alert('Failed to save profile. Please try again.');
+      alert(err instanceof Error ? err.message : 'Failed to save profile. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
-  // ── Shared primitives ────────────────────────────────────────────────────
-
-  const inputCls = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all";
-  const inputStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
-  const labelCls = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
-  const labelStyle = { color: 'rgba(240,240,248,0.4)' };
-
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div className="space-y-1.5">
-      <label className={labelCls} style={labelStyle}>{label}</label>
-      {children}
-    </div>
-  );
-
-  const TextInput = ({ value, onChange, placeholder, type = 'text' }: any) => (
-    <input
-      type={type}
-      value={value}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className={inputCls}
-      style={inputStyle}
-    />
-  );
-
-  const Select = ({ value, onChange, options, placeholder }: {
-    value: string;
-    onChange: (v: string) => void;
-    options: { value: string; label: string }[];
-    placeholder: string;
-  }) => (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`${inputCls} appearance-none pr-10`}
-        style={{ ...inputStyle, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
-      >
-        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
-        {options.map(o => (
-          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
-        ))}
-      </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
-    </div>
-  );
-
-  const Chip = ({ label, selected, onClick, accentColor = '#6366f1' }: { label: string; selected: boolean; onClick: () => void; accentColor?: string }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
-      style={selected
-        ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
-      }
-    >
-      {label}
-    </button>
-  );
-
-  const OptionCard = ({ selected, onClick, children, accentColor = '#6366f1' }: any) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
-      style={selected
-        ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
-      }
-    >
-      {children}
-    </button>
-  );
-
-  const Toggle = ({ checked, onChange, label, sub, accentColor = '#6366f1' }: any) => (
-    <div
-      className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
-      onClick={() => onChange(!checked)}
-    >
-      <div>
-        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
-        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
-      </div>
-      <div className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200`}
-        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-      </div>
-    </div>
-  );
 
   const accent = data.mode === 'domestic' ? '#10b981' : '#6366f1';
 
@@ -448,14 +528,13 @@ export function OnboardingWizard() {
   const renderStep = () => {
     switch (currentStep) {
 
-      // ── Step 1: Profile Mode ───────────────────────────────────────────────
+      // ── Step 1: Profile Mode ─────────────────────────────────────────────
       case 1: return (
         <div className="space-y-7">
           <div>
             <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>What describes you best?</h2>
             <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>This shapes your entire intelligence profile and unlocks the right tools.</p>
           </div>
-
           <div className="space-y-3">
             {MODES.map(m => {
               const isSelected = data.mode === m.value;
@@ -490,10 +569,7 @@ export function OnboardingWizard() {
                     <div className="flex-shrink-0 mt-1">
                       <div
                         className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-                        style={isSelected
-                          ? { borderColor: m.accentColor, background: m.accentColor }
-                          : { borderColor: 'rgba(255,255,255,0.2)', background: 'transparent' }
-                        }
+                        style={isSelected ? { borderColor: m.accentColor, background: m.accentColor } : { borderColor: 'rgba(255,255,255,0.2)', background: 'transparent' }}
                       >
                         {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                       </div>
@@ -506,7 +582,7 @@ export function OnboardingWizard() {
         </div>
       );
 
-      // ── Step 2: You ───────────────────────────────────────────────────────
+      // ── Step 2: You ──────────────────────────────────────────────────────
       case 2: return (
         <div className="space-y-6">
           <div>
@@ -514,15 +590,14 @@ export function OnboardingWizard() {
             <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>This helps us personalize every recommendation.</p>
           </div>
 
-          <Field label="First Name">
-            <TextInput value={data.firstName} onChange={(v: string) => upd('firstName', v)} placeholder="Your first name" />
+          <Field label="First Name" required error={errors.firstName}>
+            <TextInput value={data.firstName} onChange={v => upd('firstName', v)} placeholder="Your first name" />
           </Field>
 
-          {/* International / Lifelong: show citizenship + residence */}
           {data.mode !== 'domestic' && (
             <>
-              <Field label="Citizenship / Nationality">
-                <Select
+              <Field label="Citizenship / Nationality" required error={errors.citizenshipCountry}>
+                <OSelect
                   value={data.citizenshipCountry}
                   onChange={v => upd('citizenshipCountry', v)}
                   placeholder="Which country are you a citizen of?"
@@ -531,8 +606,8 @@ export function OnboardingWizard() {
               </Field>
 
               <div className="space-y-3">
-                <Field label="Country You Currently Live In">
-                  <Select
+                <Field label="Country You Currently Live In" required error={errors.residenceCountry}>
+                  <OSelect
                     value={data.residenceCountry}
                     onChange={v => { upd('residenceCountry', v); upd('residenceState', ''); upd('residenceCity', ''); }}
                     placeholder="Select your current country"
@@ -544,7 +619,7 @@ export function OnboardingWizard() {
                   {data.residenceCountry && STATES[data.residenceCountry] && (
                     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                       <Field label={data.residenceCountry === 'Canada' ? 'Province' : 'State'}>
-                        <Select
+                        <OSelect
                           value={data.residenceState}
                           onChange={v => { upd('residenceState', v); upd('residenceCity', ''); }}
                           placeholder={`Which ${data.residenceCountry === 'Canada' ? 'province' : 'state'}?`}
@@ -561,7 +636,7 @@ export function OnboardingWizard() {
                       <Field label="City">
                         <TextInput
                           value={data.residenceCity}
-                          onChange={(v: string) => upd('residenceCity', v)}
+                          onChange={v => upd('residenceCity', v)}
                           placeholder={`Your city in ${data.residenceState || data.residenceCountry}`}
                         />
                       </Field>
@@ -572,7 +647,6 @@ export function OnboardingWizard() {
             </>
           )}
 
-          {/* Domestic: US state is primary identifier */}
           {data.mode === 'domestic' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl" style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)' }}>
@@ -580,23 +654,21 @@ export function OnboardingWizard() {
                   🏛️ Domestic Profile — US citizen or permanent resident applying to American universities.
                 </p>
               </div>
-
-              <Field label="Home State">
-                <Select
+              <Field label="Home State" required error={errors.residenceState}>
+                <OSelect
                   value={data.residenceState}
                   onChange={v => { upd('residenceState', v); upd('residenceCountry', 'United States'); upd('residenceCity', ''); }}
                   placeholder="Which state are you from?"
                   options={STATES['United States'].map(s => ({ value: s, label: s }))}
                 />
               </Field>
-
               <AnimatePresence>
                 {data.residenceState && (
                   <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                     <Field label="City / Town">
                       <TextInput
                         value={data.residenceCity}
-                        onChange={(v: string) => upd('residenceCity', v)}
+                        onChange={v => upd('residenceCity', v)}
                         placeholder={`Your city in ${data.residenceState}`}
                       />
                     </Field>
@@ -608,7 +680,7 @@ export function OnboardingWizard() {
         </div>
       );
 
-      // ── Step 3: Academic ──────────────────────────────────────────────────
+      // ── Step 3: Academic ─────────────────────────────────────────────────
       case 3: return (
         <div className="space-y-6">
           <div>
@@ -616,7 +688,7 @@ export function OnboardingWizard() {
             <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>Be specific — this directly impacts your match quality.</p>
           </div>
 
-          <Field label="Current Education Level">
+          <Field label="Current Education Level" required error={errors.currentEducation}>
             <div className="grid grid-cols-2 gap-2">
               {EDUCATION_LEVELS.map(e => (
                 <OptionCard key={e.id} selected={data.currentEducation === e.id} onClick={() => upd('currentEducation', e.id)} accentColor={accent}>
@@ -628,12 +700,12 @@ export function OnboardingWizard() {
           </Field>
 
           <Field label="School / Institution Name">
-            <TextInput value={data.schoolName} onChange={(v: string) => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
+            <TextInput value={data.schoolName} onChange={v => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="GPA">
-              <TextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
+            <Field label="GPA" required error={errors.gpa}>
+              <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
             </Field>
             <Field label="GPA Scale">
               <div className="flex gap-2 h-12 items-center">
@@ -653,20 +725,17 @@ export function OnboardingWizard() {
             </Field>
           </div>
 
-          {/* Domestic: SAT/ACT is primary + first-gen toggle */}
           {data.mode === 'domestic' && (
             <>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="SAT Score">
-                  <TextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+                  <TextInput value={data.satScore} onChange={v => upd('satScore', v)} placeholder="400 – 1600" type="number" />
                 </Field>
                 <Field label="ACT Score">
-                  <TextInput value={data.actScore} onChange={(v: string) => upd('actScore', v)} placeholder="1 – 36" type="number" />
+                  <TextInput value={data.actScore} onChange={v => upd('actScore', v)} placeholder="1 – 36" type="number" />
                 </Field>
               </div>
-              <Toggle
-                checked={data.firstGenStudent}
-                onChange={(v: boolean) => upd('firstGenStudent', v)}
+              <Toggle checked={data.firstGenStudent} onChange={v => upd('firstGenStudent', v)}
                 label="First-Generation College Student"
                 sub="Neither parent has a 4-year college degree — unlocks major aid opportunities"
                 accentColor="#10b981"
@@ -674,19 +743,13 @@ export function OnboardingWizard() {
             </>
           )}
 
-          {/* International: English proficiency is primary */}
           {data.mode !== 'domestic' && (
             <>
               <Field label="English Proficiency Test">
                 <div className="flex flex-wrap gap-2">
                   {ENGLISH_PROFICIENCY_TYPES.map(e => (
-                    <Chip
-                      key={e.id}
-                      label={e.label}
-                      selected={data.englishProficiencyType === e.id}
-                      onClick={() => upd('englishProficiencyType', e.id)}
-                      accentColor={accent}
-                    />
+                    <Chip key={e.id} label={e.label} selected={data.englishProficiencyType === e.id}
+                      onClick={() => upd('englishProficiencyType', e.id)} accentColor={accent} />
                   ))}
                 </div>
               </Field>
@@ -697,7 +760,7 @@ export function OnboardingWizard() {
                     <Field label={`${ENGLISH_PROFICIENCY_TYPES.find(e => e.id === data.englishProficiencyType)?.label || 'Test'} Score`}>
                       <TextInput
                         value={data.ieltsToeflScore}
-                        onChange={(v: string) => upd('ieltsToeflScore', v)}
+                        onChange={v => upd('ieltsToeflScore', v)}
                         placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : 'Your score'}
                       />
                     </Field>
@@ -707,22 +770,22 @@ export function OnboardingWizard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Field label="IB Score (optional)">
-                  <TextInput value={data.ibScore} onChange={(v: string) => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
+                  <TextInput value={data.ibScore} onChange={v => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
                 </Field>
                 <Field label="SAT Score (optional)">
-                  <TextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+                  <TextInput value={data.satScore} onChange={v => upd('satScore', v)} placeholder="400 – 1600" type="number" />
                 </Field>
               </div>
             </>
           )}
 
-          <Field label="Intended Major / Field of Study">
-            <TextInput value={data.major} onChange={(v: string) => upd('major', v)} placeholder="e.g., Computer Science, Biochemistry, Business" />
+          <Field label="Intended Major / Field of Study" required error={errors.major}>
+            <TextInput value={data.major} onChange={v => upd('major', v)} placeholder="e.g., Computer Science, Biochemistry, Business" />
           </Field>
         </div>
       );
 
-      // ── Step 4: Vision ────────────────────────────────────────────────────
+      // ── Step 4: Vision ───────────────────────────────────────────────────
       case 4: return (
         <div className="space-y-6">
           <div>
@@ -731,14 +794,14 @@ export function OnboardingWizard() {
           </div>
 
           <Field label="Dream Job Title">
-            <TextInput value={data.dreamJob} onChange={(v: string) => upd('dreamJob', v)} placeholder="e.g., Neurosurgeon, AI Research Scientist, VC Partner" />
+            <TextInput value={data.dreamJob} onChange={v => upd('dreamJob', v)} placeholder="e.g., Neurosurgeon, AI Research Scientist, VC Partner" />
           </Field>
 
           <Field label="Dream Company or Sector">
-            <TextInput value={data.dreamCompany} onChange={(v: string) => upd('dreamCompany', v)} placeholder="e.g., Google DeepMind, McKinsey, my own startup" />
+            <TextInput value={data.dreamCompany} onChange={v => upd('dreamCompany', v)} placeholder="e.g., Google DeepMind, McKinsey, my own startup" />
           </Field>
 
-          <Field label="Career Field">
+          <Field label="Career Field" required error={errors.careerField}>
             <div className="grid grid-cols-2 gap-2">
               {CAREER_FIELDS.map(f => (
                 <OptionCard key={f.id} selected={data.careerField === f.id} onClick={() => upd('careerField', f.id)} accentColor={accent}>
@@ -749,7 +812,7 @@ export function OnboardingWizard() {
             </div>
           </Field>
 
-          <Field label="When Do You Plan to Start?">
+          <Field label="When Do You Plan to Start?" required error={errors.studyTimeline}>
             <div className="grid grid-cols-2 gap-2">
               {STUDY_TIMELINES.map(t => (
                 <OptionCard key={t.id} selected={data.studyTimeline === t.id} onClick={() => upd('studyTimeline', t.id)} accentColor={accent}>
@@ -762,7 +825,7 @@ export function OnboardingWizard() {
         </div>
       );
 
-      // ── Step 5: Budget ────────────────────────────────────────────────────
+      // ── Step 5: Budget ───────────────────────────────────────────────────
       case 5: return (
         <div className="space-y-6">
           <div>
@@ -779,18 +842,14 @@ export function OnboardingWizard() {
                 <span className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>/year</span>
               </div>
               <input
-                type="range"
-                min={5000}
-                max={100000}
-                step={2500}
+                type="range" min={5000} max={100000} step={2500}
                 value={data.budgetPerYear}
                 onChange={e => upd('budgetPerYear', Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: accent, background: `linear-gradient(to right, ${accent} ${((data.budgetPerYear - 5000) / 95000) * 100}%, rgba(255,255,255,0.1) 0%)` }}
               />
               <div className="flex justify-between text-xs font-light" style={{ color: 'rgba(240,240,248,0.3)' }}>
-                <span>$5K</span>
-                <span>$100K+</span>
+                <span>$5K</span><span>$100K+</span>
               </div>
             </div>
           </Field>
@@ -809,69 +868,62 @@ export function OnboardingWizard() {
           <div className="space-y-2">
             {data.mode === 'domestic' ? (
               <>
-                <Toggle
-                  checked={data.fafsaFiled}
-                  onChange={(v: boolean) => upd('fafsaFiled', v)}
+                <Toggle checked={data.fafsaFiled} onChange={v => upd('fafsaFiled', v)}
                   label="I've filed or plan to file FAFSA"
                   sub="Federal aid eligibility — highly recommended for US students"
-                  accentColor="#10b981"
-                />
-                <Toggle
-                  checked={data.inStateTuition}
-                  onChange={(v: boolean) => upd('inStateTuition', v)}
+                  accentColor="#10b981" />
+                <Toggle checked={data.inStateTuition} onChange={v => upd('inStateTuition', v)}
                   label="Prioritize in-state tuition savings"
                   sub="Show me schools where I qualify for in-state rates"
-                  accentColor="#10b981"
-                />
-                <Toggle
-                  checked={data.financialAid}
-                  onChange={(v: boolean) => upd('financialAid', v)}
+                  accentColor="#10b981" />
+                <Toggle checked={data.financialAid} onChange={v => upd('financialAid', v)}
                   label="I need financial aid"
                   sub="Prioritize schools with generous need-based aid"
-                  accentColor="#10b981"
-                />
+                  accentColor="#10b981" />
               </>
             ) : (
               <>
-                <Toggle
-                  checked={data.scholarshipNeeded}
-                  onChange={(v: boolean) => upd('scholarshipNeeded', v)}
+                <Toggle checked={data.scholarshipNeeded} onChange={v => upd('scholarshipNeeded', v)}
                   label="I need international scholarship opportunities"
                   sub="Show me schools with merit-based scholarships for international students"
-                  accentColor={accent}
-                />
-                <Toggle
-                  checked={data.financialAid}
-                  onChange={(v: boolean) => upd('financialAid', v)}
+                  accentColor={accent} />
+                <Toggle checked={data.financialAid} onChange={v => upd('financialAid', v)}
                   label="I need need-based financial aid"
                   sub="Prioritize schools with strong international aid programs"
-                  accentColor={accent}
-                />
+                  accentColor={accent} />
               </>
             )}
           </div>
         </div>
       );
 
-      // ── Step 6: Location ──────────────────────────────────────────────────
+      // ── Step 6: Location ─────────────────────────────────────────────────
       case 6: return (
         <div className="space-y-6">
           <div>
             <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Where do you want to study?</h2>
             <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>
-              {data.mode === 'domestic' ? 'Choose your target states and campus environment.' : "Select all countries and regions you'd consider."}
+              {data.mode === 'domestic' ? 'Tell us which states and areas you want to study in.' : "Select countries and type your preferred US states or cities."}
             </p>
           </div>
 
-          {/* Domestic: US States is primary */}
           {data.mode === 'domestic' ? (
             <>
-              <Field label="Target US States (select all that interest you)">
-                <div className="flex flex-wrap gap-1.5 max-h-52 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(16,185,129,0.3) transparent' }}>
-                  {STATES['United States'].map(s => (
-                    <Chip key={s} label={s} selected={data.preferredUSStates.includes(s)} onClick={() => toggleUSState(s)} accentColor="#10b981" />
-                  ))}
-                </div>
+              <Field label="Target US States / Locations" required error={errors.preferredUSStatesText}>
+                <TextInput
+                  value={data.preferredUSStatesText}
+                  onChange={v => upd('preferredUSStatesText', v)}
+                  placeholder="e.g., California, Texas, New York"
+                />
+                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states with commas</p>
+              </Field>
+
+              <Field label="Specific City or Area (optional)">
+                <TextInput
+                  value={data.preferredLocations}
+                  onChange={v => upd('preferredLocations', v)}
+                  placeholder="e.g., Bay Area, Austin TX, Chicago IL"
+                />
               </Field>
 
               <Field label="Open to Other Countries? (optional)">
@@ -889,9 +941,8 @@ export function OnboardingWizard() {
               </Field>
             </>
           ) : (
-            /* International: Countries is primary */
             <>
-              <Field label="Preferred Study Countries (select all that apply)">
+              <Field label="Preferred Study Countries" required error={errors.preferredCountries}>
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.filter(c => c.code !== 'OTHER').map(c => (
                     <Chip
@@ -908,28 +959,34 @@ export function OnboardingWizard() {
               <AnimatePresence>
                 {data.preferredCountries.includes('United States') && (
                   <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.22 }}>
-                    <Field label="Preferred US States (select all that interest you)">
-                      <div className="flex flex-wrap gap-1.5 max-h-44 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(99,102,241,0.3) transparent' }}>
-                        {STATES['United States'].map(s => (
-                          <Chip key={s} label={s} selected={data.preferredUSStates.includes(s)} onClick={() => toggleUSState(s)} accentColor={accent} />
-                        ))}
-                      </div>
+                    <Field label="Preferred US States / Cities">
+                      <TextInput
+                        value={data.preferredUSStatesText}
+                        onChange={v => upd('preferredUSStatesText', v)}
+                        placeholder="e.g., California, New York, Texas"
+                      />
+                      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states or cities with commas</p>
                     </Field>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <Toggle
-                checked={data.visaNeeded}
-                onChange={(v: boolean) => upd('visaNeeded', v)}
+              <Field label="Specific Areas or Cities (optional)">
+                <TextInput
+                  value={data.preferredLocations}
+                  onChange={v => upd('preferredLocations', v)}
+                  placeholder="e.g., Boston MA, London UK, Toronto Ontario"
+                />
+              </Field>
+
+              <Toggle checked={data.visaNeeded} onChange={v => upd('visaNeeded', v)}
                 label="I will need visa assistance"
                 sub="Show visa acceptance rates and F-1 / student visa pathways"
-                accentColor={accent}
-              />
+                accentColor={accent} />
             </>
           )}
 
-          <Field label="Campus Environment">
+          <Field label="Campus Environment" required error={errors.campusEnvironment}>
             <div className="grid grid-cols-2 gap-2">
               {CAMPUS_ENVIRONMENTS.map(env => (
                 <OptionCard key={env.id} selected={data.campusEnvironment === env.id} onClick={() => upd('campusEnvironment', env.id)} accentColor={accent}>
@@ -963,6 +1020,8 @@ export function OnboardingWizard() {
   };
 
   // ── Layout ───────────────────────────────────────────────────────────────
+
+  const hasErrors = Object.keys(errors).length > 0;
 
   return (
     <div className="min-h-screen flex items-start justify-center p-4 pt-10 pb-16" style={{ background: '#080810' }}>
@@ -1009,6 +1068,23 @@ export function OnboardingWizard() {
             </span>
           </div>
 
+          {/* Validation error banner */}
+          <AnimatePresence>
+            {hasErrors && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mx-8 mb-2"
+              >
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl" style={{ background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)' }}>
+                  <AlertCircle style={{ width: '14px', height: '14px', color: '#f87171', flexShrink: 0 }} />
+                  <p style={{ fontSize: '12px', color: '#f87171' }}>Please fill in the required fields marked with * before continuing.</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Content */}
           <div className="px-8 pb-6" style={{ minHeight: '400px' }}>
             <AnimatePresence mode="wait">
@@ -1025,10 +1101,7 @@ export function OnboardingWizard() {
           </div>
 
           {/* Navigation */}
-          <div
-            className="flex items-center justify-between px-8 py-6"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
-          >
+          <div className="flex items-center justify-between px-8 py-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <button
               type="button"
               onClick={handleBack}
@@ -1045,11 +1118,7 @@ export function OnboardingWizard() {
               onClick={handleNext}
               disabled={loading}
               className="flex items-center gap-2 text-sm font-bold h-12 px-8 rounded-2xl transition-all active:scale-95 disabled:opacity-50"
-              style={{
-                background: `linear-gradient(135deg, ${accent}, ${accent}bb)`,
-                color: '#fff',
-                boxShadow: `0 0 24px ${accent}40`,
-              }}
+              style={{ background: `linear-gradient(135deg, ${accent}, ${accent}bb)`, color: '#fff', boxShadow: `0 0 24px ${accent}40` }}
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
