@@ -352,7 +352,6 @@ export default function EditProfilePage() {
         const cg = p.career_goals || {};
         const b = p.budget || {};
         const lp = p.location_preferences || {};
-        const sp = p.school_preferences || {};
 
         setData({
           firstName: p.full_name || '',
@@ -388,7 +387,7 @@ export default function EditProfilePage() {
           campusEnvironment: lp.campusEnvironment || '',
           visaNeeded: lp.visaNeeded || false,
           mode: (p.mode === 'domestic' ? 'domestic' : 'international') as 'domestic' | 'international',
-          schoolSize: sp.schoolSize || 'any',
+          schoolSize: lp.schoolSize || 'any',
         });
       }
       setPageLoading(false);
@@ -459,9 +458,9 @@ export default function EditProfilePage() {
           preferredLocations: data.preferredLocations,
           campusEnvironment: data.campusEnvironment,
           visaNeeded: data.visaNeeded,
+          schoolSize: data.schoolSize,
         },
         mode: data.mode,
-        school_preferences: { schoolSize: data.schoolSize },
         updated_at: new Date().toISOString(),
       }).eq('id', user.id);
 

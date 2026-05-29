@@ -489,9 +489,9 @@ export function OnboardingWizard() {
           preferredLocations: data.preferredLocations,
           campusEnvironment: data.campusEnvironment,
           visaNeeded: data.visaNeeded,
+          schoolSize: data.schoolSize,
         },
         mode: data.mode,
-        school_preferences: { schoolSize: data.schoolSize },
         onboarding_completed: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'id' });
