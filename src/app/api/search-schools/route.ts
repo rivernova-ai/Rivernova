@@ -3,6 +3,53 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+// Repair common AI JSON issues: trailing commas, truncated output
+function repairJSON(raw: string): any {
+  let s = raw.trim();
+
+  // Strip markdown code fences
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) s = fence[1].trim();
+
+  // Extract outermost { ... }
+  const start = s.indexOf('{');
+  const end = s.lastIndexOf('}');
+  if (start === -1 || end <= start) return null;
+  s = s.substring(start, end + 1);
+
+  // Remove trailing commas before ] or }
+  s = s.replace(/,(\s*[}\]])/g, '$1');
+
+  // Try direct parse
+  try { return JSON.parse(s); } catch {}
+
+  // Try completing truncated JSON by balancing brackets
+  s = closeTruncatedJSON(s);
+  try { return JSON.parse(s); } catch {}
+
+  return null;
+}
+
+function closeTruncatedJSON(str: string): string {
+  const stack: string[] = [];
+  let inStr = false;
+  let esc = false;
+
+  for (const ch of str) {
+    if (esc) { esc = false; continue; }
+    if (ch === '\\' && inStr) { esc = true; continue; }
+    if (ch === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (ch === '{' || ch === '[') stack.push(ch === '{' ? '}' : ']');
+    else if ((ch === '}' || ch === ']') && stack.length) stack.pop();
+  }
+
+  // If we're mid-string, close it
+  if (inStr) str += '"';
+  // Close any open objects/arrays
+  return str + stack.reverse().join('');
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -252,30 +299,9 @@ ABSOLUTE RULES:
 
     console.log('Raw Perplexity response length:', rawContent.length);
 
-    // Strip markdown code fences if present
-    let jsonString = rawContent.trim();
-    const codeBlockMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (codeBlockMatch) {
-      jsonString = codeBlockMatch[1].trim();
-    }
-
-    const firstBrace = jsonString.indexOf('{');
-    const lastBrace = jsonString.lastIndexOf('}');
-    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
-      console.error('No valid JSON found in response');
-      return NextResponse.json(
-        { error: 'AI returned an invalid response. Please try again.' },
-        { status: 502 }
-      );
-    }
-
-    jsonString = jsonString.substring(firstBrace, lastBrace + 1);
-
-    let parsedData: any;
-    try {
-      parsedData = JSON.parse(jsonString);
-    } catch (parseError) {
-      console.error('JSON parse error:', parseError);
+    const parsedData = repairJSON(rawContent);
+    if (!parsedData) {
+      console.error('Could not parse AI response after repair attempts. Length:', rawContent.length);
       return NextResponse.json(
         { error: 'AI returned malformed data. Please try again.' },
         { status: 502 }

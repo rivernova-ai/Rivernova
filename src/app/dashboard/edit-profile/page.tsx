@@ -466,11 +466,10 @@ export default function EditProfilePage() {
 
       if (saveError) throw new Error(saveError.message);
       setHasChanges(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      router.push('/dashboard');
     } catch (err) {
       console.error(err);
-      alert('Failed to save. Please try again.');
+      alert(err instanceof Error ? err.message : 'Failed to save. Please try again.');
     } finally {
       setSaving(false);
     }
