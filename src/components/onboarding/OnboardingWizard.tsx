@@ -75,8 +75,8 @@ const MODES = [
     tagline: 'Applying from abroad',
     desc: 'From another country, targeting US, UK, Canada, Australia, Germany, or beyond.',
     bullets: ['Visa pathway & acceptance rates','IELTS / TOEFL school cutoffs','International merit scholarships','Cross-border ROI analysis'],
-    accentColor: '#6366f1', accentBg: 'rgba(99,102,241,0.08)', accentBorder: 'rgba(99,102,241,0.45)',
-    tagColor: '#818cf8', selectedBg: 'rgba(99,102,241,0.1)',
+    accentColor: '#8C2D35', accentBg: 'rgba(140,45,53,0.08)', accentBorder: 'rgba(140,45,53,0.40)',
+    tagColor: '#8C2D35', selectedBg: 'rgba(140,45,53,0.08)',
   },
   {
     value: 'domestic' as const,
@@ -205,10 +205,10 @@ interface OnboardingData {
 //     stable across renders. If defined inside, every keystroke re-creates
 //     them as new component types, causing React to unmount the input. ─────────
 
-const INPUT_CLS = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-indigo-500/50 transition-all";
-const INPUT_STYLE = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
+const INPUT_CLS = "w-full h-12 px-4 rounded-2xl text-sm font-light focus:outline-none focus:ring-1 transition-all";
+const INPUT_STYLE = { background: 'rgba(140,45,53,0.05)', border: '1px solid rgba(140,45,53,0.15)', color: '#1C0A0C', caretColor: '#8C2D35' };
 const LABEL_CLS = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
-const LABEL_STYLE = { color: 'rgba(240,240,248,0.4)' };
+const LABEL_STYLE = { color: 'rgba(28,10,12,0.45)' };
 
 function Field({ label, required, error, children }: {
   label: string; required?: boolean; error?: string; children: React.ReactNode;
@@ -256,14 +256,14 @@ function OSelect({ value, onChange, options, placeholder }: {
         value={value}
         onChange={e => onChange(e.target.value)}
         className={`${INPUT_CLS} appearance-none pr-10`}
-        style={{ ...INPUT_STYLE, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
+        style={{ ...INPUT_STYLE, color: value ? '#1C0A0C' : 'rgba(28,10,12,0.3)' }}
       >
-        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
+        <option value="" disabled style={{ background: '#F5EDE5', color: 'rgba(28,10,12,0.4)' }}>{placeholder}</option>
         {options.map(o => (
-          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
+          <option key={o.value} value={o.value} style={{ background: '#F5EDE5', color: '#1C0A0C' }}>{o.label}</option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(28,10,12,0.35)' }} />
     </div>
   );
 }
@@ -278,7 +278,7 @@ function Chip({ label, selected, onClick, accentColor = '#6366f1' }: {
       className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
       style={selected
         ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
+        : { background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.12)', color: 'rgba(28,10,12,0.5)' }
       }
     >
       {label}
@@ -296,7 +296,7 @@ function OptionCard({ selected, onClick, children, accentColor = '#6366f1' }: {
       className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
       style={selected
         ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
+        : { background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)' }
       }
     >
       {children}
@@ -310,15 +310,15 @@ function Toggle({ checked, onChange, label, sub, accentColor = '#6366f1' }: {
   return (
     <div
       className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)' }}
       onClick={() => onChange(!checked)}
     >
       <div>
-        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
-        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
+        <div className="text-sm font-medium" style={{ color: '#1C0A0C' }}>{label}</div>
+        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(28,10,12,0.45)' }}>{sub}</div>}
       </div>
       <div className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200"
-        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
+        style={{ background: checked ? accentColor : 'rgba(28,10,12,0.1)' }}>
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </div>
     </div>
@@ -498,7 +498,7 @@ export function OnboardingWizard() {
 
       if (upsertError) throw new Error(upsertError.message);
 
-      router.push('/dashboard');
+      router.push('/dashboard/matches');
     } catch (err: unknown) {
       console.error(err);
       alert(err instanceof Error ? err.message : 'Failed to save profile. Please try again.');
@@ -507,7 +507,7 @@ export function OnboardingWizard() {
     }
   };
 
-  const accent = data.mode === 'domestic' ? '#10b981' : '#6366f1';
+  const accent = data.mode === 'domestic' ? '#10b981' : '#8C2D35';
 
   // ── Step renderer ────────────────────────────────────────────────────────
 
@@ -518,8 +518,8 @@ export function OnboardingWizard() {
       case 1: return (
         <div className="space-y-7">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>What describes you best?</h2>
-            <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>This shapes your entire intelligence profile and unlocks the right tools.</p>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>What describes you best?</h2>
+            <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>This shapes your entire intelligence profile and unlocks the right tools.</p>
           </div>
           <div className="space-y-3">
             {MODES.map(m => {
@@ -532,22 +532,22 @@ export function OnboardingWizard() {
                   className="w-full p-5 rounded-2xl text-left transition-all duration-200 active:scale-[0.99]"
                   style={isSelected
                     ? { background: m.selectedBg, border: `1px solid ${m.accentBorder}`, boxShadow: `0 0 20px ${m.accentColor}18` }
-                    : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }
+                    : { background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.08)' }
                   }
                 >
                   <div className="flex items-start gap-4">
                     <span className="text-2xl mt-0.5 flex-shrink-0">{m.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-base font-bold" style={{ color: isSelected ? m.accentColor : '#f0f0f8' }}>{m.label}</span>
+                        <span className="text-base font-bold" style={{ color: isSelected ? m.accentColor : '#1C0A0C' }}>{m.label}</span>
                         <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full" style={{ color: m.tagColor, background: `${m.accentColor}18` }}>{m.tagline}</span>
                       </div>
-                      <p className="text-xs font-light mb-3" style={{ color: 'rgba(240,240,248,0.5)' }}>{m.desc}</p>
+                      <p className="text-xs font-light mb-3" style={{ color: 'rgba(28,10,12,0.5)' }}>{m.desc}</p>
                       <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                         {m.bullets.map(b => (
                           <div key={b} className="flex items-center gap-1.5">
                             <span className="text-[8px]" style={{ color: m.tagColor }}>✦</span>
-                            <span className="text-[11px] font-light" style={{ color: 'rgba(240,240,248,0.55)' }}>{b}</span>
+                            <span className="text-[11px] font-light" style={{ color: 'rgba(28,10,12,0.55)' }}>{b}</span>
                           </div>
                         ))}
                       </div>
@@ -555,7 +555,7 @@ export function OnboardingWizard() {
                     <div className="flex-shrink-0 mt-1">
                       <div
                         className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200"
-                        style={isSelected ? { borderColor: m.accentColor, background: m.accentColor } : { borderColor: 'rgba(255,255,255,0.2)', background: 'transparent' }}
+                        style={isSelected ? { borderColor: m.accentColor, background: m.accentColor } : { borderColor: 'rgba(28,10,12,0.2)', background: 'transparent' }}
                       >
                         {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                       </div>
@@ -572,8 +572,8 @@ export function OnboardingWizard() {
       case 2: return (
         <div className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Tell us about yourself.</h2>
-            <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>This helps us personalize every recommendation.</p>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>Tell us about yourself.</h2>
+            <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>This helps us personalize every recommendation.</p>
           </div>
 
           <Field label="First Name" required error={errors.firstName}>
@@ -670,16 +670,16 @@ export function OnboardingWizard() {
       case 3: return (
         <div className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Your academic profile.</h2>
-            <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>Be specific — this directly impacts your match quality.</p>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>Your academic profile.</h2>
+            <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>Be specific — this directly impacts your match quality.</p>
           </div>
 
           <Field label="Current Education Level" required error={errors.currentEducation}>
             <div className="grid grid-cols-2 gap-2">
               {EDUCATION_LEVELS.map(e => (
                 <OptionCard key={e.id} selected={data.currentEducation === e.id} onClick={() => upd('currentEducation', e.id)} accentColor={accent}>
-                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{e.label}</div>
-                  <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{e.sub}</div>
+                  <div className="text-sm font-bold" style={{ color: '#1C0A0C' }}>{e.label}</div>
+                  <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(28,10,12,0.45)' }}>{e.sub}</div>
                 </OptionCard>
               ))}
             </div>
@@ -689,27 +689,9 @@ export function OnboardingWizard() {
             <TextInput value={data.schoolName} onChange={v => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
           </Field>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="GPA" required error={errors.gpa}>
-              <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
-            </Field>
-            <Field label="GPA Scale">
-              <div className="flex gap-2 h-12 items-center">
-                {['4.0', '5.0', '100', 'Letter'].map(scale => (
-                  <button
-                    key={scale}
-                    type="button"
-                    onClick={() => upd('gpaScale', scale)}
-                    className="flex-1 h-full rounded-xl text-xs font-bold transition-all"
-                    style={data.gpaScale === scale
-                      ? { background: `${accent}28`, border: `1px solid ${accent}80`, color: accent }
-                      : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.4)' }
-                    }
-                  >{scale}</button>
-                ))}
-              </div>
-            </Field>
-          </div>
+          <Field label="GPA" required error={errors.gpa}>
+            <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
+          </Field>
 
           {data.mode === 'domestic' && (
             <>
@@ -775,8 +757,8 @@ export function OnboardingWizard() {
       case 4: return (
         <div className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>What's your vision?</h2>
-            <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>Think big. The AI uses this to calculate your ROI on every school.</p>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>What's your vision?</h2>
+            <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>Think big. The AI uses this to calculate your ROI on every school.</p>
           </div>
 
           <Field label="Dream Job Title">
@@ -792,7 +774,7 @@ export function OnboardingWizard() {
               {CAREER_FIELDS.map(f => (
                 <OptionCard key={f.id} selected={data.careerField === f.id} onClick={() => upd('careerField', f.id)} accentColor={accent}>
                   <span className="text-lg">{f.icon}</span>
-                  <span className="text-sm font-medium ml-2" style={{ color: '#f0f0f8' }}>{f.label}</span>
+                  <span className="text-sm font-medium ml-2" style={{ color: '#1C0A0C' }}>{f.label}</span>
                 </OptionCard>
               ))}
             </div>
@@ -802,8 +784,8 @@ export function OnboardingWizard() {
             <div className="grid grid-cols-2 gap-2">
               {STUDY_TIMELINES.map(t => (
                 <OptionCard key={t.id} selected={data.studyTimeline === t.id} onClick={() => upd('studyTimeline', t.id)} accentColor={accent}>
-                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{t.label}</div>
-                  <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{t.sub}</div>
+                  <div className="text-sm font-bold" style={{ color: '#1C0A0C' }}>{t.label}</div>
+                  <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(28,10,12,0.45)' }}>{t.sub}</div>
                 </OptionCard>
               ))}
             </div>
@@ -815,26 +797,26 @@ export function OnboardingWizard() {
       case 5: return (
         <div className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Budget & support.</h2>
-            <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>Honest numbers = better matches. We never share your data.</p>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>Budget & support.</h2>
+            <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>Honest numbers = better matches. We never share your data.</p>
           </div>
 
           <Field label="Annual Budget (USD per year, all-in)">
-            <div className="space-y-4 p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="space-y-4 p-5 rounded-2xl" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)' }}>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-4xl font-black" style={{ color: accent }}>
                   ${data.budgetPerYear >= 100000 ? '100K+' : data.budgetPerYear.toLocaleString()}
                 </span>
-                <span className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>/year</span>
+                <span className="text-sm font-light" style={{ color: 'rgba(28,10,12,0.45)' }}>/year</span>
               </div>
               <input
                 type="range" min={5000} max={100000} step={2500}
                 value={data.budgetPerYear}
                 onChange={e => upd('budgetPerYear', Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                style={{ accentColor: accent, background: `linear-gradient(to right, ${accent} ${((data.budgetPerYear - 5000) / 95000) * 100}%, rgba(255,255,255,0.1) 0%)` }}
+                style={{ accentColor: accent, background: `linear-gradient(to right, ${accent} ${((data.budgetPerYear - 5000) / 95000) * 100}%, rgba(140,45,53,0.12) 0%)` }}
               />
-              <div className="flex justify-between text-xs font-light" style={{ color: 'rgba(240,240,248,0.3)' }}>
+              <div className="flex justify-between text-xs font-light" style={{ color: 'rgba(28,10,12,0.35)' }}>
                 <span>$5K</span><span>$100K+</span>
               </div>
             </div>
@@ -845,7 +827,7 @@ export function OnboardingWizard() {
               {(data.mode === 'domestic' ? FUNDING_SOURCES_DOMESTIC : FUNDING_SOURCES_INTL).map(f => (
                 <OptionCard key={f.id} selected={data.fundingSource === f.id} onClick={() => upd('fundingSource', f.id)} accentColor={accent}>
                   <span className="text-xl">{f.icon}</span>
-                  <div className="text-sm font-medium mt-1.5" style={{ color: '#f0f0f8' }}>{f.label}</div>
+                  <div className="text-sm font-medium mt-1.5" style={{ color: '#1C0A0C' }}>{f.label}</div>
                 </OptionCard>
               ))}
             </div>
@@ -887,8 +869,8 @@ export function OnboardingWizard() {
       case 6: return (
         <div className="space-y-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Where do you want to study?</h2>
-            <p className="text-sm font-light mt-1" style={{ color: 'rgba(240,240,248,0.45)' }}>
+            <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>Where do you want to study?</h2>
+            <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>
               {data.mode === 'domestic' ? 'Tell us which states and areas you want to study in.' : "Select countries and type your preferred US states or cities."}
             </p>
           </div>
@@ -901,7 +883,7 @@ export function OnboardingWizard() {
                   onChange={v => upd('preferredUSStatesText', v)}
                   placeholder="e.g., California, Texas, New York"
                 />
-                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states with commas</p>
+                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(28,10,12,0.35)' }}>Separate multiple states with commas</p>
               </Field>
 
               <Field label="Specific City or Area (optional)">
@@ -951,7 +933,7 @@ export function OnboardingWizard() {
                         onChange={v => upd('preferredUSStatesText', v)}
                         placeholder="e.g., California, New York, Texas"
                       />
-                      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states or cities with commas</p>
+                      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(28,10,12,0.35)' }}>Separate multiple states or cities with commas</p>
                     </Field>
                   </motion.div>
                 )}
@@ -979,8 +961,8 @@ export function OnboardingWizard() {
                   <div className="flex items-center gap-2">
                     <span className="text-xl">{env.icon}</span>
                     <div>
-                      <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{env.label}</div>
-                      <div className="text-xs font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{env.sub}</div>
+                      <div className="text-sm font-bold" style={{ color: '#1C0A0C' }}>{env.label}</div>
+                      <div className="text-xs font-light" style={{ color: 'rgba(28,10,12,0.45)' }}>{env.sub}</div>
                     </div>
                   </div>
                 </OptionCard>
@@ -992,8 +974,8 @@ export function OnboardingWizard() {
             <div className="grid grid-cols-2 gap-2">
               {SCHOOL_SIZES.map(s => (
                 <OptionCard key={s.id} selected={data.schoolSize === s.id} onClick={() => upd('schoolSize', s.id)} accentColor={accent}>
-                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{s.label}</div>
-                  <div className="text-xs font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{s.sub}</div>
+                  <div className="text-sm font-bold" style={{ color: '#1C0A0C' }}>{s.label}</div>
+                  <div className="text-xs font-light" style={{ color: 'rgba(28,10,12,0.45)' }}>{s.sub}</div>
                 </OptionCard>
               ))}
             </div>
@@ -1010,22 +992,22 @@ export function OnboardingWizard() {
   const hasErrors = Object.keys(errors).length > 0;
 
   return (
-    <div className="min-h-screen flex items-start justify-center p-4 pt-10 pb-16" style={{ background: '#080810' }}>
-      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.1) 0%, transparent 60%)' }} />
+    <div className="min-h-screen flex items-start justify-center p-4 pt-10 pb-16" style={{ background: '#F5EDE5' }}>
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(140,45,53,0.06) 0%, transparent 60%)' }} />
 
       <div className="w-full max-w-2xl relative z-10">
         {/* Brand */}
         <div className="text-center mb-8">
           <p className="text-[10px] font-black uppercase tracking-[0.5em] mb-3" style={{ color: accent }}>RIVERNOVA</p>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Build your intelligence profile</h1>
-          <p className="text-sm font-light mt-2" style={{ color: 'rgba(240,240,248,0.4)' }}>The more you share, the smarter your AI advisor becomes.</p>
+          <h1 className="text-3xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>Build your intelligence profile</h1>
+          <p className="text-sm font-light mt-2" style={{ color: 'rgba(28,10,12,0.45)' }}>The more you share, the smarter your AI advisor becomes.</p>
         </div>
 
         {/* Card */}
-        <div className="rounded-3xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <div className="rounded-3xl overflow-hidden" style={{ background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.12)' }}>
 
           {/* Progress bar */}
-          <div className="h-[2px]" style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <div className="h-[2px]" style={{ background: 'rgba(140,45,53,0.08)' }}>
             <motion.div
               className="h-full"
               style={{ background: `linear-gradient(90deg, ${accent}, ${accent}aa)` }}
@@ -1042,14 +1024,14 @@ export function OnboardingWizard() {
                   <div
                     className="w-1.5 h-1.5 rounded-full transition-all duration-300"
                     style={{
-                      background: i + 1 < currentStep ? accent : i + 1 === currentStep ? `${accent}cc` : 'rgba(255,255,255,0.12)',
+                      background: i + 1 < currentStep ? accent : i + 1 === currentStep ? `${accent}cc` : 'rgba(140,45,53,0.18)',
                       transform: i + 1 === currentStep ? 'scale(1.4)' : 'scale(1)',
                     }}
                   />
                 </div>
               ))}
             </div>
-            <span className="text-xs font-light" style={{ color: 'rgba(240,240,248,0.35)' }}>
+            <span className="text-xs font-light" style={{ color: 'rgba(28,10,12,0.4)' }}>
               {currentStep} of {STEPS.length} · <span style={{ color: accent, fontWeight: 700 }}>{STEPS[currentStep - 1]}</span>
             </span>
           </div>
@@ -1087,13 +1069,13 @@ export function OnboardingWizard() {
           </div>
 
           {/* Navigation */}
-          <div className="flex items-center justify-between px-8 py-6" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center justify-between px-8 py-6" style={{ borderTop: '1px solid rgba(140,45,53,0.10)' }}>
             <button
               type="button"
               onClick={handleBack}
               disabled={currentStep === 1 || loading}
               className="flex items-center gap-2 text-sm font-medium transition-all disabled:opacity-20 hover:opacity-70"
-              style={{ color: 'rgba(240,240,248,0.55)' }}
+              style={{ color: 'rgba(28,10,12,0.5)' }}
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -1117,7 +1099,7 @@ export function OnboardingWizard() {
           </div>
         </div>
 
-        <p className="text-center text-xs font-light mt-5" style={{ color: 'rgba(240,240,248,0.2)' }}>
+        <p className="text-center text-xs font-light mt-5" style={{ color: 'rgba(28,10,12,0.3)' }}>
           Zero commission. Your data stays private. Always.
         </p>
       </div>

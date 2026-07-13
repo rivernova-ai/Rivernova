@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
-import { AICounselor } from "@/components/chat/AICounselor";
 
 export const metadata: Metadata = {
   title: "Rivernova",
@@ -18,7 +17,6 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <AuthProvider>
           {children}
-          <AICounselor />
         </AuthProvider>
       </body>
     </html>

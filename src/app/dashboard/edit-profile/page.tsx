@@ -139,8 +139,8 @@ const STUDY_TIMELINES = [
 ];
 
 const MODES = [
-  { value: 'international' as const, icon: '🌐', label: 'International Student', tagline: 'Applying from abroad', accentColor: '#6366f1', tagColor: '#818cf8' },
-  { value: 'domestic' as const, icon: '🏛️', label: 'US Domestic Student', tagline: 'Applying within America', accentColor: '#10b981', tagColor: '#34d399' },
+  { value: 'international' as const, label: 'International Student', tagline: 'Applying from abroad', accentColor: '#8C2D35' },
+  { value: 'domestic' as const, label: 'US Domestic Student', tagline: 'Applying within America', accentColor: '#8C2D35' },
 ];
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -185,10 +185,10 @@ interface EditData {
 // ─── Stable UI primitives — defined OUTSIDE the component to prevent
 //     re-mount on each keystroke (would lose focus after every character) ────
 
-const EP_INPUT_CLS = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-white/20 focus:outline-none transition-all";
-const EP_INPUT_STYLE = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#f0f0f8' };
+const EP_INPUT_CLS = "w-full h-12 px-4 rounded-2xl text-sm font-light placeholder:text-[rgba(28,10,12,0.3)] focus:outline-none transition-all";
+const EP_INPUT_STYLE = { background: 'rgba(245,237,229,0.7)', border: '1px solid rgba(140,45,53,0.14)', color: '#1C0A0C' };
 const EP_LABEL_CLS = "block text-[10px] font-black uppercase tracking-[0.25em] mb-2";
-const EP_LABEL_STYLE = { color: 'rgba(240,240,248,0.38)' };
+const EP_LABEL_STYLE = { color: 'rgba(28,10,12,0.55)' };
 
 function EPField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -224,14 +224,14 @@ function EPSelect({ value, onChange, options, placeholder }: {
         value={value}
         onChange={e => onChange(e.target.value)}
         className={`${EP_INPUT_CLS} appearance-none pr-10`}
-        style={{ ...EP_INPUT_STYLE, color: value ? '#f0f0f8' : 'rgba(240,240,248,0.25)' }}
+        style={{ ...EP_INPUT_STYLE, color: value ? '#1C0A0C' : 'rgba(28,10,12,0.3)' }}
       >
-        <option value="" disabled style={{ background: '#0d0d1a', color: 'rgba(240,240,248,0.4)' }}>{placeholder}</option>
+        <option value="" disabled style={{ background: '#FAF5F0', color: 'rgba(28,10,12,0.4)' }}>{placeholder}</option>
         {options.map(o => (
-          <option key={o.value} value={o.value} style={{ background: '#0d0d1a', color: '#f0f0f8' }}>{o.label}</option>
+          <option key={o.value} value={o.value} style={{ background: '#FAF5F0', color: '#1C0A0C' }}>{o.label}</option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(240,240,248,0.3)' }} />
+      <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(28,10,12,0.55)' }} />
     </div>
   );
 }
@@ -246,7 +246,7 @@ function EPChip({ label, selected, onClick, accentColor = '#6366f1' }: {
       className="px-3.5 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
       style={selected
         ? { background: `${accentColor}22`, border: `1px solid ${accentColor}99`, color: accentColor }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.45)' }
+        : { background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)', color: 'rgba(28,10,12,0.6)' }
       }
     >
       {label}
@@ -264,7 +264,7 @@ function EPOptionCard({ selected, onClick, children, accentColor = '#6366f1' }: 
       className="w-full p-4 rounded-2xl text-left transition-all active:scale-[0.99]"
       style={selected
         ? { background: `${accentColor}14`, border: `1px solid ${accentColor}66` }
-        : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }
+        : { background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.08)' }
       }
     >
       {children}
@@ -278,15 +278,15 @@ function EPToggle({ checked, onChange, label, sub, accentColor = '#6366f1' }: {
   return (
     <div
       className="flex items-center justify-between p-4 rounded-2xl cursor-pointer"
-      style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}
+      style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.08)' }}
       onClick={() => onChange(!checked)}
     >
       <div className="pr-4">
-        <div className="text-sm font-medium" style={{ color: '#f0f0f8' }}>{label}</div>
-        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(240,240,248,0.4)' }}>{sub}</div>}
+        <div className="text-sm font-medium" style={{ color: '#1C0A0C' }}>{label}</div>
+        {sub && <div className="text-xs font-light mt-0.5" style={{ color: 'rgba(28,10,12,0.45)' }}>{sub}</div>}
       </div>
       <div className="relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors duration-200"
-        style={{ background: checked ? accentColor : 'rgba(255,255,255,0.1)' }}>
+        style={{ background: checked ? accentColor : 'rgba(140,45,53,0.15)' }}>
         <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform duration-200 ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
       </div>
     </div>
@@ -475,44 +475,43 @@ export default function EditProfilePage() {
     }
   };
 
-  const accent = data.mode === 'domestic' ? '#10b981' : '#6366f1';
+  const accent = '#8C2D35';
 
-  const SectionHeader = ({ icon, title }: { icon: string; title: string }) => (
-    <div className="flex items-center gap-3 pb-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <span className="text-xl">{icon}</span>
-      <h2 className="text-lg font-bold" style={{ color: '#f0f0f8' }}>{title}</h2>
+  const SectionHeader = ({ icon: _icon, title }: { icon: string; title: string }) => (
+    <div className="flex items-center pb-2" style={{ borderBottom: '1px solid rgba(140,45,53,0.10)' }}>
+      <h2 className="text-base font-bold" style={{ color: '#1C0A0C', letterSpacing: '-0.01em' }}>{title}</h2>
     </div>
   );
 
   if (authLoading || pageLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen" style={{ background: '#080810' }}>
+      <div className="flex items-center justify-center min-h-screen" style={{ background: '#F5EDE5' }}>
         <Loader2 className="w-8 h-8 animate-spin" style={{ color: accent }} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#080810' }}>
+    <div className="min-h-screen" style={{ background: '#F5EDE5' }}>
       {/* Ambient */}
-      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.1) 0%, transparent 60%)' }} />
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(140,45,53,0.06) 0%, transparent 60%)' }} />
 
       {/* Sticky header */}
-      <div className="sticky top-0 z-50" style={{ background: 'rgba(8,8,16,0.85)', backdropFilter: 'blur(40px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div className="sticky top-0 z-50" style={{ background: 'rgba(245,237,229,0.92)', backdropFilter: 'blur(40px)', borderBottom: '1px solid rgba(140,45,53,0.12)' }}>
         <div className="max-w-[720px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
               className="p-2 rounded-xl transition-all"
-              style={{ color: 'rgba(240,240,248,0.4)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+              style={{ color: 'rgba(28,10,12,0.4)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.06)'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(240,240,248,0.3)' }}>RIVERNOVA</p>
-              <h1 className="text-lg font-bold leading-tight" style={{ color: '#f0f0f8' }}>Edit Profile</h1>
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(28,10,12,0.5)' }}>RIVERNOVA</p>
+              <h1 className="text-lg font-bold leading-tight" style={{ color: '#1C0A0C' }}>Edit Profile</h1>
             </div>
           </div>
 
@@ -540,7 +539,7 @@ export default function EditProfilePage() {
         {/* ── Profile Type ──────────────────────────────────────────────── */}
         <div className="space-y-4">
           <SectionHeader icon="🎯" title="Profile Type" />
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {MODES.map(m => {
               const isSelected = data.mode === m.value;
               return (
@@ -550,17 +549,16 @@ export default function EditProfilePage() {
                   onClick={() => upd('mode', m.value)}
                   className="p-4 rounded-2xl text-left transition-all duration-200 active:scale-[0.98]"
                   style={isSelected
-                    ? { background: `${m.accentColor}12`, border: `1px solid ${m.accentColor}55`, boxShadow: `0 0 16px ${m.accentColor}18` }
-                    : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }
+                    ? { background: 'rgba(140,45,53,0.07)', border: '1px solid rgba(140,45,53,0.3)' }
+                    : { background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.08)' }
                   }
                 >
-                  <div className="text-xl mb-2">{m.icon}</div>
-                  <div className="text-xs font-bold leading-tight mb-0.5" style={{ color: isSelected ? m.accentColor : '#f0f0f8' }}>{m.label}</div>
-                  <div className="text-[10px] font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{m.tagline}</div>
-                  <div className="mt-2 flex items-center justify-center">
+                  <div className="text-sm font-bold leading-tight mb-0.5" style={{ color: '#1C0A0C' }}>{m.label}</div>
+                  <div className="text-[11px] font-light" style={{ color: 'rgba(28,10,12,0.6)' }}>{m.tagline}</div>
+                  <div className="mt-3 flex items-center">
                     <div
                       className="w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
-                      style={isSelected ? { borderColor: m.accentColor, background: m.accentColor } : { borderColor: 'rgba(255,255,255,0.2)' }}
+                      style={isSelected ? { borderColor: '#8C2D35', background: '#8C2D35' } : { borderColor: 'rgba(140,45,53,0.25)' }}
                     >
                       {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                     </div>
@@ -586,7 +584,7 @@ export default function EditProfilePage() {
                   value={data.citizenshipCountry}
                   onChange={v => upd('citizenshipCountry', v)}
                   placeholder="Which country are you a citizen of?"
-                  options={COUNTRIES.map(c => ({ value: c.name, label: `${c.flag}  ${c.name}` }))}
+                  options={COUNTRIES.map(c => ({ value: c.name, label: c.name }))}
                 />
               </EPField>
 
@@ -595,7 +593,7 @@ export default function EditProfilePage() {
                   value={data.residenceCountry}
                   onChange={v => { upd('residenceCountry', v); upd('residenceState', ''); upd('residenceCity', ''); }}
                   placeholder="Select your current country"
-                  options={COUNTRIES.map(c => ({ value: c.name, label: `${c.flag}  ${c.name}` }))}
+                  options={COUNTRIES.map(c => ({ value: c.name, label: c.name }))}
                 />
               </EPField>
 
@@ -655,7 +653,7 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-3 gap-2">
               {EDUCATION_LEVELS.map(e => (
                 <EPOptionCard key={e.id} selected={data.currentEducation === e.id} onClick={() => upd('currentEducation', e.id)} accentColor={accent}>
-                  <div className="text-xs font-bold" style={{ color: '#f0f0f8' }}>{e.label}</div>
+                  <div className="text-xs font-bold" style={{ color: '#1C0A0C' }}>{e.label}</div>
                 </EPOptionCard>
               ))}
             </div>
@@ -665,27 +663,9 @@ export default function EditProfilePage() {
             <EPTextInput value={data.schoolName} onChange={(v: string) => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
           </EPField>
 
-          <div className="grid grid-cols-2 gap-4">
-            <EPField label="GPA">
-              <EPTextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8" type="number" />
-            </EPField>
-            <EPField label="GPA Scale">
-              <div className="flex gap-2 h-12 items-center">
-                {['4.0', '5.0', '100', 'Letter'].map(scale => (
-                  <button
-                    key={scale}
-                    type="button"
-                    onClick={() => upd('gpaScale', scale)}
-                    className="flex-1 h-full rounded-xl text-xs font-bold transition-all"
-                    style={data.gpaScale === scale
-                      ? { background: `${accent}28`, border: `1px solid ${accent}80`, color: accent }
-                      : { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.4)' }
-                    }
-                  >{scale}</button>
-                ))}
-              </div>
-            </EPField>
-          </div>
+          <EPField label="GPA">
+            <EPTextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
+          </EPField>
 
           {data.mode === 'domestic' ? (
             <>
@@ -702,7 +682,7 @@ export default function EditProfilePage() {
                 onChange={(v: boolean) => upd('firstGenStudent', v)}
                 label="First-Generation College Student"
                 sub="Neither parent completed a 4-year degree — unlocks major aid opportunities"
-                accentColor="#10b981"
+                accentColor={accent}
               />
             </>
           ) : (
@@ -761,8 +741,7 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               {CAREER_FIELDS.map(f => (
                 <EPOptionCard key={f.id} selected={data.careerField === f.id} onClick={() => upd('careerField', f.id)} accentColor={accent}>
-                  <span className="text-base">{f.icon}</span>
-                  <span className="text-sm font-medium ml-2" style={{ color: '#f0f0f8' }}>{f.label}</span>
+                  <span className="text-sm font-medium" style={{ color: '#1C0A0C' }}>{f.label}</span>
                 </EPOptionCard>
               ))}
             </div>
@@ -772,7 +751,7 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               {STUDY_TIMELINES.map(t => (
                 <EPOptionCard key={t.id} selected={data.studyTimeline === t.id} onClick={() => upd('studyTimeline', t.id)} accentColor={accent}>
-                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{t.label}</div>
+                  <div className="text-sm font-bold" style={{ color: '#1C0A0C' }}>{t.label}</div>
                 </EPOptionCard>
               ))}
             </div>
@@ -784,12 +763,12 @@ export default function EditProfilePage() {
           <SectionHeader icon="💰" title="Budget & Funding" />
 
           <EPField label="Annual Budget (USD per year, all-in)">
-            <div className="space-y-4 p-5 rounded-2xl" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="space-y-4 p-5 rounded-2xl" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)' }}>
               <div className="flex items-baseline justify-center gap-1">
                 <span className="text-4xl font-black" style={{ color: accent }}>
                   ${data.budgetPerYear >= 100000 ? '100K+' : data.budgetPerYear.toLocaleString()}
                 </span>
-                <span className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>/year</span>
+                <span className="text-sm font-light" style={{ color: 'rgba(28,10,12,0.45)' }}>/year</span>
               </div>
               <input
                 type="range"
@@ -799,9 +778,9 @@ export default function EditProfilePage() {
                 value={data.budgetPerYear}
                 onChange={e => upd('budgetPerYear', Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-                style={{ accentColor: accent, background: `linear-gradient(to right, ${accent} ${((data.budgetPerYear - 5000) / 95000) * 100}%, rgba(255,255,255,0.1) 0%)` }}
+                style={{ accentColor: accent, background: `linear-gradient(to right, ${accent} ${((data.budgetPerYear - 5000) / 95000) * 100}%, rgba(140,45,53,0.12) 0%)` }}
               />
-              <div className="flex justify-between text-xs font-light" style={{ color: 'rgba(240,240,248,0.3)' }}>
+              <div className="flex justify-between text-xs font-light" style={{ color: 'rgba(28,10,12,0.55)' }}>
                 <span>$5K</span><span>$100K+</span>
               </div>
             </div>
@@ -811,8 +790,7 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               {(data.mode === 'domestic' ? FUNDING_SOURCES_DOMESTIC : FUNDING_SOURCES_INTL).map(f => (
                 <EPOptionCard key={f.id} selected={data.fundingSource === f.id} onClick={() => upd('fundingSource', f.id)} accentColor={accent}>
-                  <span className="text-xl">{f.icon}</span>
-                  <div className="text-sm font-medium mt-1.5" style={{ color: '#f0f0f8' }}>{f.label}</div>
+                  <div className="text-sm font-medium" style={{ color: '#1C0A0C' }}>{f.label}</div>
                 </EPOptionCard>
               ))}
             </div>
@@ -821,9 +799,9 @@ export default function EditProfilePage() {
           <div className="space-y-2">
             {data.mode === 'domestic' ? (
               <>
-                <EPToggle checked={data.fafsaFiled} onChange={(v: boolean) => upd('fafsaFiled', v)} label="I've filed or plan to file FAFSA" sub="Federal aid eligibility — highly recommended for US students" accentColor="#10b981" />
-                <EPToggle checked={data.inStateTuition} onChange={(v: boolean) => upd('inStateTuition', v)} label="Prioritize in-state tuition savings" sub="Show me schools where I qualify for in-state rates" accentColor="#10b981" />
-                <EPToggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need financial aid" sub="Prioritize schools with generous need-based aid" accentColor="#10b981" />
+                <EPToggle checked={data.fafsaFiled} onChange={(v: boolean) => upd('fafsaFiled', v)} label="I've filed or plan to file FAFSA" sub="Federal aid eligibility — highly recommended for US students" accentColor={accent} />
+                <EPToggle checked={data.inStateTuition} onChange={(v: boolean) => upd('inStateTuition', v)} label="Prioritize in-state tuition savings" sub="Show me schools where I qualify for in-state rates" accentColor={accent} />
+                <EPToggle checked={data.financialAid} onChange={(v: boolean) => upd('financialAid', v)} label="I need financial aid" sub="Prioritize schools with generous need-based aid" accentColor={accent} />
               </>
             ) : (
               <>
@@ -846,7 +824,7 @@ export default function EditProfilePage() {
                   onChange={v => upd('preferredUSStatesText', v)}
                   placeholder="e.g., California, Texas, New York"
                 />
-                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states with commas</p>
+                <p className="text-[10px] mt-1.5" style={{ color: 'rgba(28,10,12,0.55)' }}>Separate multiple states with commas</p>
               </EPField>
 
               <EPField label="Specific City or Area (optional)">
@@ -860,7 +838,7 @@ export default function EditProfilePage() {
               <EPField label="Open to Other Countries? (optional)">
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.filter(c => c.code !== 'US' && c.code !== 'OTHER').map(c => (
-                    <EPChip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor="#10b981" />
+                    <EPChip key={c.code} label={c.name} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor={accent} />
                   ))}
                 </div>
               </EPField>
@@ -870,7 +848,7 @@ export default function EditProfilePage() {
               <EPField label="Preferred Study Countries">
                 <div className="flex flex-wrap gap-2">
                   {COUNTRIES.filter(c => c.code !== 'OTHER').map(c => (
-                    <EPChip key={c.code} label={`${c.flag} ${c.name}`} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor={accent} />
+                    <EPChip key={c.code} label={c.name} selected={data.preferredCountries.includes(c.name)} onClick={() => toggleCountry(c.name)} accentColor={accent} />
                   ))}
                 </div>
               </EPField>
@@ -884,7 +862,7 @@ export default function EditProfilePage() {
                         onChange={v => upd('preferredUSStatesText', v)}
                         placeholder="e.g., California, New York, Texas"
                       />
-                      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(240,240,248,0.3)' }}>Separate multiple states or cities with commas</p>
+                      <p className="text-[10px] mt-1.5" style={{ color: 'rgba(28,10,12,0.55)' }}>Separate multiple states or cities with commas</p>
                     </EPField>
                   </motion.div>
                 )}
@@ -906,10 +884,7 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-2 gap-2">
               {CAMPUS_ENVIRONMENTS.map(env => (
                 <EPOptionCard key={env.id} selected={data.campusEnvironment === env.id} onClick={() => upd('campusEnvironment', env.id)} accentColor={accent}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">{env.icon}</span>
-                    <span className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{env.label}</span>
-                  </div>
+                  <span className="text-sm font-medium" style={{ color: '#1C0A0C' }}>{env.label}</span>
                 </EPOptionCard>
               ))}
             </div>
@@ -919,8 +894,8 @@ export default function EditProfilePage() {
             <div className="grid grid-cols-4 gap-2">
               {SCHOOL_SIZES.map(s => (
                 <EPOptionCard key={s.id} selected={data.schoolSize === s.id} onClick={() => upd('schoolSize', s.id)} accentColor={accent}>
-                  <div className="text-sm font-bold" style={{ color: '#f0f0f8' }}>{s.label}</div>
-                  <div className="text-xs font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>{s.sub}</div>
+                  <div className="text-sm font-bold" style={{ color: '#1C0A0C' }}>{s.label}</div>
+                  <div className="text-xs font-light" style={{ color: 'rgba(28,10,12,0.45)' }}>{s.sub}</div>
                 </EPOptionCard>
               ))}
             </div>
@@ -958,7 +933,7 @@ export default function EditProfilePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             className="fixed bottom-6 right-6 flex items-center gap-2 text-sm font-medium px-5 py-3 rounded-full"
-            style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', color: '#34d399' }}
+            style={{ background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.22)', color: '#8C2D35' }}
           >
             <Check className="w-4 h-4" />
             Changes saved

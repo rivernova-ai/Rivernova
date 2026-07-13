@@ -59,17 +59,23 @@ Please provide a JSON response with this exact structure:
         "testScores": "SAT 1400+ or equivalent",
         "other": "Portfolio, essays, recommendations"
       },
+      "tier": "target",
       "whyUnbiased": "This recommendation is based purely on program fit, career outcomes, and affordability. Rivernova receives $0 commission from this institution.",
       "citations": ["Source 1", "Source 2"]
     }
   ]
 }
 
+For the "tier" field, classify each school as:
+- "reach": successProbability below 45 (admission is ambitious given the student's profile)
+- "target": successProbability 45–74 (realistic and well-aligned with the student's profile)
+- "safety": successProbability 75 or above (high confidence of admission)
+
 Rank matches by overall fit (success probability, affordability, career outcomes). Ensure all data is accurate and based on the research provided. Include the "whyUnbiased" field for every match to emphasize zero commission.`;
 
   try {
     const { text } = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
+      model: anthropic('claude-sonnet-4-6'),
       prompt,
     });
 
@@ -104,7 +110,7 @@ Make it personal, authentic, and compelling.`;
 
   try {
     const { text } = await generateText({
-      model: anthropic('claude-3-5-sonnet-20241022'),
+      model: anthropic('claude-sonnet-4-6'),
       prompt,
     });
 

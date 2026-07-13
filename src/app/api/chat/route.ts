@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
+import { createClient } from '@/utils/supabase/server';
+import { enforceRateLimit } from '@/lib/rateLimit';
+import { sanitizeForPrompt } from '@/lib/sanitize';
 
 interface MetricsPayload {
   safety: number;
@@ -13,13 +16,26 @@ const clampScore = (v: unknown): number => {
   return isNaN(n) ? 50 : Math.max(0, Math.min(100, Math.round(n)));
 };
 
+
 export async function POST(req: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rateLimitResponse = await enforceRateLimit(supabase, user.id, 'last_chat_at', 10_000, 'chat message');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { messages, context } = await req.json();
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json({ error: 'Messages array is required' }, { status: 400 });
     }
+
+    // Cap conversation history to prevent context-window overflow and runaway API spend.
+    const cappedMessages = messages.slice(-40);
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
@@ -27,10 +43,12 @@ export async function POST(req: NextRequest) {
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const isDeepResearch = context?.type === 'deep-research';
+    const safeSchoolName = sanitizeForPrompt(context?.schoolName);
+    const safeLocation = sanitizeForPrompt(context?.location);
 
     // ── DEEP RESEARCH MODE: Perplexity real-time intel ──
     let researchedData = '';
-    if (isDeepResearch && process.env.PERPLEXITY_API_KEY) {
+    if (isDeepResearch && safeSchoolName && process.env.PERPLEXITY_API_KEY) {
       try {
         const perpController = new AbortController();
         const perpTimeout = setTimeout(() => perpController.abort(), 8000);
@@ -50,7 +68,7 @@ export async function POST(req: NextRequest) {
               },
               {
                 role: 'user',
-                content: `Research deep intel for ${context.schoolName} in ${context.location}:
+                content: `Research deep intel for ${safeSchoolName} in ${safeLocation}:
 1. Crime & Safety: Recent incidents, areas to avoid, night safety.
 2. Student Life Reality: Best clubs, social hierarchy, pressure levels.
 3. Local Vibe: Transit, food scene, cost of living for students.
@@ -75,7 +93,7 @@ Return a concise data-rich briefing.`,
     const systemPrompt = `You are a high-level Strategic Education Advisor for Rivernova.
 You provide elite, data-backed intelligence to help students make life-changing decisions.
 ${researchedData ? `\nREAL-TIME INTEL (prioritize this):\n${researchedData}\n` : ''}
-${context?.schoolName ? `Focusing on: ${context.schoolName} (${context.location})` : ''}
+${safeSchoolName ? `Focusing on: ${safeSchoolName} (${safeLocation})` : ''}
 
 Rules:
 1. Be brutally honest. If a city is dangerous or a school has a toxic culture, say it directly.
@@ -84,9 +102,9 @@ Rules:
 4. Start deep-research responses with a bold STRATEGIC BRIEFING header.
 5. CRITICAL: Always write your complete text briefing FIRST. Only call tools AFTER your full text response is written. Never skip the text.`;
 
-    const anthropicMessages = messages.map((msg: { role: string; content: string }) => ({
+    const anthropicMessages = cappedMessages.map((msg: { role: string; content: string }) => ({
       role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
-      content: msg.content,
+      content: typeof msg.content === 'string' ? msg.content : '',
     }));
 
     // ── CALL CLAUDE (tool use for deep-research to get metrics reliably) ──
