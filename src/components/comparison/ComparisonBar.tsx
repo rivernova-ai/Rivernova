@@ -10,128 +10,139 @@ interface ComparisonBarProps {
   onRemoveSchool: (schoolName: string) => void;
 }
 
-const SCHOOL_COLORS = ['#6366f1', '#10b981', '#a855f7', '#f59e0b'];
+const SCHOOL_DOT_COLORS = [
+  '#8C2D35',
+  '#1C0A0C',
+  'rgba(140,45,53,0.6)',
+  'rgba(28,10,12,0.5)',
+];
 
 export function ComparisonBar({ selectedSchools, onViewComparison, onRemoveSchool }: ComparisonBarProps) {
   if (selectedSchools.length < 1) return null;
 
-  const scoreColor = (s: number) => s >= 80 ? '#34d399' : s >= 60 ? '#fb923c' : '#f87171';
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none">
-      {/* Ambient glow from below */}
-      <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-56 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%)' }}
-      />
-
-      <div className="max-w-7xl mx-auto px-6 pb-6">
+    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50, pointerEvents: 'none' }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px 20px' }}>
         <div
-          className="pointer-events-auto relative rounded-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-500 ease-out"
           style={{
-            background: 'rgba(8,8,16,0.93)',
-            border: '1px solid rgba(255,255,255,0.1)',
+            pointerEvents: 'auto',
+            borderRadius: '18px',
+            overflow: 'hidden',
+            background: 'rgba(245,237,229,0.97)',
+            border: '1px solid rgba(140,45,53,0.18)',
             backdropFilter: 'blur(40px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(40px) saturate(180%)',
+            boxShadow: '0 -4px 32px rgba(140,45,53,0.08), 0 8px 40px rgba(28,10,12,0.10)',
           }}
         >
-          {/* Top indigo shimmer line */}
-          <div
-            className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(99,102,241,0.7) 50%, transparent 100%)' }}
-          />
+          {/* Top crimson accent line */}
+          <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent 0%, rgba(140,45,53,0.5) 50%, transparent 100%)' }} />
 
-          <div className="px-6 py-4">
-            <div className="flex items-center gap-5">
+          <div style={{ padding: '12px 20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+
               {/* Label */}
-              <div className="flex-shrink-0 hidden md:flex flex-col">
-                <span className="text-[9px] font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(240,240,248,0.3)' }}>Comparison</span>
-                <span className="text-[9px] font-black uppercase tracking-[0.28em]" style={{ color: 'rgba(240,240,248,0.3)' }}>Engine</span>
+              <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.4)' }}>Compare</span>
+                <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.4)' }}>Schools</span>
               </div>
-              <div className="hidden md:block w-px h-8 self-center" style={{ background: 'rgba(255,255,255,0.08)' }} />
+              <div style={{ width: '1px', height: '28px', background: 'rgba(140,45,53,0.12)', flexShrink: 0 }} />
 
               {/* School pills */}
-              <div className="flex items-center gap-3 flex-1 min-w-0 overflow-x-auto">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0, overflowX: 'auto' }}>
                 {selectedSchools.map((school, idx) => {
-                  const sc = scoreColor(school.matchScore || 0);
-                  const accent = SCHOOL_COLORS[idx % SCHOOL_COLORS.length];
+                  const dotColor = SCHOOL_DOT_COLORS[idx % SCHOOL_DOT_COLORS.length];
                   return (
                     <div
                       key={school.name}
-                      className="flex-shrink-0 flex items-center gap-2.5 rounded-full px-4 py-2.5 transition-all animate-in fade-in slide-in-from-left-2 duration-400"
                       style={{
-                        background: `${accent}0f`,
-                        border: `1px solid ${accent}35`,
-                        animationDelay: `${idx * 70}ms`,
-                        animationFillMode: 'backwards',
+                        flexShrink: 0,
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        borderRadius: '100px', padding: '7px 12px 7px 10px',
+                        background: 'rgba(140,45,53,0.05)',
+                        border: '1px solid rgba(140,45,53,0.14)',
                       }}
                     >
                       {/* Letter badge */}
-                      <div
-                        className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
-                        style={{ background: `${accent}28`, color: accent }}
-                      >
+                      <div style={{
+                        width: '20px', height: '20px', borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0, fontSize: '10px', fontWeight: 700,
+                        background: 'rgba(140,45,53,0.10)',
+                        color: '#8C2D35',
+                      }}>
                         {String.fromCharCode(65 + idx)}
                       </div>
 
                       {/* Name */}
-                      <span className="text-sm font-light truncate max-w-[150px]" style={{ color: '#f0f0f8' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 400, color: '#1C0A0C', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {cleanText(school.name)}
                       </span>
 
                       {/* Match score */}
                       {(school.matchScore || 0) > 0 && (
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <div className="w-1.5 h-1.5 rounded-full" style={{ background: sc }} />
-                          <span className="text-[11px] font-semibold" style={{ color: sc }}>{school.matchScore}%</span>
-                        </div>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(28,10,12,0.55)', flexShrink: 0 }}>
+                          {school.matchScore}%
+                        </span>
                       )}
 
                       {/* Remove */}
                       <button
                         onClick={() => onRemoveSchool(school.name)}
-                        className="w-5 h-5 rounded-full flex items-center justify-center transition-all hover:rotate-90 duration-200 flex-shrink-0"
-                        style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(240,240,248,0.4)' }}
+                        style={{
+                          width: '18px', height: '18px', borderRadius: '50%',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'rgba(140,45,53,0.08)',
+                          border: '1px solid rgba(140,45,53,0.14)',
+                          color: 'rgba(28,10,12,0.45)',
+                          cursor: 'pointer', transition: 'all 0.15s ease', flexShrink: 0,
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.15)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.08)'; }}
                       >
-                        <X className="w-3 h-3" />
+                        <X style={{ width: '10px', height: '10px' }} />
                       </button>
                     </div>
                   );
                 })}
 
-                {/* Empty slot hints */}
+                {/* Empty slot hint */}
                 {selectedSchools.length === 1 && (
-                  <div
-                    className="flex-shrink-0 flex items-center gap-2 rounded-full px-4 py-2.5"
-                    style={{ border: '1px dashed rgba(255,255,255,0.15)' }}
-                  >
-                    <span className="text-xs" style={{ color: 'rgba(240,240,248,0.28)' }}>+ Add one more school</span>
+                  <div style={{
+                    flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px',
+                    borderRadius: '100px', padding: '7px 14px',
+                    border: '1px dashed rgba(140,45,53,0.22)',
+                  }}>
+                    <span style={{ fontSize: '12px', color: 'rgba(28,10,12,0.35)' }}>+ Add one more school</span>
                   </div>
                 )}
               </div>
 
               {/* CTA */}
-              <div className="flex-shrink-0 flex items-center gap-4">
+              <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {selectedSchools.length < 2 && (
-                  <span className="text-xs hidden sm:block" style={{ color: 'rgba(240,240,248,0.38)' }}>
+                  <span style={{ fontSize: '12px', color: 'rgba(28,10,12,0.4)' }}>
                     Add {2 - selectedSchools.length} more
                   </span>
                 )}
                 <button
                   onClick={onViewComparison}
                   disabled={selectedSchools.length < 2}
-                  className="group relative flex items-center gap-2.5 rounded-full px-6 h-11 font-semibold text-sm transition-all duration-300 hover:scale-[1.04] active:scale-[0.97] disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
                   style={{
-                    background: 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-                    color: '#fff',
-                    boxShadow: '0 0 28px rgba(99,102,241,0.45)',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    height: '40px', padding: '0 22px', borderRadius: '100px',
+                    background: selectedSchools.length >= 2 ? '#8C2D35' : 'rgba(140,45,53,0.25)',
+                    color: '#F5EDE5', border: 'none',
+                    fontSize: '13px', fontWeight: 600,
+                    cursor: selectedSchools.length >= 2 ? 'pointer' : 'not-allowed',
+                    transition: 'all 0.2s ease', fontFamily: 'inherit',
+                    boxShadow: selectedSchools.length >= 2 ? '0 4px 16px rgba(140,45,53,0.25)' : 'none',
                   }}
+                  onMouseEnter={e => { if (selectedSchools.length >= 2) (e.currentTarget as HTMLElement).style.transform = 'scale(1.03)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
                 >
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.12),transparent)' }} />
-                  <span className="relative tracking-tight">
-                    Compare{selectedSchools.length > 1 ? ` ${selectedSchools.length} Schools` : ''}
-                  </span>
-                  <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" />
+                  <span>Compare{selectedSchools.length > 1 ? ` ${selectedSchools.length} Schools` : ''}</span>
+                  <ArrowRight style={{ width: '14px', height: '14px' }} />
                 </button>
               </div>
             </div>

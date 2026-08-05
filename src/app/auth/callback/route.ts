@@ -20,8 +20,11 @@ export async function GET(request: Request) {
           .eq('id', user.id)
           .single()
         
-        // Redirect to onboarding if not completed, otherwise dashboard or next param
-        const redirectPath = next || (profile?.onboarding_completed ? '/dashboard' : '/onboarding')
+        // Only honour `next` if it's a same-origin path (starts with / but not //)
+        const safeNext = typeof next === 'string' && next.startsWith('/') && !next.startsWith('//')
+          ? next
+          : null
+        const redirectPath = safeNext ?? (profile?.onboarding_completed ? '/dashboard' : '/onboarding')
         return NextResponse.redirect(`${origin}${redirectPath}`)
       }
     }

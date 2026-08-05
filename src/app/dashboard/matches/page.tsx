@@ -5,7 +5,26 @@ import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { MatchCard, type Match } from '@/components/matches/MatchCard';
+import { ComparisonBar } from '@/components/comparison/ComparisonBar';
+import { ComparisonModal } from '@/components/comparison/ComparisonModal';
+import { type ComparisonSchool } from '@/lib/comparison';
 import { Loader2, Sparkles, Search, RefreshCw } from 'lucide-react';
+
+function matchToComparisonSchool(match: Match): ComparisonSchool {
+  return {
+    name: match.schoolName,
+    location: match.location,
+    program: match.programName,
+    tuition: `$${match.costBreakdown.tuition.toLocaleString()}`,
+    netPrice: `$${match.costBreakdown.total.toLocaleString()}`,
+    matchScore: match.successProbability,
+    gpaMinimum: match.admissionRequirements?.gpa,
+    scholarships: match.costBreakdown.scholarshipPotential
+      ? `$${match.costBreakdown.scholarshipPotential.toLocaleString()}`
+      : undefined,
+    highlights: match.highlights,
+  };
+}
 
 export default function MatchesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -13,6 +32,18 @@ export default function MatchesPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [selectedSchools, setSelectedSchools] = useState<ComparisonSchool[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
+
+  const handleToggleCompare = (match: Match) => {
+    const school = matchToComparisonSchool(match);
+    setSelectedSchools(prev => {
+      const exists = prev.find(s => s.name === school.name);
+      if (exists) return prev.filter(s => s.name !== school.name);
+      if (prev.length >= 4) return prev;
+      return [...prev, school];
+    });
+  };
 
   useEffect(() => {
     if (!authLoading && !user) { router.push('/'); return; }
@@ -26,10 +57,29 @@ export default function MatchesPage() {
         .from('matches').select('*').eq('user_id', user?.id)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      setMatches(data.map((m: any) => ({ id: m.id, ...m.school_data, favorited: m.favorited })));
+      const mapped = data.map((m: any) => ({ id: m.id, ...m.school_data, favorited: m.favorited }));
+      setMatches(mapped);
+      setLoading(false);
+
+      // Silently backfill any matches that don't have College Scorecard data yet
+      const needsBackfill = mapped.some((m: any) => !m.dataSource);
+      if (needsBackfill) {
+        fetch('/api/matches/backfill-scorecard', { method: 'POST' })
+          .then(r => r.json())
+          .then(({ enriched }) => {
+            if (enriched > 0) {
+              // Reload cards so they show the corrected government data
+              supabase.from('matches').select('*').eq('user_id', user?.id)
+                .order('created_at', { ascending: false })
+                .then(({ data: fresh }) => {
+                  if (fresh) setMatches(fresh.map((m: any) => ({ id: m.id, ...m.school_data, favorited: m.favorited })));
+                });
+            }
+          })
+          .catch(() => { /* non-critical */ });
+      }
     } catch (error) {
       console.error('Error loading matches:', error);
-    } finally {
       setLoading(false);
     }
   };
@@ -183,7 +233,13 @@ export default function MatchesPage() {
                     <span style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.42)' }}>{cfg.sub}</span>
                   </div>
                   {group.map(match => (
-                    <MatchCard key={match.id} match={match} onFavorite={handleFavorite} />
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      onFavorite={handleFavorite}
+                      onToggleCompare={handleToggleCompare}
+                      isCompared={selectedSchools.some(s => s.name === match.schoolName)}
+                    />
                   ))}
                 </div>
               );
@@ -195,6 +251,20 @@ export default function MatchesPage() {
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
+
+      <ComparisonBar
+        selectedSchools={selectedSchools}
+        onViewComparison={() => setShowComparison(true)}
+        onRemoveSchool={name => setSelectedSchools(prev => prev.filter(s => s.name !== name))}
+      />
+
+      {showComparison && (
+        <ComparisonModal
+          schools={selectedSchools}
+          userProfile={user}
+          onClose={() => setShowComparison(false)}
+        />
+      )}
     </div>
   );
 }

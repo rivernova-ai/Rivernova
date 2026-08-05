@@ -1,6 +1,9 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+import { enforceRateLimit } from '@/lib/rateLimit';
+import { sanitizeForPrompt } from '@/lib/sanitize';
 
 const anthropic = createAnthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -8,6 +11,15 @@ const anthropic = createAnthropic({
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rateLimitResponse = await enforceRateLimit(supabase, user.id, 'last_compare_at', 30_000, 'comparison');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const { schools, userProfile } = await request.json();
 
     if (!schools || schools.length < 2) {
@@ -24,18 +36,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Sanitize all user-controlled strings before prompt interpolation.
+    const safeMajor = sanitizeForPrompt(userProfile.major);
+    const safeCareerField = sanitizeForPrompt(userProfile.careerField);
+    const safeDreamJob = sanitizeForPrompt(userProfile.dreamJob);
+    const safeLocation = sanitizeForPrompt(userProfile.preferredCountries);
+
     const schoolsText = schools
       .map(
         (school: any, idx: number) => `
-School ${idx + 1}: ${school.name}
-Location: ${school.location}
-Program: ${school.program}
+School ${idx + 1}: ${sanitizeForPrompt(school.name)}
+Location: ${sanitizeForPrompt(school.location)}
+Program: ${sanitizeForPrompt(school.program)}
 Match Score: ${school.matchScore}%
-Tuition: ${school.tuition}
+Tuition: ${sanitizeForPrompt(school.tuition)}
 Admission Rate: ${school.admissionRate || 'N/A'}
 Employment Rate: ${school.employmentRate || 'N/A'}
 Avg Salary: ${school.avgSalary || 'N/A'}
-Highlights: ${school.highlights?.join(', ') || 'N/A'}
+Highlights: ${school.highlights?.map((h: string) => sanitizeForPrompt(h)).join(', ') || 'N/A'}
 `
       )
       .join('\n');
@@ -43,11 +61,11 @@ Highlights: ${school.highlights?.join(', ') || 'N/A'}
     const prompt = `You are an expert education counselor providing personalized school comparison advice.
 
 STUDENT PROFILE:
-- Major: ${userProfile.major}
-- Career Goal: ${userProfile.careerField} (Dream Job: ${userProfile.dreamJob})
+- Major: ${safeMajor}
+- Career Goal: ${safeCareerField} (Dream Job: ${safeDreamJob})
 - GPA: ${userProfile.gpa || 'Not provided'}
 - Budget: $${userProfile.budgetMin || 0} - $${userProfile.budgetMax || 0} USD/year
-- Location Preference: ${userProfile.preferredCountries || 'Not specified'}
+- Location Preference: ${safeLocation || 'Not specified'}
 
 SCHOOLS TO COMPARE:
 ${schoolsText}
@@ -70,7 +88,7 @@ NEXT STEPS:
 [Specific action items the student should take to decide between these schools]`;
 
     const { text } = await generateText({
-      model: anthropic('claude-sonnet-4-20250514'),
+      model: anthropic('claude-sonnet-4-6'),
       prompt,
       temperature: 0.7,
     });

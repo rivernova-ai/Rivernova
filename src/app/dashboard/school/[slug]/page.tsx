@@ -128,6 +128,10 @@ export default function SchoolProfile() {
               test_policy: cleanText(s.test_policy || (s.test_optional ? 'Test-Optional' : '')),
               concern: cleanText(s.concern || ''),
               deadline_type: cleanText(s.deadline_type || ''),
+              dataSource: s.dataSource || '',
+              dataSources: s.dataSources || {},
+              postGradWorkRights: cleanText(s.postGradWorkRights || ''),
+              englishRequirements: cleanText(s.englishRequirements || ''),
             });
             setIsFavorite(match.favorited || false);
 
@@ -152,6 +156,47 @@ export default function SchoolProfile() {
       return () => clearTimeout(t);
     }
   }, [school]);
+
+  // Enrich old matches that predate College Scorecard integration (one-time per school, persisted to DB)
+  useEffect(() => {
+    if (!school) return;
+    if (school.dataSource) return; // already enriched with real data
+    fetch('/api/school-enrich', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        matchId: school.id,
+        schoolName: school.name,
+        programName: school.program,
+        location: school.location,
+        isInternational: profileMode === 'international',
+      }),
+    })
+      .then(r => r.json())
+      .then(({ enriched }) => {
+        if (!enriched) return;
+        setSchool((prev: any) => ({
+          ...prev,
+          ranking: enriched.ranking || prev.ranking,
+          admissionRate: enriched.admissionRate || prev.admissionRate,
+          admissionNum: enriched.admissionRate ? parseFloat(enriched.admissionRate) : prev.admissionNum,
+          graduationRate: enriched.graduationRate || prev.graduationRate,
+          graduationNum: enriched.graduationRate ? parseFloat(enriched.graduationRate) : prev.graduationNum,
+          employmentRate: enriched.employmentRate || prev.employmentRate,
+          avgSalary: enriched.avgSalary || prev.avgSalary,
+          netPrice: enriched.netPrice || prev.netPrice,
+          deadline: enriched.deadline || prev.deadline,
+          deadline_type: enriched.deadline_type || prev.deadline_type,
+          test_policy: enriched.test_policy || prev.test_policy,
+          stemOpt: enriched.stemOpt || prev.stemOpt,
+          dataSource: enriched.dataSource || prev.dataSource,
+          tuition: enriched.costBreakdown?.tuition
+            ? `$${enriched.costBreakdown.tuition.toLocaleString()}`
+            : prev.tuition,
+        }));
+      })
+      .catch(() => { /* non-critical, fail silently */ });
+  }, [school?.id]);
 
   const toggleFavorite = async () => {
     if (!school || !user) return;
@@ -795,15 +840,29 @@ export default function SchoolProfile() {
           </h2>
           <div style={{ background: 'rgba(140,45,53,0.02)', border: '1px solid rgba(140,45,53,0.08)', borderRadius: '20px', overflow: 'hidden' }}>
             {([
-              { label: 'Intended Major / Program', value: school.program || 'Undeclared', icon: GraduationCap, color: '#8C2D35' },
-              { label: 'Minimum GPA Required', value: school.gpaMinimum || 'Not Specified', icon: Award, color: '#8C2D35' },
-              { label: 'Application Deadline', value: school.deadline || 'Rolling Admission', icon: Calendar, color: 'rgba(28,10,12,0.55)' },
-              ...(school.deadline_type ? [{ label: 'Deadline Type', value: school.deadline_type, icon: Calendar, color: 'rgba(28,10,12,0.55)' }] : []),
-              { label: 'National Ranking', value: school.ranking || school.program_rank || 'N/A', icon: Star, color: 'rgba(28,10,12,0.55)' },
-              { label: 'Sticker Tuition', value: school.tuition || '—', icon: DollarSign, color: 'rgba(28,10,12,0.55)' },
-              ...(school.test_policy ? [{ label: 'Test Policy', value: school.test_policy, icon: CheckCircle2, color: '#8C2D35' }] : []),
-            ] as { label: string; value: string; icon: React.ElementType; color: string }[]).map((row, i, arr) => {
+              { label: 'Intended Major / Program', value: school.program || 'Undeclared', icon: GraduationCap, color: '#8C2D35', sourceKey: '' },
+              { label: 'Minimum GPA Required', value: school.gpaMinimum || 'Not Specified', icon: Award, color: '#8C2D35', sourceKey: '' },
+              { label: 'Application Deadline', value: school.deadline || 'Rolling Admission', icon: Calendar, color: 'rgba(28,10,12,0.55)', sourceKey: 'deadline' },
+              ...(school.deadline_type ? [{ label: 'Deadline Type', value: school.deadline_type, icon: Calendar, color: 'rgba(28,10,12,0.55)', sourceKey: '' }] : []),
+              { label: 'National Ranking', value: school.ranking || school.program_rank || 'Loading...', icon: Star, color: 'rgba(28,10,12,0.55)', sourceKey: 'ranking' },
+              { label: 'Sticker Tuition', value: school.tuition || '—', icon: DollarSign, color: 'rgba(28,10,12,0.55)', sourceKey: 'tuition' },
+              ...(school.test_policy ? [{ label: 'Test Policy', value: school.test_policy, icon: CheckCircle2, color: '#8C2D35', sourceKey: 'testPolicy' }] : []),
+              ...(school.stemOpt ? [{ label: 'STEM OPT Eligible', value: school.stemOpt, icon: CheckCircle2, color: school.stemOpt === 'Yes' ? '#059669' : 'rgba(28,10,12,0.55)', sourceKey: 'stemOpt' }] : []),
+              ...(school.postGradWorkRights ? [{ label: 'Post-Grad Work Rights', value: school.postGradWorkRights, icon: CheckCircle2, color: '#059669', sourceKey: '' }] : []),
+              ...(school.englishRequirements ? [{ label: 'English Requirements', value: school.englishRequirements, icon: Award, color: 'rgba(28,10,12,0.55)', sourceKey: '' }] : []),
+            ] as { label: string; value: string; icon: React.ElementType; color: string; sourceKey: string }[]).map((row, i, arr) => {
               const Icon = row.icon;
+              const src = row.sourceKey ? school.dataSources?.[row.sourceKey] : null;
+              const srcColor = src?.includes('Scorecard') || src?.includes('Perplexity')
+                ? src.includes('Scorecard') ? '#059669' : '#2563EB'
+                : 'rgba(28,10,12,0.35)';
+              const srcLabel = src?.includes('Scorecard')
+                ? '✓ Gov. verified'
+                : src?.includes('Perplexity')
+                  ? '⟳ Live search'
+                  : src
+                    ? '~ AI estimated'
+                    : null;
               return (
                 <div key={i}
                   style={{
@@ -823,7 +882,14 @@ export default function SchoolProfile() {
                     <Icon style={{ width: '14px', height: '14px', color: row.color }} />
                   </div>
                   <span style={{ fontSize: '13px', fontWeight: 300, color: 'rgba(28,10,12,0.55)', flex: 1 }}>{row.label}</span>
-                  <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(28,10,12,0.84)' }}>{row.value}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(28,10,12,0.84)' }}>{row.value}</span>
+                    {srcLabel && (
+                      <span style={{ fontSize: '9px', fontWeight: 600, color: srcColor, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                        {srcLabel}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

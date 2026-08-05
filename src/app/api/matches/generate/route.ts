@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { enforceRateLimit } from '@/lib/rateLimit';
 import { researchSchools } from '@/lib/ai/perplexity';
 import { synthesizeMatches } from '@/lib/ai/claude';
+import { lookupSchool, applyVerifiedData } from '@/lib/collegeScorecard';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,6 +13,9 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const rateLimitResponse = await enforceRateLimit(supabase, user.id, 'last_search_at', 60_000, 'match generation');
+    if (rateLimitResponse) return rateLimitResponse;
 
     // Get user profile
     const { data: profile, error: profileError } = await supabase
@@ -29,9 +34,9 @@ export async function POST(request: NextRequest) {
     const budget = profile.budget || {};
     const location = profile.location_preferences || {};
 
-    // Step 1: Research schools using Perplexity
+    // Step 1: Research schools using Perplexity (returns live facts + raw text)
     console.log('Researching schools with Perplexity...');
-    const researchData = await researchSchools({
+    const { rawText, schools: verifiedFacts } = await researchSchools({
       major: academic.major || 'General Studies',
       careerField: career.careerField || 'Various',
       budgetMin: parseInt(budget.min) || 10000,
@@ -44,10 +49,11 @@ export async function POST(request: NextRequest) {
       testScores: academic.testScores,
     });
 
-    // Step 2: Synthesize matches using Claude
+    // Step 2: Synthesize matches using Claude (verified facts are passed as locked ground truth)
     console.log('Synthesizing matches with Claude...');
     const matchResults = await synthesizeMatches({
-      researchData,
+      researchData: rawText,
+      verifiedFacts,
       userProfile: {
         major: academic.major || 'General Studies',
         careerField: career.careerField || 'Various',
@@ -65,8 +71,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Step 3: Save matches to database
-    const matchesToSave = matchResults.matches.map((match: any) => ({
+    // Step 3: Overwrite AI-guessed numbers with College Scorecard verified data
+    console.log('Enriching matches with College Scorecard data...');
+    const isInternational = (profile.mode || 'international') === 'international';
+    const enrichedMatches = await Promise.all(
+      matchResults.matches.map(async (match: any) => {
+        try {
+          const scorecard = await lookupSchool(match.schoolName, supabase, match.programName);
+          if (scorecard) {
+            return applyVerifiedData(match, scorecard, isInternational);
+          }
+        } catch (err) {
+          console.error(`Scorecard lookup failed for ${match.schoolName}:`, err);
+        }
+        return match;
+      })
+    );
+
+    // Step 4: Save matches to database
+    const matchesToSave = enrichedMatches.map((match: any) => ({
       user_id: user.id,
       school_name: match.schoolName,
       school_data: match,
@@ -87,8 +110,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      matches: matchResults.matches,
-      count: matchResults.matches.length,
+      matches: enrichedMatches,
+      count: enrichedMatches.length,
     });
   } catch (error: any) {
     console.error('Error generating matches:', error);

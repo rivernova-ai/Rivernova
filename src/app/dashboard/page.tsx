@@ -70,41 +70,38 @@ const SEARCH_STEPS = [
 
 const TIER_CONFIG = {
   safety: {
-    icon: '🛡️',
     label: 'Safety Schools',
     desc: 'Your profile is well above their typical admit — high probability of acceptance',
-    color: '#34d399',
-    rgb: '52,211,153',
-    bg: 'rgba(52,211,153,0.05)',
-    border: 'rgba(52,211,153,0.14)',
+    color: '#8C2D35',
+    rgb: '140,45,53',
+    bg: 'rgba(140,45,53,0.05)',
+    border: 'rgba(140,45,53,0.14)',
   },
   target: {
-    icon: '🎯',
     label: 'Target Schools',
     desc: "You're in range — competitive but highly achievable with a strong application",
-    color: '#818cf8',
-    rgb: '129,140,248',
-    bg: 'rgba(129,140,248,0.05)',
-    border: 'rgba(129,140,248,0.14)',
+    color: '#8C2D35',
+    rgb: '140,45,53',
+    bg: 'rgba(140,45,53,0.05)',
+    border: 'rgba(140,45,53,0.14)',
   },
   reach: {
-    icon: '🚀',
     label: 'Reach Schools',
     desc: 'Selective and ambitious — worth every application, expect competition',
-    color: '#fb923c',
-    rgb: '251,146,60',
-    bg: 'rgba(251,146,60,0.05)',
-    border: 'rgba(251,146,60,0.14)',
+    color: 'rgba(28,10,12,0.65)',
+    rgb: '28,10,12',
+    bg: 'rgba(28,10,12,0.04)',
+    border: 'rgba(28,10,12,0.12)',
   },
 } as const;
 
-const APP_STATUS_CONFIG: Record<string, { label: string; icon: string; color: string; bg: string; border: string }> = {
-  considering:  { label: 'Considering',  icon: '👀', color: '#818cf8', bg: 'rgba(129,140,248,0.1)',  border: 'rgba(129,140,248,0.3)' },
-  applying:     { label: 'Applying',     icon: '✍️', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)',   border: 'rgba(96,165,250,0.3)' },
-  submitted:    { label: 'Submitted',    icon: '📨', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)',  border: 'rgba(167,139,250,0.3)' },
-  accepted:     { label: 'Accepted! 🎉', icon: '✅', color: '#34d399', bg: 'rgba(52,211,153,0.1)',   border: 'rgba(52,211,153,0.3)' },
-  waitlisted:   { label: 'Waitlisted',   icon: '⏳', color: '#fb923c', bg: 'rgba(251,146,60,0.1)',   border: 'rgba(251,146,60,0.3)' },
-  rejected:     { label: 'Not Selected', icon: '○',  color: 'rgba(240,240,248,0.3)', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)' },
+const APP_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  considering:  { label: 'Considering',  color: 'rgba(28,10,12,0.55)', bg: 'rgba(28,10,12,0.05)',  border: 'rgba(28,10,12,0.15)' },
+  applying:     { label: 'Applying',     color: '#8C2D35',             bg: 'rgba(140,45,53,0.07)',  border: 'rgba(140,45,53,0.20)' },
+  submitted:    { label: 'Submitted',    color: 'rgba(28,10,12,0.7)',  bg: 'rgba(28,10,12,0.05)',  border: 'rgba(28,10,12,0.15)' },
+  accepted:     { label: 'Accepted',     color: '#8C2D35',             bg: 'rgba(140,45,53,0.07)',  border: 'rgba(140,45,53,0.20)' },
+  waitlisted:   { label: 'Waitlisted',   color: 'rgba(28,10,12,0.55)', bg: 'rgba(28,10,12,0.05)',  border: 'rgba(28,10,12,0.15)' },
+  rejected:     { label: 'Not Selected', color: 'rgba(28,10,12,0.4)',  bg: 'rgba(28,10,12,0.04)',  border: 'rgba(28,10,12,0.12)' },
 };
 
 const DEFAULT_FILTERS: FilterOptions = {
@@ -477,7 +474,6 @@ export default function Dashboard() {
   };
 
   const isSel = (n: string) => comparison.schools.some(s => s.name === n);
-  const scoreColor = (s: number) => s >= 80 ? '#34d399' : s >= 60 ? '#fb923c' : '#f87171';
 
   const modes = [
     { id: 'domestic' as const, label: 'Domestic', icon: Home },
@@ -485,8 +481,8 @@ export default function Dashboard() {
   ];
 
   if (loading || checking) return (
-    <div style={{ background: '#080810', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#6366f1' }} />
+    <div style={{ background: '#F5EDE5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#8C2D35' }} />
     </div>
   );
   if (!profile) return null;
@@ -494,13 +490,11 @@ export default function Dashboard() {
   // ── Card renderer ──────────────────────────────────────────────────────────
   const renderCard = (school: SchoolMatch, idx: number) => {
     const sc = school.matchScore || 0;
-    const col = scoreColor(sc);
     const selected = isSel(school.name);
     const fav = favorites.has(cleanText(school.name));
     const budgetMax = profile?.budget?.perYear || (profile?.budget?.max ? Number(profile.budget.max) : null);
     const tuitionNum = parseInt((school.tuition || '').replace(/[^0-9]/g, '') || '0') || school.tuition_instate || 0;
     const withinBudget = budgetMax && tuitionNum > 0 && tuitionNum <= budgetMax;
-    const circumference = 2 * Math.PI * 18;
     const tier = school.tier || 'target';
     const tierCfg = TIER_CONFIG[tier];
     const appStatus = applicationStatuses[cleanText(school.name)] || '';
@@ -512,8 +506,8 @@ export default function Dashboard() {
         key={`${school.name}-${idx}`}
         onClick={() => handleSchoolClick(school)}
         style={{
-          background: selected ? 'rgba(99,102,241,0.06)' : 'rgba(255,255,255,0.025)',
-          border: `1px solid ${selected ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)'}`,
+          background: selected ? 'rgba(140,45,53,0.06)' : 'rgba(140,45,53,0.04)',
+          border: `1px solid ${selected ? 'rgba(140,45,53,0.25)' : 'rgba(140,45,53,0.10)'}`,
           borderRadius: '20px', overflow: 'hidden',
           cursor: 'pointer', display: 'flex', flexDirection: 'column',
           transition: 'all 0.25s ease',
@@ -521,14 +515,14 @@ export default function Dashboard() {
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLElement;
           el.style.transform = 'translateY(-3px)';
-          el.style.boxShadow = '0 24px 60px rgba(0,0,0,0.45)';
-          el.style.borderColor = selected ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.1)';
+          el.style.boxShadow = '0 12px 32px rgba(140,45,53,0.12)';
+          el.style.borderColor = selected ? 'rgba(140,45,53,0.4)' : 'rgba(140,45,53,0.15)';
         }}
         onMouseLeave={e => {
           const el = e.currentTarget as HTMLElement;
           el.style.transform = 'translateY(0)';
           el.style.boxShadow = 'none';
-          el.style.borderColor = selected ? 'rgba(99,102,241,0.25)' : 'rgba(255,255,255,0.06)';
+          el.style.borderColor = selected ? 'rgba(140,45,53,0.25)' : 'rgba(140,45,53,0.10)';
         }}
       >
         {/* Tier accent bar */}
@@ -540,21 +534,16 @@ export default function Dashboard() {
             <div style={{ flex: 1, minWidth: 0 }}>
               {/* Tier badge */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                <span style={{
-                  fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase',
-                  padding: '2px 8px', borderRadius: '100px',
-                  color: tierCfg.color,
-                  background: `${tierCfg.color}14`,
-                  border: `1px solid ${tierCfg.color}30`,
-                }}>
-                  {tierCfg.icon} {tier.charAt(0).toUpperCase() + tier.slice(1)}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.4)' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: tierCfg.color, display: 'inline-block', flexShrink: 0 }} />
+                  {tier}
                 </span>
                 {school.test_policy && (
                   <span style={{
                     fontSize: '10px', fontWeight: 500, padding: '2px 8px', borderRadius: '100px',
-                    color: school.test_policy === 'Test-Optional' ? '#60a5fa' : school.test_policy === 'Test-Free' ? '#34d399' : 'rgba(240,240,248,0.45)',
-                    background: school.test_policy === 'Test-Optional' ? 'rgba(96,165,250,0.1)' : school.test_policy === 'Test-Free' ? 'rgba(52,211,153,0.1)' : 'rgba(255,255,255,0.05)',
-                    border: `1px solid ${school.test_policy === 'Test-Optional' ? 'rgba(96,165,250,0.25)' : school.test_policy === 'Test-Free' ? 'rgba(52,211,153,0.25)' : 'rgba(255,255,255,0.1)'}`,
+                    color: 'rgba(28,10,12,0.5)',
+                    background: 'rgba(140,45,53,0.05)',
+                    border: '1px solid rgba(140,45,53,0.12)',
                   }}>
                     {school.test_policy}
                   </span>
@@ -562,7 +551,7 @@ export default function Dashboard() {
               </div>
 
               <h3 style={{
-                fontSize: '17px', fontWeight: 600, color: '#f0f0f8',
+                fontSize: '17px', fontWeight: 600, color: '#1C0A0C',
                 letterSpacing: '-0.01em', lineHeight: 1.3, margin: '0 0 6px',
                 overflow: 'hidden', display: '-webkit-box',
                 WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
@@ -572,15 +561,15 @@ export default function Dashboard() {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 {school.location && (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 300, color: 'rgba(240,240,248,0.4)' }}>
-                    <MapPin style={{ width: '11px', height: '11px', opacity: 0.6 }} />
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.6)' }}>
+                    <MapPin style={{ width: '11px', height: '11px', opacity: 0.7 }} />
                     {cleanText(school.location)}
                   </span>
                 )}
                 {school.program_rank && (
                   <>
-                    <span style={{ color: 'rgba(240,240,248,0.15)', fontSize: '11px' }}>·</span>
-                    <span style={{ fontSize: '10px', fontWeight: 500, color: '#fbbf24', background: 'rgba(251,191,36,0.1)', padding: '2px 7px', borderRadius: '100px', border: '1px solid rgba(251,191,36,0.2)' }}>
+                    <span style={{ color: 'rgba(28,10,12,0.15)', fontSize: '11px' }}>·</span>
+                    <span style={{ fontSize: '10px', fontWeight: 500, color: 'rgba(28,10,12,0.5)', background: 'rgba(140,45,53,0.05)', padding: '2px 7px', borderRadius: '100px', border: '1px solid rgba(140,45,53,0.12)' }}>
                       {cleanText(school.program_rank)}
                     </span>
                   </>
@@ -588,46 +577,42 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Score ring */}
-            <div style={{ flexShrink: 0, position: 'relative', width: '54px', height: '54px' }}>
-              <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }} viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="18" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" strokeWidth="2.5" />
-                <circle cx="22" cy="22" r="18" fill="none" stroke={col} strokeWidth="2.5" strokeLinecap="round"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={circumference - (sc / 100) * circumference}
-                  style={{ filter: `drop-shadow(0 0 5px ${col}80)`, transition: 'stroke-dashoffset 1.2s cubic-bezier(0.16,1,0.3,1)' }}
-                />
-              </svg>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#f0f0f8', lineHeight: 1 }}>{sc}</span>
-                <span style={{ fontSize: '7px', fontWeight: 400, color: col, lineHeight: 1, marginTop: '2px', letterSpacing: '0.02em' }}>MATCH</span>
-              </div>
+            {/* Score badge */}
+            <div style={{
+              flexShrink: 0,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              width: '54px', height: '54px', borderRadius: '14px',
+              background: 'rgba(140,45,53,0.05)',
+              border: '1px solid rgba(140,45,53,0.12)',
+            }}>
+              <span style={{ fontSize: '18px', fontWeight: 700, color: '#1C0A0C', lineHeight: 1, letterSpacing: '-0.02em' }}>{sc}%</span>
+              <span style={{ fontSize: '7px', fontWeight: 700, color: 'rgba(28,10,12,0.45)', letterSpacing: '0.10em', textTransform: 'uppercase', marginTop: '4px' }}>match</span>
             </div>
           </div>
         </div>
 
         {/* Metrics row */}
-        <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0 22px' }} />
+        <div style={{ height: '1px', background: 'rgba(140,45,53,0.08)', margin: '0 22px' }} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)' }}>
           {[
             {
               label: 'Tuition / yr',
               value: school.tuition ? cleanText(school.tuition) : (school.tuition_instate ? `$${(school.tuition_instate / 1000).toFixed(0)}k` : '—'),
-              color: '#f0f0f8',
+              color: '#1C0A0C',
             },
             {
               label: 'Admit Rate',
               value: school.acceptance_rate ? `${school.acceptance_rate.toFixed(0)}%` : (school.admissionRate ? cleanText(school.admissionRate) : '—'),
-              color: '#fb923c',
+              color: 'rgba(28,10,12,0.75)',
             },
             {
               label: '10yr Salary',
               value: school.median_earnings_10yr ? `$${(school.median_earnings_10yr / 1000).toFixed(0)}k` : (school.avgSalary ? cleanText(school.avgSalary) : '—'),
-              color: '#34d399',
+              color: 'rgba(28,10,12,0.75)',
             },
           ].map((m, i) => (
-            <div key={i} style={{ padding: '12px 0', textAlign: 'center', borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.05)' : undefined }}>
-              <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,240,248,0.25)', margin: '0 0 5px' }}>{m.label}</p>
+            <div key={i} style={{ padding: '12px 0', textAlign: 'center', borderLeft: i > 0 ? '1px solid rgba(140,45,53,0.08)' : undefined }}>
+              <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.42)', margin: '0 0 5px' }}>{m.label}</p>
               <p style={{ fontSize: '15px', fontWeight: 600, color: m.color, margin: 0 }}>{m.value}</p>
             </div>
           ))}
@@ -636,10 +621,10 @@ export default function Dashboard() {
         {/* Why matched */}
         {school.why_matched && (
           <>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0 22px' }} />
+            <div style={{ height: '1px', background: 'rgba(140,45,53,0.08)', margin: '0 22px' }} />
             <div style={{ padding: '12px 22px', display: 'flex', alignItems: 'flex-start', gap: '9px' }}>
-              <Sparkles style={{ width: '12px', height: '12px', color: '#818cf8', flexShrink: 0, marginTop: '2px' }} />
-              <p style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(240,240,248,0.55)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
+              <Sparkles style={{ width: '12px', height: '12px', color: '#8C2D35', flexShrink: 0, marginTop: '2px' }} />
+              <p style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.7)', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
                 {school.why_matched}
               </p>
             </div>
@@ -648,9 +633,8 @@ export default function Dashboard() {
 
         {/* Concern */}
         {school.concern && (
-          <div style={{ padding: '10px 22px', display: 'flex', alignItems: 'flex-start', gap: '8px', background: 'rgba(251,146,60,0.04)', borderTop: '1px solid rgba(251,146,60,0.08)' }}>
-            <span style={{ fontSize: '11px', flexShrink: 0 }}>⚠️</span>
-            <p style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(251,191,36,0.7)', lineHeight: 1.55, margin: 0 }}>
+          <div style={{ padding: '10px 22px', display: 'flex', alignItems: 'flex-start', borderTop: '1px solid rgba(140,45,53,0.07)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(28,10,12,0.55)', lineHeight: 1.55, margin: 0 }}>
               {school.concern}
             </p>
           </div>
@@ -659,23 +643,23 @@ export default function Dashboard() {
         {/* Badges */}
         {(school.scholarships || withinBudget) && (
           <>
-            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0 22px' }} />
+            <div style={{ height: '1px', background: 'rgba(140,45,53,0.08)', margin: '0 22px' }} />
             <div style={{ padding: '10px 22px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(52,211,153,0.07)', color: 'rgba(52,211,153,0.8)', border: '1px solid rgba(52,211,153,0.18)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', color: 'rgba(28,10,12,0.5)', border: '1px solid rgba(140,45,53,0.12)' }}>
                 <ShieldCheck style={{ width: '10px', height: '10px' }} />$0 Commission
               </span>
               {withinBudget && (
-                <span style={{ fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(99,102,241,0.09)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)' }}>
+                <span style={{ fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.09)', color: '#8C2D35', border: '1px solid rgba(140,45,53,0.2)' }}>
                   Within Budget
                 </span>
               )}
               {school.scholarships && school.scholarships.toLowerCase() !== 'none' && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(251,191,36,0.08)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.15)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', color: 'rgba(28,10,12,0.55)', border: '1px solid rgba(140,45,53,0.12)' }}>
                   <Award style={{ width: '10px', height: '10px' }} />{cleanText(school.scholarships)}
                 </span>
               )}
               {school.deadline && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(248,113,113,0.08)', color: '#f87171', border: '1px solid rgba(248,113,113,0.15)' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', color: 'rgba(28,10,12,0.55)', border: '1px solid rgba(140,45,53,0.12)' }}>
                   <Calendar style={{ width: '10px', height: '10px' }} />Due {cleanText(school.deadline)}
                 </span>
               )}
@@ -684,16 +668,16 @@ export default function Dashboard() {
         )}
 
         {/* Footer */}
-        <div style={{ marginTop: 'auto', padding: '12px 22px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ marginTop: 'auto', padding: '12px 22px', borderTop: '1px solid rgba(140,45,53,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <button
               onClick={e => { e.stopPropagation(); toggleFavorite(school); }}
-              style={{ width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: fav ? 'rgba(244,114,182,0.12)' : 'rgba(255,255,255,0.04)', border: fav ? '1px solid rgba(244,114,182,0.3)' : '1px solid rgba(255,255,255,0.07)', color: fav ? '#f472b6' : 'rgba(240,240,248,0.3)', cursor: 'pointer', transition: 'all 0.2s ease' }}>
+              style={{ width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: fav ? 'rgba(244,114,182,0.12)' : 'rgba(140,45,53,0.05)', border: fav ? '1px solid rgba(244,114,182,0.3)' : '1px solid rgba(140,45,53,0.10)', color: fav ? '#f472b6' : 'rgba(28,10,12,0.3)', cursor: 'pointer', transition: 'all 0.2s ease' }}>
               <Heart style={{ width: '12px', height: '12px', fill: fav ? 'currentColor' : 'none' }} />
             </button>
             <button
               onClick={e => { e.stopPropagation(); toggleCompare(school); }}
-              style={{ width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: selected ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)', border: selected ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.07)', color: selected ? '#818cf8' : 'rgba(240,240,248,0.3)', cursor: 'pointer', transition: 'all 0.2s ease' }}>
+              style={{ width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: selected ? 'rgba(140,45,53,0.18)' : 'rgba(140,45,53,0.05)', border: selected ? '1px solid rgba(140,45,53,0.4)' : '1px solid rgba(140,45,53,0.10)', color: selected ? '#8C2D35' : 'rgba(28,10,12,0.3)', cursor: 'pointer', transition: 'all 0.2s ease' }}>
               {selected ? <Check style={{ width: '12px', height: '12px' }} /> : <Plus style={{ width: '12px', height: '12px' }} />}
             </button>
 
@@ -705,12 +689,12 @@ export default function Dashboard() {
                   display: 'flex', alignItems: 'center', gap: '5px',
                   height: '30px', padding: '0 10px', borderRadius: '15px',
                   fontSize: '11px', fontWeight: 500,
-                  background: appCfg ? appCfg.bg : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${appCfg ? appCfg.border : 'rgba(255,255,255,0.07)'}`,
-                  color: appCfg ? appCfg.color : 'rgba(240,240,248,0.3)',
+                  background: appCfg ? appCfg.bg : 'rgba(140,45,53,0.05)',
+                  border: `1px solid ${appCfg ? appCfg.border : 'rgba(140,45,53,0.10)'}`,
+                  color: appCfg ? appCfg.color : 'rgba(28,10,12,0.3)',
                   cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit',
                 }}>
-                {appStatus ? appCfg?.icon : '○'}
+                {appStatus && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: appCfg?.color, flexShrink: 0, display: 'inline-block' }} />}
                 <span>{appStatus ? appCfg?.label : 'Track'}</span>
                 <ChevronDown style={{ width: '9px', height: '9px', opacity: 0.6 }} />
               </button>
@@ -720,9 +704,9 @@ export default function Dashboard() {
                   onClick={e => e.stopPropagation()}
                   style={{
                     position: 'absolute', bottom: '36px', left: 0, zIndex: 200,
-                    background: '#0d0d1a', border: '1px solid rgba(255,255,255,0.1)',
+                    background: '#FAF5F0', border: '1px solid rgba(140,45,53,0.15)',
                     borderRadius: '12px', padding: '6px', minWidth: '160px',
-                    boxShadow: '0 16px 40px rgba(0,0,0,0.6)',
+                    boxShadow: '0 8px 24px rgba(140,45,53,0.12)',
                   }}>
                   {Object.entries(APP_STATUS_CONFIG).map(([val, cfg]) => (
                     <button
@@ -732,23 +716,23 @@ export default function Dashboard() {
                         width: '100%', display: 'flex', alignItems: 'center', gap: '8px',
                         padding: '8px 10px', borderRadius: '8px', border: 'none',
                         background: appStatus === val ? `${cfg.bg}` : 'transparent',
-                        color: appStatus === val ? cfg.color : 'rgba(240,240,248,0.6)',
+                        color: appStatus === val ? cfg.color : 'rgba(28,10,12,0.6)',
                         fontSize: '12px', fontWeight: appStatus === val ? 600 : 400,
                         cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit',
                         transition: 'background 0.15s ease',
                       }}
-                      onMouseEnter={e => { if (appStatus !== val) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
+                      onMouseEnter={e => { if (appStatus !== val) (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.08)'; }}
                       onMouseLeave={e => { if (appStatus !== val) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}>
-                      <span>{cfg.icon}</span>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: cfg.color, flexShrink: 0, display: 'inline-block' }} />
                       <span>{cfg.label}</span>
                     </button>
                   ))}
                   {appStatus && (
                     <>
-                      <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+                      <div style={{ height: '1px', background: 'rgba(140,45,53,0.10)', margin: '4px 0' }} />
                       <button
                         onClick={e => { e.stopPropagation(); updateApplicationStatus(school.name, ''); }}
-                        style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'rgba(240,240,248,0.3)', fontSize: '11px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
+                        style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'rgba(28,10,12,0.3)', fontSize: '11px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
                         Clear status
                       </button>
                     </>
@@ -759,9 +743,9 @@ export default function Dashboard() {
           </div>
 
           <span
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 500, color: 'rgba(240,240,248,0.35)', transition: 'color 0.2s ease', letterSpacing: '-0.01em' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'rgba(240,240,248,0.7)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,240,248,0.35)')}>
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 500, color: 'rgba(28,10,12,0.55)', transition: 'color 0.2s ease', letterSpacing: '-0.01em' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#1C0A0C')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.55)')}>
             Deep Dive <ChevronRight style={{ width: '14px', height: '14px' }} />
           </span>
         </div>
@@ -778,16 +762,14 @@ export default function Dashboard() {
     return (
       <div key={tier} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {/* Section header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 20px', borderRadius: '16px', background: cfg.bg, border: `1px solid ${cfg.border}` }}>
-          <span style={{ fontSize: '22px' }}>{cfg.icon}</span>
-          <div style={{ flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingBottom: '12px', borderBottom: '1px solid rgba(140,45,53,0.08)' }}>
+          <div style={{ width: '3px', height: '18px', borderRadius: '2px', background: cfg.color, flexShrink: 0 }} />
+          <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: cfg.color }}>{cfg.label}</span>
-              <span style={{ fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '100px', background: `${cfg.color}18`, color: cfg.color, border: `1px solid ${cfg.color}30` }}>
-                {schools.length}
-              </span>
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#1C0A0C' }}>{cfg.label}</span>
+              <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(28,10,12,0.55)' }}>{schools.length}</span>
             </div>
-            <p style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(240,240,248,0.4)', margin: '3px 0 0' }}>{cfg.desc}</p>
+            <p style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.52)', margin: '2px 0 0', lineHeight: 1.5 }}>{cfg.desc}</p>
           </div>
         </div>
 
@@ -802,23 +784,23 @@ export default function Dashboard() {
   const activeTierFilter = filters.tier;
 
   return (
-    <div style={{ background: '#080810', minHeight: '100vh' }}>
-      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 40% at 50% -5%, rgba(99,102,241,0.12) 0%, transparent 60%)', zIndex: 0 }} />
+    <div style={{ background: '#F5EDE5', minHeight: '100vh' }}>
+      <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 40% at 50% -5%, rgba(140,45,53,0.07) 0%, transparent 60%)', zIndex: 0 }} />
 
       {/* Nav */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(8,8,16,0.8)', backdropFilter: 'blur(40px) saturate(180%)', WebkitBackdropFilter: 'blur(40px) saturate(180%)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(245,237,229,0.92)', backdropFilter: 'blur(40px) saturate(180%)', WebkitBackdropFilter: 'blur(40px) saturate(180%)', borderBottom: '1px solid rgba(140,45,53,0.10)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h1 style={{ fontSize: '17px', fontWeight: 600, color: '#f0f0f8', letterSpacing: '-0.01em', margin: 0 }}>
+          <h1 style={{ fontSize: '17px', fontWeight: 600, color: '#1C0A0C', letterSpacing: '-0.01em', margin: 0 }}>
             {profile.full_name || 'Dashboard'}
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '12px', background: 'rgba(255,255,255,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '12px', background: 'rgba(140,45,53,0.10)' }}>
               {modes.map(m => {
                 const I = m.icon;
                 const active = profile.mode === m.id || (profile.mode === 'lifelong' && m.id === 'international');
                 return (
                   <button key={m.id} onClick={() => handleModeChange(m.id)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, background: active ? 'rgba(255,255,255,0.1)' : 'transparent', color: active ? '#f0f0f8' : 'rgba(240,240,248,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, background: active ? 'rgba(140,45,53,0.15)' : 'transparent', color: active ? '#1C0A0C' : 'rgba(28,10,12,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
                     <I style={{ width: '14px', height: '14px' }} />
                     <span>{m.label}</span>
                   </button>
@@ -826,9 +808,9 @@ export default function Dashboard() {
               })}
             </div>
             <button onClick={() => router.push('/dashboard/edit-profile')}
-              style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(240,240,248,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '8px', transition: 'color 0.2s ease', fontFamily: 'inherit' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#f0f0f8')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,240,248,0.4)')}>
+              style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(28,10,12,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '8px', transition: 'color 0.2s ease', fontFamily: 'inherit' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#1C0A0C')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.4)')}>
               Edit Profile
             </button>
           </div>
@@ -843,12 +825,12 @@ export default function Dashboard() {
             { label: 'Major', value: profile.academic_background?.major || '—' },
             { label: 'Budget', value: profile.budget?.perYear ? `$${Number(profile.budget.perYear).toLocaleString()}/yr` : profile.budget?.max ? `$${Number(profile.budget.max).toLocaleString()}/yr` : '—' },
             { label: 'GPA', value: profile.academic_background?.gpa || '—' },
-            { label: 'Mode', value: profile.mode === 'domestic' ? '🏛️ Domestic' : '🌐 International' },
+            { label: 'Mode', value: profile.mode === 'domestic' ? 'Domestic' : 'International' },
             ...(profile.location_preferences?.residenceState ? [{ label: 'State', value: profile.location_preferences.residenceState }] : []),
           ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '100px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', fontSize: '12px', whiteSpace: 'nowrap' }}>
-              <span style={{ color: 'rgba(240,240,248,0.35)' }}>{item.label}</span>
-              <span style={{ color: '#f0f0f8', fontWeight: 500 }}>{item.value}</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', border: '1px solid rgba(140,45,53,0.10)', fontSize: '12px', whiteSpace: 'nowrap' }}>
+              <span style={{ color: 'rgba(28,10,12,0.55)' }}>{item.label}</span>
+              <span style={{ color: '#1C0A0C', fontWeight: 500 }}>{item.value}</span>
             </div>
           ))}
         </div>
@@ -857,17 +839,17 @@ export default function Dashboard() {
         {!searching && results.length === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '56px', paddingTop: '40px' }}>
             <div style={{ textAlign: 'center', maxWidth: '640px' }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '100px', marginBottom: '28px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#818cf8' }}>
-                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#818cf8', display: 'inline-block', animation: 'pulse 2s infinite' }} />
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '100px', marginBottom: '28px', background: 'rgba(140,45,53,0.1)', border: '1px solid rgba(140,45,53,0.25)', fontSize: '11px', fontWeight: 500, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#8C2D35' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#8C2D35', display: 'inline-block', animation: 'pulse 2s infinite' }} />
                 Matching Engine Ready
               </div>
-              <h2 style={{ fontSize: 'clamp(40px,7vw,72px)', fontWeight: 300, color: '#f0f0f8', lineHeight: 1.07, letterSpacing: '-0.03em', margin: '0 0 20px' }}>
+              <h2 style={{ fontSize: 'clamp(40px,7vw,72px)', fontWeight: 300, color: '#1C0A0C', lineHeight: 1.07, letterSpacing: '-0.03em', margin: '0 0 20px' }}>
                 Find your{' '}
-                <span style={{ fontWeight: 600, background: 'linear-gradient(135deg,#818cf8,#c084fc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                <span style={{ fontWeight: 600, color: '#8C2D35', WebkitTextFillColor: '#8C2D35' }}>
                   perfect school.
                 </span>
               </h2>
-              <p style={{ fontSize: '17px', fontWeight: 300, color: 'rgba(240,240,248,0.45)', lineHeight: 1.65, margin: 0 }}>
+              <p style={{ fontSize: '17px', fontWeight: 300, color: 'rgba(28,10,12,0.45)', lineHeight: 1.65, margin: 0 }}>
                 Real-time matching across 15,000+ programs — 20 personalized schools in three strategic tiers.
               </p>
             </div>
@@ -877,12 +859,12 @@ export default function Dashboard() {
               {(['safety', 'target', 'reach'] as const).map(t => {
                 const cfg = TIER_CONFIG[t];
                 return (
-                  <div key={t} style={{ padding: '20px 16px', textAlign: 'center', background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: '16px' }}>
-                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>{cfg.icon}</div>
-                    <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: cfg.color, margin: '0 0 4px' }}>
+                  <div key={t} style={{ padding: '20px 16px', textAlign: 'center', background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.09)', borderRadius: '16px' }}>
+                    <div style={{ width: '24px', height: '3px', borderRadius: '2px', background: cfg.color, margin: '0 auto 12px' }} />
+                    <p style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#1C0A0C', margin: '0 0 3px' }}>
                       {t === 'safety' ? '6 Schools' : t === 'target' ? '8 Schools' : '6 Schools'}
                     </p>
-                    <p style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(240,240,248,0.35)', margin: 0 }}>{t.charAt(0).toUpperCase() + t.slice(1)}</p>
+                    <p style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(28,10,12,0.4)', margin: 0, textTransform: 'capitalize' }}>{t}</p>
                   </div>
                 );
               })}
@@ -892,19 +874,19 @@ export default function Dashboard() {
               {[{ value: '15K+', label: 'Programs' }, { value: '20', label: 'Schools' }, { value: '0%', label: 'Commission' }, { value: 'Live', label: 'Data' }].map((s, i, arr) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
                   <div style={{ textAlign: 'center' }}>
-                    <p style={{ fontSize: '28px', fontWeight: 300, color: '#f0f0f8', margin: 0, letterSpacing: '-0.02em' }}>{s.value}</p>
-                    <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(240,240,248,0.28)', margin: '6px 0 0' }}>{s.label}</p>
+                    <p style={{ fontSize: '28px', fontWeight: 300, color: '#1C0A0C', margin: 0, letterSpacing: '-0.02em' }}>{s.value}</p>
+                    <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.28)', margin: '6px 0 0' }}>{s.label}</p>
                   </div>
-                  {i < arr.length - 1 && <div style={{ width: '1px', height: '28px', background: 'rgba(255,255,255,0.08)' }} />}
+                  {i < arr.length - 1 && <div style={{ width: '1px', height: '28px', background: 'rgba(140,45,53,0.12)' }} />}
                 </div>
               ))}
             </div>
 
             <button
               onClick={searchSchools}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', padding: '0 36px', height: '56px', borderRadius: '100px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 500, letterSpacing: '-0.01em', boxShadow: '0 0 60px rgba(99,102,241,0.4), 0 4px 24px rgba(0,0,0,0.3)', transition: 'all 0.3s ease', fontFamily: 'inherit' }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1.03)'; el.style.boxShadow = '0 0 80px rgba(99,102,241,0.55), 0 8px 32px rgba(0,0,0,0.35)'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1)'; el.style.boxShadow = '0 0 60px rgba(99,102,241,0.4), 0 4px 24px rgba(0,0,0,0.3)'; }}>
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', padding: '0 36px', height: '56px', borderRadius: '100px', background: '#8C2D35', color: '#F5EDE5', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 500, letterSpacing: '-0.01em', boxShadow: '0 0 40px rgba(140,45,53,0.25), 0 4px 24px rgba(0,0,0,0.12)', transition: 'all 0.3s ease', fontFamily: 'inherit' }}
+              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1.03)'; el.style.boxShadow = '0 0 60px rgba(140,45,53,0.35), 0 8px 32px rgba(0,0,0,0.18)'; }}
+              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1)'; el.style.boxShadow = '0 0 40px rgba(140,45,53,0.25), 0 4px 24px rgba(0,0,0,0.12)'; }}>
               <Search style={{ width: '18px', height: '18px', opacity: 0.85 }} />
               Analyze & Match
               <ArrowRight style={{ width: '16px', height: '16px' }} />
@@ -916,10 +898,10 @@ export default function Dashboard() {
         {searching && (
           <div style={{ minHeight: '65vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '52px' }}>
             <div style={{ position: 'relative', width: '88px', height: '88px' }}>
-              <div style={{ position: 'absolute', inset: '-16px', borderRadius: '50%', border: '1px solid rgba(99,102,241,0.15)', animation: 'orb-ring 2.4s ease-out infinite' }} />
-              <div style={{ position: 'absolute', inset: '-8px', borderRadius: '50%', border: '1px solid rgba(99,102,241,0.22)', animation: 'orb-ring 2.4s ease-out infinite 0.8s' }} />
-              <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: 'linear-gradient(135deg,rgba(99,102,241,0.18),rgba(139,92,246,0.12))', border: '1px solid rgba(99,102,241,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(99,102,241,0.25)' }}>
-                <Sparkles style={{ width: '32px', height: '32px', color: '#818cf8', animation: 'sparkle-rotate 3s linear infinite' }} />
+              <div style={{ position: 'absolute', inset: '-16px', borderRadius: '50%', border: '1px solid rgba(140,45,53,0.15)', animation: 'orb-ring 2.4s ease-out infinite' }} />
+              <div style={{ position: 'absolute', inset: '-8px', borderRadius: '50%', border: '1px solid rgba(140,45,53,0.22)', animation: 'orb-ring 2.4s ease-out infinite 0.8s' }} />
+              <div style={{ width: '88px', height: '88px', borderRadius: '50%', background: 'linear-gradient(135deg,rgba(140,45,53,0.18),rgba(140,45,53,0.12))', border: '1px solid rgba(140,45,53,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(140,45,53,0.25)' }}>
+                <Sparkles style={{ width: '32px', height: '32px', color: '#8C2D35', animation: 'sparkle-rotate 3s linear infinite' }} />
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', width: '320px' }}>
@@ -927,12 +909,12 @@ export default function Dashboard() {
                 const completed = i < searchStep, active = i === searchStep, pending = i > searchStep;
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', opacity: pending ? 0.25 : 1, transition: 'opacity 0.5s ease' }}>
-                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: completed ? 'rgba(52,211,153,0.15)' : active ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.05)', border: completed ? '1px solid rgba(52,211,153,0.35)' : active ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.08)', transition: 'all 0.4s ease' }}>
-                      {completed ? <Check style={{ width: '12px', height: '12px', color: '#34d399' }} /> : active ? <Loader2 style={{ width: '12px', height: '12px', color: '#818cf8', animation: 'spin 1s linear infinite' }} /> : <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'rgba(240,240,248,0.2)' }} />}
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: completed ? 'rgba(140,45,53,0.10)' : active ? 'rgba(140,45,53,0.15)' : 'rgba(140,45,53,0.05)', border: completed ? '1px solid rgba(140,45,53,0.3)' : active ? '1px solid rgba(140,45,53,0.4)' : '1px solid rgba(140,45,53,0.12)', transition: 'all 0.4s ease' }}>
+                      {completed ? <Check style={{ width: '12px', height: '12px', color: '#8C2D35' }} /> : active ? <Loader2 style={{ width: '12px', height: '12px', color: '#8C2D35', animation: 'spin 1s linear infinite' }} /> : <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'rgba(28,10,12,0.2)' }} />}
                     </div>
                     <div>
-                      <p style={{ fontSize: '13px', fontWeight: active ? 500 : 400, color: completed ? '#34d399' : active ? '#f0f0f8' : 'rgba(240,240,248,0.6)', margin: 0, transition: 'color 0.4s ease' }}>{step.label}</p>
-                      {active && <p style={{ fontSize: '11px', color: 'rgba(240,240,248,0.35)', margin: '2px 0 0', fontWeight: 300 }}>{step.sub}</p>}
+                      <p style={{ fontSize: '13px', fontWeight: active ? 500 : 400, color: completed ? '#8C2D35' : active ? '#1C0A0C' : 'rgba(28,10,12,0.65)', margin: 0, transition: 'color 0.4s ease' }}>{step.label}</p>
+                      {active && <p style={{ fontSize: '11px', color: 'rgba(28,10,12,0.5)', margin: '2px 0 0', fontWeight: 300 }}>{step.sub}</p>}
                     </div>
                   </div>
                 );
@@ -948,15 +930,15 @@ export default function Dashboard() {
             <div>
               <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <div>
-                  <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(240,240,248,0.28)', margin: '0 0 6px' }}>Rivernova · Zero Commission</p>
-                  <h2 style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 300, color: '#f0f0f8', letterSpacing: '-0.02em', margin: 0 }}>
+                  <p style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.5)', margin: '0 0 6px' }}>Rivernova · Zero Commission</p>
+                  <h2 style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 300, color: '#1C0A0C', letterSpacing: '-0.02em', margin: 0 }}>
                     {filteredResults.length} <strong style={{ fontWeight: 600 }}>matches</strong>
                   </h2>
                 </div>
                 <button onClick={searchSchools}
-                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 400, color: 'rgba(240,240,248,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = '#f0f0f8'; el.style.background = 'rgba(255,255,255,0.07)'; }}
-                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(240,240,248,0.4)'; el.style.background = 'rgba(255,255,255,0.04)'; }}>
+                  style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 400, color: 'rgba(28,10,12,0.65)', background: 'rgba(140,45,53,0.05)', border: '1px solid rgba(140,45,53,0.10)', padding: '8px 14px', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                  onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.color = '#1C0A0C'; el.style.background = 'rgba(140,45,53,0.10)'; }}
+                  onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.color = 'rgba(28,10,12,0.65)'; el.style.background = 'rgba(140,45,53,0.05)'; }}>
                   <Search style={{ width: '13px', height: '13px' }} /> Re-analyze
                 </button>
               </div>
@@ -968,17 +950,17 @@ export default function Dashboard() {
                   const count = results.filter(s => s.tier === t).length;
                   if (count === 0) return null;
                   return (
-                    <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '10px', background: cfg.bg, border: `1px solid ${cfg.border}` }}>
-                      <span style={{ fontSize: '13px' }}>{cfg.icon}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: cfg.color }}>{count}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(240,240,248,0.4)' }}>{t}</span>
+                    <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '10px', border: '1px solid rgba(140,45,53,0.10)', background: 'rgba(140,45,53,0.03)' }}>
+                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: cfg.color, display: 'inline-block', flexShrink: 0 }} />
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#1C0A0C' }}>{count}</span>
+                      <span style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.6)' }}>{t}</span>
                     </div>
                   );
                 })}
                 <div style={{ flex: 1 }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#34d399' }}>{Math.round(results.reduce((a, b) => a + (b.matchScore || 0), 0) / results.length)}%</span>
-                  <span style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(240,240,248,0.35)' }}>avg match</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '10px', background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#1C0A0C' }}>{Math.round(results.reduce((a, b) => a + (b.matchScore || 0), 0) / results.length)}%</span>
+                  <span style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.55)' }}>avg match</span>
                 </div>
               </div>
             </div>
@@ -988,10 +970,10 @@ export default function Dashboard() {
 
             {/* Sort row */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(240,240,248,0.25)', marginRight: '4px' }}>Sort</span>
+              <span style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.45)', marginRight: '4px' }}>Sort</span>
               {[{ key: 'match' as const, label: 'Best Match' }, { key: 'tuition' as const, label: 'Lowest Cost' }, { key: 'admit' as const, label: 'Highest Admit' }].map(s => (
                 <button key={s.key} onClick={() => handleSort(s.key)}
-                  style={{ padding: '5px 12px', borderRadius: '100px', fontSize: '12px', fontWeight: sortBy === s.key ? 500 : 400, background: sortBy === s.key ? 'rgba(129,140,248,0.14)' : 'transparent', border: sortBy === s.key ? '1px solid rgba(129,140,248,0.4)' : '1px solid rgba(255,255,255,0.07)', color: sortBy === s.key ? '#818cf8' : 'rgba(240,240,248,0.4)', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit' }}>
+                  style={{ padding: '5px 12px', borderRadius: '100px', fontSize: '12px', fontWeight: sortBy === s.key ? 500 : 400, background: sortBy === s.key ? 'rgba(140,45,53,0.14)' : 'transparent', border: sortBy === s.key ? '1px solid rgba(140,45,53,0.4)' : '1px solid rgba(140,45,53,0.10)', color: sortBy === s.key ? '#8C2D35' : 'rgba(28,10,12,0.4)', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit' }}>
                   {s.label}
                 </button>
               ))}
@@ -1011,7 +993,7 @@ export default function Dashboard() {
             )}
 
             {filteredResults.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(240,240,248,0.35)' }}>
+              <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(28,10,12,0.35)' }}>
                 <p style={{ fontSize: '15px', fontWeight: 300 }}>No schools match your current filters.</p>
                 <p style={{ fontSize: '13px', marginTop: '8px' }}>Try adjusting your filters above.</p>
               </div>
@@ -1049,7 +1031,7 @@ export default function Dashboard() {
         @keyframes floatA { 0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)} }
         @keyframes floatB { 0%,100%{transform:translateY(0)}50%{transform:translateY(10px)} }
         @keyframes floatC { 0%,100%{transform:translateY(-6px)}50%{transform:translateY(8px)} }
-        *{scrollbar-width:thin;scrollbar-color:rgba(99,102,241,0.25) transparent}
+        *{scrollbar-width:thin;scrollbar-color:rgba(140,45,53,0.25) rgba(245,237,229,0.5)}
       `}</style>
     </div>
   );
@@ -1060,46 +1042,43 @@ function SchoolLoadingOverlay({ school }: { school: { name: string; program: str
   useEffect(() => { const t = setTimeout(() => setRingFilled(true), 80); return () => clearTimeout(t); }, []);
 
   const sc = school.matchScore;
-  const col = sc >= 80 ? '#34d399' : sc >= 60 ? '#fb923c' : '#f87171';
-  const rgb = sc >= 80 ? '52,211,153' : sc >= 60 ? '251,146,60' : '248,113,113';
   const ringR = 80, ringC = 2 * Math.PI * ringR;
   const ringOffset = ringFilled ? ringC - (sc / 100) * ringC : ringC;
   const floatAnims = ['floatA','floatB','floatC','floatB','floatA','floatC'];
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#080810', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', animation: 'overlayIn 0.32s cubic-bezier(0.16,1,0.3,1) forwards' }}>
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `radial-gradient(ellipse 65% 55% at 50% 44%, rgba(${rgb},0.1) 0%, transparent 58%)` }} />
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 40% 35% at 50% 44%, rgba(99,102,241,0.04) 0%, transparent 55%)' }} />
-      {([{ top:'12%',left:'8%',size:8,opacity:0.12,blur:0,anim:0 },{ top:'18%',right:'12%',size:5,opacity:0.08,blur:1,anim:1 },{ top:'72%',left:'14%',size:6,opacity:0.07,blur:1,anim:2 },{ top:'68%',right:'9%',size:10,opacity:0.1,blur:0,anim:3 },{ top:'40%',left:'5%',size:4,opacity:0.06,blur:2,anim:4 },{ top:'38%',right:'6%',size:7,opacity:0.09,blur:1,anim:5 }] as any[]).map((orb,i)=>(
-        <div key={i} style={{ position:'absolute', top:orb.top, left:orb.left, right:orb.right, width:orb.size, height:orb.size, borderRadius:'50%', background:`rgba(${rgb},${orb.opacity})`, filter:`blur(${orb.blur}px)`, animation:`${floatAnims[orb.anim]} ${3.5+i*0.6}s ease-in-out infinite` }} />
+    <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: '#F5EDE5', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', animation: 'overlayIn 0.32s cubic-bezier(0.16,1,0.3,1) forwards' }}>
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 65% 55% at 50% 44%, rgba(140,45,53,0.07) 0%, transparent 58%)' }} />
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 40% 35% at 50% 44%, rgba(140,45,53,0.04) 0%, transparent 55%)' }} />
+      {([{ top:'12%',left:'8%',size:8,opacity:0.07,blur:0,anim:0 },{ top:'18%',right:'12%',size:5,opacity:0.05,blur:1,anim:1 },{ top:'72%',left:'14%',size:6,opacity:0.04,blur:1,anim:2 },{ top:'68%',right:'9%',size:10,opacity:0.06,blur:0,anim:3 },{ top:'40%',left:'5%',size:4,opacity:0.04,blur:2,anim:4 },{ top:'38%',right:'6%',size:7,opacity:0.05,blur:1,anim:5 }] as any[]).map((orb,i)=>(
+        <div key={i} style={{ position:'absolute', top:orb.top, left:orb.left, right:orb.right, width:orb.size, height:orb.size, borderRadius:'50%', background:`rgba(140,45,53,${orb.opacity})`, filter:`blur(${orb.blur}px)`, animation:`${floatAnims[orb.anim]} ${3.5+i*0.6}s ease-in-out infinite` }} />
       ))}
       <div style={{ position:'relative', marginBottom:'40px', animation:'textSlideIn 0.5s 0.05s cubic-bezier(0.16,1,0.3,1) both' }}>
-        <div style={{ position:'absolute', inset:'-32px', borderRadius:'50%', background:`radial-gradient(circle,rgba(${rgb},0.11) 0%,transparent 58%)`, animation:'haloPulse 2.8s ease-in-out infinite', pointerEvents:'none' }} />
+        <div style={{ position:'absolute', inset:'-32px', borderRadius:'50%', background:'radial-gradient(circle,rgba(140,45,53,0.08) 0%,transparent 58%)', animation:'haloPulse 2.8s ease-in-out infinite', pointerEvents:'none' }} />
         <svg width="200" height="200" viewBox="0 0 200 200" style={{ transform:'rotate(-90deg)' }}>
           <defs>
-            <filter id="ol-glow" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur stdDeviation="4.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-            <linearGradient id="ol-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={col} stopOpacity="1"/><stop offset="100%" stopColor={col} stopOpacity="0.55"/></linearGradient>
+            <linearGradient id="ol-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8C2D35" stopOpacity="1"/><stop offset="100%" stopColor="#8C2D35" stopOpacity="0.55"/></linearGradient>
           </defs>
-          <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="3 8" style={{ animation:'spinSlow 12s linear infinite', transformOrigin:'100px 100px' }} />
-          <circle cx="100" cy="100" r={ringR} fill="none" stroke="rgba(255,255,255,0.055)" strokeWidth="12" />
-          <circle cx="100" cy="100" r={ringR} fill="none" stroke="url(#ol-grad)" strokeWidth="12" strokeLinecap="round" strokeDasharray={ringC} strokeDashoffset={ringOffset} filter="url(#ol-glow)" style={{ transition:'stroke-dashoffset 1.6s cubic-bezier(0.16,1,0.3,1)' }} />
-          <circle cx="100" cy="100" r={ringR+13} fill="none" stroke={`rgba(${rgb},0.12)`} strokeWidth="1.5" strokeDasharray="28 502" strokeLinecap="round" style={{ animation:'spinMed 3s linear infinite', transformOrigin:'100px 100px' }} />
+          <circle cx="100" cy="100" r="94" fill="none" stroke="rgba(140,45,53,0.06)" strokeWidth="1" strokeDasharray="3 8" style={{ animation:'spinSlow 12s linear infinite', transformOrigin:'100px 100px' }} />
+          <circle cx="100" cy="100" r={ringR} fill="none" stroke="rgba(140,45,53,0.09)" strokeWidth="12" />
+          <circle cx="100" cy="100" r={ringR} fill="none" stroke="url(#ol-grad)" strokeWidth="12" strokeLinecap="round" strokeDasharray={ringC} strokeDashoffset={ringOffset} style={{ transition:'stroke-dashoffset 1.6s cubic-bezier(0.16,1,0.3,1)' }} />
+          <circle cx="100" cy="100" r={ringR+13} fill="none" stroke="rgba(140,45,53,0.10)" strokeWidth="1.5" strokeDasharray="28 502" strokeLinecap="round" style={{ animation:'spinMed 3s linear infinite', transformOrigin:'100px 100px' }} />
         </svg>
         <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-          <span style={{ fontSize:'52px', fontWeight:700, color:'#f0f0f8', letterSpacing:'-0.05em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{sc}</span>
-          <span style={{ fontSize:'9px', fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(240,240,248,0.2)', marginTop:'6px' }}>Match</span>
+          <span style={{ fontSize:'52px', fontWeight:700, color:'#1C0A0C', letterSpacing:'-0.05em', lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{sc}</span>
+          <span style={{ fontSize:'9px', fontWeight:700, letterSpacing:'0.18em', textTransform:'uppercase', color:'rgba(28,10,12,0.5)', marginTop:'6px' }}>Match</span>
         </div>
       </div>
-      <div style={{ padding:'6px 20px', borderRadius:'100px', background:`rgba(${rgb},0.09)`, border:`1px solid rgba(${rgb},0.25)`, fontSize:'11px', fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase', color:col, marginBottom:'28px', animation:'textSlideIn 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both' }}>
+      <div style={{ padding:'6px 20px', borderRadius:'100px', background:'rgba(140,45,53,0.07)', border:'1px solid rgba(140,45,53,0.18)', fontSize:'11px', fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase', color:'#8C2D35', marginBottom:'28px', animation:'textSlideIn 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both' }}>
         {sc>=80?'Excellent Match':sc>=60?'Good Match':'Reach School'}
       </div>
-      <h2 style={{ fontSize:'clamp(24px,4.5vw,56px)', fontWeight:700, color:'#f0f0f8', letterSpacing:'-0.04em', lineHeight:0.93, textAlign:'center', margin:'0 0 14px', padding:'0 40px', animation:'textSlideIn 0.55s 0.18s cubic-bezier(0.16,1,0.3,1) both' }}>{school.name}</h2>
-      <p style={{ fontSize:'16px', fontWeight:300, color:'rgba(240,240,248,0.38)', letterSpacing:'-0.01em', margin:'0 0 8px', animation:'textSlideIn 0.5s 0.28s cubic-bezier(0.16,1,0.3,1) both' }}>{school.program}</p>
-      {school.location && <p style={{ fontSize:'12px', fontWeight:300, color:'rgba(240,240,248,0.2)', margin:'0 0 44px', animation:'textSlideIn 0.5s 0.35s cubic-bezier(0.16,1,0.3,1) both' }}>{school.location}</p>}
-      <div style={{ width:'200px', height:'2px', background:'rgba(255,255,255,0.06)', borderRadius:'1px', overflow:'hidden', animation:'textSlideIn 0.5s 0.42s cubic-bezier(0.16,1,0.3,1) both' }}>
-        <div style={{ height:'100%', background:`linear-gradient(90deg,${col},${col}bb)`, borderRadius:'1px', boxShadow:`0 0 10px rgba(${rgb},0.7)`, animation:'progressFill 1.8s 0.45s cubic-bezier(0.4,0,0.2,1) forwards', width:'0%' }} />
+      <h2 style={{ fontSize:'clamp(24px,4.5vw,56px)', fontWeight:700, color:'#1C0A0C', letterSpacing:'-0.04em', lineHeight:0.93, textAlign:'center', margin:'0 0 14px', padding:'0 40px', animation:'textSlideIn 0.55s 0.18s cubic-bezier(0.16,1,0.3,1) both' }}>{school.name}</h2>
+      <p style={{ fontSize:'16px', fontWeight:300, color:'rgba(28,10,12,0.6)', letterSpacing:'-0.01em', margin:'0 0 8px', animation:'textSlideIn 0.5s 0.28s cubic-bezier(0.16,1,0.3,1) both' }}>{school.program}</p>
+      {school.location && <p style={{ fontSize:'12px', fontWeight:300, color:'rgba(28,10,12,0.5)', margin:'0 0 44px', animation:'textSlideIn 0.5s 0.35s cubic-bezier(0.16,1,0.3,1) both' }}>{school.location}</p>}
+      <div style={{ width:'200px', height:'2px', background:'rgba(140,45,53,0.10)', borderRadius:'1px', overflow:'hidden', animation:'textSlideIn 0.5s 0.42s cubic-bezier(0.16,1,0.3,1) both' }}>
+        <div style={{ height:'100%', background:'linear-gradient(90deg,#8C2D35,rgba(140,45,53,0.7))', borderRadius:'1px', animation:'progressFill 1.8s 0.45s cubic-bezier(0.4,0,0.2,1) forwards', width:'0%' }} />
       </div>
-      <p style={{ fontSize:'10px', fontWeight:600, letterSpacing:'0.16em', textTransform:'uppercase', color:'rgba(240,240,248,0.18)', margin:'14px 0 0', animation:'textSlideIn 0.5s 0.52s cubic-bezier(0.16,1,0.3,1) both' }}>Preparing your analysis…</p>
+      <p style={{ fontSize:'10px', fontWeight:600, letterSpacing:'0.16em', textTransform:'uppercase', color:'rgba(28,10,12,0.55)', margin:'14px 0 0', animation:'textSlideIn 0.5s 0.52s cubic-bezier(0.16,1,0.3,1) both' }}>Preparing your analysis…</p>
     </div>
   );
 }

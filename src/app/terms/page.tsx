@@ -5,424 +5,358 @@ import { FileText, AlertCircle, CheckCircle2, XCircle, Scale } from 'lucide-reac
 
 export default function TermsOfService() {
   return (
-    <main className="min-h-screen bg-[#09090b]">
+    <main className="min-h-screen" style={{ background: '#F5EDE5' }}>
       <Navbar />
-      
+
       <div className="pt-32 pb-20 px-6 max-w-[900px] mx-auto">
+
         {/* Header */}
         <div className="mb-12">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center">
               <FileText className="w-6 h-6 text-indigo-400" />
             </div>
-            <h1 className="text-4xl font-bold text-white">Terms of Service</h1>
+            <h1 className="text-4xl font-bold text-white" style={{ color: '#1C0A0C' }}>Terms of Service</h1>
           </div>
-          <p className="text-white/60 text-lg">Last updated: {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+          <p className="text-base font-light mt-4" style={{ color: 'rgba(28,10,12,0.45)' }}>
+            Last updated:{' '}
+            {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </p>
         </div>
 
         {/* Content */}
-        <div className="space-y-8 text-white/80 leading-relaxed">
-          
+        <div className="space-y-10">
+
           {/* Introduction */}
-          <section className="bg-white/5 border border-white/10 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold text-white mb-4">Agreement to Terms</h2>
-            <p className="mb-4">
+          <section className="rounded-2xl p-8" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+            <h2 className="text-2xl font-bold mb-4" style={{ color: '#1C0A0C' }}>Agreement to Terms</h2>
+            <p className="mb-4 font-light leading-relaxed" style={{ color: '#1C0A0C' }}>
               Welcome to Rivernova. These Terms of Service (&quot;Terms&quot;) govern your access to and use of our website, platform, and services (collectively, the &quot;Services&quot;). By accessing or using Rivernova, you agree to be bound by these Terms.
             </p>
-            <p className="text-white/60 text-sm">
+            <p className="text-sm font-light" style={{ color: 'rgba(28,10,12,0.5)' }}>
               If you do not agree to these Terms, you may not access or use our Services. We reserve the right to modify these Terms at any time, and your continued use constitutes acceptance of any changes.
             </p>
           </section>
 
-          {/* Eligibility */}
+          {/* 1. Eligibility */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <CheckCircle2 className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">1. Eligibility</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <CheckCircle2 className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>1. Eligibility</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <p className="text-white/70 mb-3">To use Rivernova, you must:</p>
-                <ul className="space-y-2 text-white/70">
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">•</span>
-                    <span>Be at least 16 years of age</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">•</span>
-                    <span>Have the legal capacity to enter into a binding contract</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">•</span>
-                    <span>Not be prohibited from using our Services under applicable law</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">•</span>
-                    <span>Provide accurate and complete information during registration</span>
-                  </li>
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                <p className="font-light mb-3" style={{ color: '#1C0A0C' }}>To use Rivernova, you must:</p>
+                <ul className="space-y-2">
+                  {[
+                    'Be at least 16 years of age',
+                    'Have the legal capacity to enter into a binding contract',
+                    'Not be prohibited from using our Services under applicable law',
+                    'Provide accurate and complete information during registration',
+                  ].map(item => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 font-bold" style={{ color: '#8C2D35' }}>•</span>
+                      <span className="font-light" style={{ color: '#1C0A0C' }}>{item}</span>
+                    </li>
+                  ))}
                 </ul>
-                <p className="text-white/60 text-sm mt-4">
+                <p className="text-sm font-light mt-4" style={{ color: 'rgba(28,10,12,0.5)' }}>
                   If you are under 18, you represent that you have your parent or guardian&apos;s permission to use the Services.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Account Registration */}
+          {/* 2. Account Registration */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <FileText className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">2. Account Registration and Security</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>2. Account Registration and Security</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-                <div>
-                  <h3 className="text-white font-bold mb-2">2.1 Account Creation</h3>
-                  <p className="text-white/70">You must create an account to access certain features. You agree to provide accurate, current, and complete information and to update it as necessary.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">2.2 Account Security</h3>
-                  <p className="text-white/70 mb-2">You are responsible for:</p>
-                  <ul className="space-y-1 text-white/70 text-sm">
-                    <li>• Maintaining the confidentiality of your password</li>
-                    <li>• All activities that occur under your account</li>
-                    <li>• Notifying us immediately of any unauthorized access</li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">2.3 Account Termination</h3>
-                  <p className="text-white/70">We reserve the right to suspend or terminate your account if you violate these Terms or engage in fraudulent, abusive, or illegal activity.</p>
-                </div>
+            <div className="ml-9">
+              <div className="rounded-xl p-6 space-y-5" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                {[
+                  { title: '2.1 Account Creation', desc: 'You must create an account to access certain features. You agree to provide accurate, current, and complete information and to update it as necessary.' },
+                  { title: '2.2 Account Security', desc: 'You are responsible for maintaining the confidentiality of your password, all activities that occur under your account, and notifying us immediately of any unauthorized access.' },
+                  { title: '2.3 Account Termination', desc: 'We reserve the right to suspend or terminate your account if you violate these Terms or engage in fraudulent, abusive, or illegal activity.' },
+                ].map(item => (
+                  <div key={item.title}>
+                    <h3 className="font-bold mb-1" style={{ color: '#1C0A0C' }}>{item.title}</h3>
+                    <p className="font-light text-sm" style={{ color: 'rgba(28,10,12,0.7)' }}>{item.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Services Description */}
+          {/* 3. Services */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <Scale className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">3. Description of Services</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <Scale className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>3. Description of Services</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <p className="text-white/70 mb-3">Rivernova provides:</p>
-                <ul className="space-y-2 text-white/70">
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">✓</span>
-                    <span><strong className="text-white">AI-Powered School Matching:</strong> Personalized recommendations based on your profile</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">✓</span>
-                    <span><strong className="text-white">Education Consulting:</strong> Guidance on school selection and applications</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">✓</span>
-                    <span><strong className="text-white">AI Advisor:</strong> Conversational assistance for education planning</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-indigo-400 mt-1">✓</span>
-                    <span><strong className="text-white">Transparency Tools:</strong> Commission-free verification and unbiased recommendations</span>
-                  </li>
+            <div className="space-y-4 ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                <p className="font-light mb-3" style={{ color: '#1C0A0C' }}>Rivernova provides:</p>
+                <ul className="space-y-2">
+                  {[
+                    ['AI-Powered School Matching', 'Personalized recommendations based on your profile'],
+                    ['Education Consulting', 'Guidance on school selection and applications'],
+                    ['AI Advisor', 'Conversational assistance for education planning'],
+                    ['Transparency Tools', 'Commission-free verification and unbiased recommendations'],
+                  ].map(([title, desc]) => (
+                    <li key={title} className="flex items-start gap-3">
+                      <span className="mt-1 font-bold" style={{ color: '#8C2D35' }}>✓</span>
+                      <span className="font-light" style={{ color: '#1C0A0C' }}>
+                        <strong style={{ color: '#1C0A0C' }}>{title}:</strong> {desc}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               </div>
-
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-6">
-                <h3 className="text-amber-400 font-bold mb-2 flex items-center gap-2">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(234,88,12,0.05)', border: '1px solid rgba(234,88,12,0.18)' }}>
+                <h3 className="font-bold mb-2 flex items-center gap-2" style={{ color: '#1C0A0C' }}>
                   <AlertCircle className="w-5 h-5" />
                   Important Disclaimer
                 </h3>
-                <p className="text-white/70 text-sm">
+                <p className="text-sm font-light" style={{ color: '#1C0A0C' }}>
                   Rivernova provides educational guidance and recommendations, but we do not guarantee admission to any institution. Final admission decisions are made solely by the educational institutions. Our AI-powered recommendations are based on available data and should be used as one factor in your decision-making process.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* User Responsibilities */}
+          {/* 4. User Conduct */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <CheckCircle2 className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">4. User Responsibilities and Conduct</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <CheckCircle2 className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>4. User Responsibilities and Conduct</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <h3 className="text-white font-bold mb-3">You agree NOT to:</h3>
-                <ul className="space-y-2 text-white/70">
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Provide false or misleading information</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Use the Services for any illegal purpose</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Attempt to gain unauthorized access to our systems</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Scrape, copy, or reverse engineer our platform</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Abuse or spam our AI services</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Share your account credentials with others</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Harass, threaten, or harm other users</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-rose-400 mt-1">✗</span>
-                    <span>Upload viruses, malware, or malicious code</span>
-                  </li>
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                <h3 className="font-bold mb-3" style={{ color: '#1C0A0C' }}>You agree NOT to:</h3>
+                <ul className="space-y-2">
+                  {[
+                    'Provide false or misleading information',
+                    'Use the Services for any illegal purpose',
+                    'Attempt to gain unauthorized access to our systems',
+                    'Scrape, copy, or reverse engineer our platform',
+                    'Abuse or spam our AI services',
+                    'Share your account credentials with others',
+                    'Harass, threaten, or harm other users',
+                    'Upload viruses, malware, or malicious code',
+                  ].map(item => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 font-bold" style={{ color: '#DC2626' }}>✗</span>
+                      <span className="font-light" style={{ color: '#1C0A0C' }}>{item}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
           </section>
 
-          {/* Payment Terms */}
+          {/* 5. Payment */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <FileText className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">5. Payment and Subscription Terms</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>5. Payment and Subscription Terms</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-                <div>
-                  <h3 className="text-white font-bold mb-2">5.1 Pricing</h3>
-                  <p className="text-white/70">Certain features require a paid subscription. Prices are displayed on our website and may change with notice.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">5.2 Payment Processing</h3>
-                  <p className="text-white/70">Payments are processed securely through Stripe. We do not store your full payment card information.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">5.3 Subscriptions</h3>
-                  <p className="text-white/70 mb-2">Subscriptions automatically renew unless cancelled. You may cancel at any time through your account settings.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">5.4 Refunds</h3>
-                  <p className="text-white/70">Refunds are provided on a case-by-case basis. Contact support@rivernova.com within 14 days of purchase to request a refund.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">5.5 Free Trial</h3>
-                  <p className="text-white/70">If we offer a free trial, you will be charged when the trial ends unless you cancel before the trial period expires.</p>
-                </div>
+            <div className="ml-9">
+              <div className="rounded-xl p-6 space-y-5" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                {[
+                  { title: '5.1 Pricing', desc: 'Certain features require a paid subscription. Prices are displayed on our website and may change with notice.' },
+                  { title: '5.2 Payment Processing', desc: 'Payments are processed securely through Stripe. We do not store your full payment card information.' },
+                  { title: '5.3 Subscriptions', desc: 'Subscriptions automatically renew unless cancelled. You may cancel at any time through your account settings.' },
+                  { title: '5.4 Refunds', desc: 'Refunds are provided on a case-by-case basis. Contact support@rivernova.com within 14 days of purchase to request a refund.' },
+                  { title: '5.5 Free Trial', desc: 'If we offer a free trial, you will be charged when the trial ends unless you cancel before the trial period expires.' },
+                ].map(item => (
+                  <div key={item.title}>
+                    <h3 className="font-bold mb-1" style={{ color: '#1C0A0C' }}>{item.title}</h3>
+                    <p className="font-light text-sm" style={{ color: 'rgba(28,10,12,0.7)' }}>{item.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Intellectual Property */}
+          {/* 6. Intellectual Property */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <Scale className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">6. Intellectual Property Rights</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <Scale className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>6. Intellectual Property Rights</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-                <div>
-                  <h3 className="text-white font-bold mb-2">6.1 Our Content</h3>
-                  <p className="text-white/70">All content, features, and functionality of Rivernova (including text, graphics, logos, software, and AI models) are owned by Rivernova and protected by copyright, trademark, and other intellectual property laws.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">6.2 Your Content</h3>
-                  <p className="text-white/70">You retain ownership of any content you submit. By using our Services, you grant us a license to use, store, and process your content to provide the Services.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">6.3 Feedback</h3>
-                  <p className="text-white/70">If you provide feedback or suggestions, we may use them without obligation to you.</p>
-                </div>
+            <div className="ml-9">
+              <div className="rounded-xl p-6 space-y-5" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                {[
+                  { title: '6.1 Our Content', desc: 'All content, features, and functionality of Rivernova (including text, graphics, logos, software, and AI models) are owned by Rivernova and protected by copyright, trademark, and other intellectual property laws.' },
+                  { title: '6.2 Your Content', desc: 'You retain ownership of any content you submit. By using our Services, you grant us a license to use, store, and process your content to provide the Services.' },
+                  { title: '6.3 Feedback', desc: 'If you provide feedback or suggestions, we may use them without obligation to you.' },
+                ].map(item => (
+                  <div key={item.title}>
+                    <h3 className="font-bold mb-1" style={{ color: '#1C0A0C' }}>{item.title}</h3>
+                    <p className="font-light text-sm" style={{ color: 'rgba(28,10,12,0.7)' }}>{item.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* AI Disclaimer */}
+          {/* 7. AI Disclaimer */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <AlertCircle className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">7. AI Services Disclaimer</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <AlertCircle className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>7. AI Services Disclaimer</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-6">
-                <p className="text-white/70 mb-3">
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(234,88,12,0.05)', border: '1px solid rgba(234,88,12,0.18)' }}>
+                <p className="font-light mb-3" style={{ color: '#1C0A0C' }}>
                   Our AI-powered recommendations and advisor are provided for informational purposes only. While we strive for accuracy:
                 </p>
-                <ul className="space-y-2 text-white/70">
-                  <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-1">⚠</span>
-                    <span>AI can make mistakes and provide inaccurate information</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-1">⚠</span>
-                    <span>You should verify all information independently</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-1">⚠</span>
-                    <span>AI recommendations are not guarantees of admission or success</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-amber-400 mt-1">⚠</span>
-                    <span>We are not liable for decisions made based on AI recommendations</span>
-                  </li>
+                <ul className="space-y-2">
+                  {[
+                    'AI can make mistakes and provide inaccurate information',
+                    'You should verify all information independently',
+                    'AI recommendations are not guarantees of admission or success',
+                    'We are not liable for decisions made based on AI recommendations',
+                  ].map(item => (
+                    <li key={item} className="flex items-start gap-3">
+                      <span className="mt-1 font-bold" style={{ color: '#EA580C' }}>⚠</span>
+                      <span className="font-light" style={{ color: '#1C0A0C' }}>{item}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
           </section>
 
-          {/* Limitation of Liability */}
+          {/* 8. Limitation of Liability */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <XCircle className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">8. Limitation of Liability</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <XCircle className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>8. Limitation of Liability</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <p className="text-white/70 mb-3">
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                <p className="font-light mb-3" style={{ color: '#1C0A0C' }}>
                   TO THE MAXIMUM EXTENT PERMITTED BY LAW, RIVERNOVA SHALL NOT BE LIABLE FOR:
                 </p>
-                <ul className="space-y-2 text-white/70">
-                  <li>• Indirect, incidental, special, or consequential damages</li>
-                  <li>• Loss of profits, data, or business opportunities</li>
-                  <li>• Damages resulting from admission decisions by educational institutions</li>
-                  <li>• Errors or inaccuracies in AI-generated content</li>
-                  <li>• Service interruptions or technical issues</li>
-                  <li>• Third-party actions or content</li>
+                <ul className="space-y-2 font-light" style={{ color: 'rgba(28,10,12,0.7)' }}>
+                  {[
+                    'Indirect, incidental, special, or consequential damages',
+                    'Loss of profits, data, or business opportunities',
+                    'Damages resulting from admission decisions by educational institutions',
+                    'Errors or inaccuracies in AI-generated content',
+                    'Service interruptions or technical issues',
+                    'Third-party actions or content',
+                  ].map(item => <li key={item}>• {item}</li>)}
                 </ul>
-                <p className="text-white/70 mt-4">
+                <p className="font-light mt-4" style={{ color: 'rgba(28,10,12,0.7)' }}>
                   Our total liability shall not exceed the amount you paid us in the 12 months preceding the claim, or $100, whichever is greater.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Indemnification */}
+          {/* 9. Indemnification */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <Scale className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">9. Indemnification</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <Scale className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>9. Indemnification</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <p className="text-white/70">
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                <p className="font-light" style={{ color: '#1C0A0C' }}>
                   You agree to indemnify and hold harmless Rivernova, its officers, directors, employees, and agents from any claims, damages, losses, or expenses (including legal fees) arising from:
                 </p>
-                <ul className="space-y-2 text-white/70 mt-3">
-                  <li>• Your use of the Services</li>
-                  <li>• Your violation of these Terms</li>
-                  <li>• Your violation of any third-party rights</li>
-                  <li>• Any content you submit or share</li>
+                <ul className="mt-3 space-y-1 font-light" style={{ color: 'rgba(28,10,12,0.7)' }}>
+                  {['Your use of the Services', 'Your violation of these Terms', 'Your violation of any third-party rights', 'Any content you submit or share'].map(item => (
+                    <li key={item}>• {item}</li>
+                  ))}
                 </ul>
               </div>
             </div>
           </section>
 
-          {/* Termination */}
+          {/* 10. Termination */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <XCircle className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">10. Termination</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <XCircle className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>10. Termination</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-                <div>
-                  <h3 className="text-white font-bold mb-2">10.1 By You</h3>
-                  <p className="text-white/70">You may terminate your account at any time through your account settings or by contacting us.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">10.2 By Us</h3>
-                  <p className="text-white/70">We may suspend or terminate your access immediately if you violate these Terms, without notice or liability.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">10.3 Effect of Termination</h3>
-                  <p className="text-white/70">Upon termination, your right to use the Services ceases immediately. We may delete your data in accordance with our Privacy Policy.</p>
-                </div>
+            <div className="ml-9">
+              <div className="rounded-xl p-6 space-y-5" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                {[
+                  { title: '10.1 By You', desc: 'You may terminate your account at any time through your account settings or by contacting us.' },
+                  { title: '10.2 By Us', desc: 'We may suspend or terminate your access immediately if you violate these Terms, without notice or liability.' },
+                  { title: '10.3 Effect of Termination', desc: 'Upon termination, your right to use the Services ceases immediately. We may delete your data in accordance with our Privacy Policy.' },
+                ].map(item => (
+                  <div key={item.title}>
+                    <h3 className="font-bold mb-1" style={{ color: '#1C0A0C' }}>{item.title}</h3>
+                    <p className="font-light text-sm" style={{ color: 'rgba(28,10,12,0.7)' }}>{item.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Governing Law */}
+          {/* 11. Governing Law */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <Scale className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">11. Governing Law and Disputes</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <Scale className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>11. Governing Law and Disputes</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6 space-y-4">
-                <div>
-                  <h3 className="text-white font-bold mb-2">11.1 Governing Law</h3>
-                  <p className="text-white/70">These Terms are governed by the laws of [Your Jurisdiction], without regard to conflict of law principles.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">11.2 Dispute Resolution</h3>
-                  <p className="text-white/70">Any disputes shall be resolved through binding arbitration in accordance with the rules of [Arbitration Organization], except where prohibited by law.</p>
-                </div>
-
-                <div>
-                  <h3 className="text-white font-bold mb-2">11.3 Class Action Waiver</h3>
-                  <p className="text-white/70">You agree to resolve disputes on an individual basis and waive the right to participate in class actions.</p>
-                </div>
+            <div className="ml-9">
+              <div className="rounded-xl p-6 space-y-5" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                {[
+                  { title: '11.1 Governing Law', desc: 'These Terms are governed by the laws of California, USA, without regard to conflict of law principles.' },
+                  { title: '11.2 Dispute Resolution', desc: 'Any disputes shall be resolved through binding arbitration in accordance with the rules of the American Arbitration Association, except where prohibited by law.' },
+                  { title: '11.3 Class Action Waiver', desc: 'You agree to resolve disputes on an individual basis and waive the right to participate in class actions.' },
+                ].map(item => (
+                  <div key={item.title}>
+                    <h3 className="font-bold mb-1" style={{ color: '#1C0A0C' }}>{item.title}</h3>
+                    <p className="font-light text-sm" style={{ color: 'rgba(28,10,12,0.7)' }}>{item.desc}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </section>
 
-          {/* Changes to Terms */}
+          {/* 12. Changes to Terms */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <FileText className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">12. Changes to These Terms</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>12. Changes to These Terms</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <p className="text-white/70">
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.1)' }}>
+                <p className="font-light" style={{ color: '#1C0A0C' }}>
                   We reserve the right to modify these Terms at any time. We will notify you of material changes by email or through a notice on our platform. Your continued use after changes constitutes acceptance of the modified Terms.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Contact */}
+          {/* 13. Contact */}
           <section>
-            <div className="flex items-center gap-3 mb-4">
-              <FileText className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-2xl font-bold text-white">13. Contact Information</h2>
+            <div className="flex items-center gap-3 mb-6">
+              <FileText className="w-6 h-6" style={{ color: '#8C2D35' }} />
+              <h2 className="text-2xl font-bold" style={{ color: '#1C0A0C' }}>13. Contact Information</h2>
             </div>
-            
-            <div className="space-y-3 ml-9">
-              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-6">
-                <p className="text-white/70 mb-4">
+            <div className="ml-9">
+              <div className="rounded-xl p-6" style={{ background: 'rgba(140,45,53,0.06)', border: '1px solid rgba(140,45,53,0.15)' }}>
+                <p className="font-light mb-4" style={{ color: '#1C0A0C' }}>
                   For questions about these Terms, please contact us:
                 </p>
-                <div className="space-y-2 text-white/70">
-                  <p><strong className="text-white">Email:</strong> <a href="mailto:legal@rivernova.com" className="text-indigo-400 hover:underline">legal@rivernova.com</a></p>
-                  <p><strong className="text-white">Support:</strong> <a href="mailto:support@rivernova.com" className="text-indigo-400 hover:underline">support@rivernova.com</a></p>
+                <div className="space-y-2 font-light" style={{ color: '#1C0A0C' }}>
+                  <p>
+                    <strong style={{ color: '#1C0A0C' }}>Email:</strong>{' '}
+                    <a href="mailto:legal@rivernova.com" className="underline" style={{ color: '#8C2D35' }}>legal@rivernova.com</a>
+                  </p>
+                  <p>
+                    <strong style={{ color: '#1C0A0C' }}>Support:</strong>{' '}
+                    <a href="mailto:support@rivernova.com" className="underline" style={{ color: '#8C2D35' }}>support@rivernova.com</a>
+                  </p>
                 </div>
               </div>
             </div>
@@ -432,16 +366,20 @@ export default function TermsOfService() {
       </div>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-white/5 bg-[#09090b]">
+      <footer className="py-10 px-6" style={{ borderTop: '1px solid rgba(140,45,53,0.12)', background: '#F5EDE5' }}>
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-white">Rivernova</span>
-            <span className="text-white/40 text-sm">© 2026</span>
+            <span className="text-lg font-bold" style={{ color: '#1C0A0C' }}>Rivernova</span>
+            <span className="text-sm" style={{ color: 'rgba(28,10,12,0.35)' }}>© 2026</span>
           </div>
-          <div className="flex items-center gap-6 text-sm text-white/60">
-            <a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="/terms" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="mailto:legal@rivernova.com" className="hover:text-white transition-colors">Contact</a>
+          <div className="flex items-center gap-6 text-sm font-light" style={{ color: 'rgba(28,10,12,0.5)' }}>
+            <a href="/privacy" className="transition-colors"
+              onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.5)')}>Privacy Policy</a>
+            <a href="/terms" style={{ color: '#8C2D35' }}>Terms of Service</a>
+            <a href="mailto:legal@rivernova.com" className="transition-colors"
+              onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.5)')}>Contact</a>
           </div>
         </div>
       </footer>

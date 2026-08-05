@@ -60,7 +60,7 @@ export async function submitApplication(formData: any) {
 
   // 3. Step 2: Claude Synthesis & Ranking
   const { text: finalMatchesJson } = await generateText({
-    model: anthropic('claude-3-5-sonnet-20240620'),
+    model: anthropic('claude-sonnet-4-6'),
     prompt: `You are the lead Rivernova Match Architect. Based on the following raw research provided, synthesize 10 ranked school matches for ${formData.mode} mode.
     
     Research Findings:

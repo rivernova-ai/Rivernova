@@ -31,35 +31,34 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
   // issues with users being randomly logged out.
 
-  // Race the auth call against a 1.2s timeout — if Supabase is slow,
-  // fall through and let individual pages handle their own auth checks.
-  const fallback = new Promise<{ data: { user: null } }>(resolve =>
-    setTimeout(() => resolve({ data: { user: null } }), 1200)
-  );
-  const { data: { user } } = await Promise.race([
-    supabase.auth.getUser(),
-    fallback,
-  ]);
+  // Bound the auth call to 1200ms so Vercel's edge middleware timeout (1.5s)
+  // is never hit. On timeout or network error, fail-open and let the page
+  // render — individual server components perform their own auth checks.
+  // Only redirect when getUser() definitively confirms no session.
+  let user = null;
+  let authConfirmed = false;
 
-  // if (
-  //   !user &&
-  //   request.nextUrl.pathname.startsWith('/dashboard')
-  // ) {
-  //   // no user, potentially respond by redirecting the user to the login page
-  //   const url = request.nextUrl.clone()
-  //   url.pathname = '/'
-  //   return NextResponse.redirect(url)
-  // }
+  try {
+    const { data } = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('auth-timeout')), 1200)
+      ),
+    ]);
+    user = data.user;
+    authConfirmed = true;
+  } catch {
+    // timeout or Supabase network error — fail-open
+  }
 
-  // OPTIONAL: Redirect authenticated users away from auth pages
-  if (
-     // Example: if they hit /auth and are logged in, send to dashboard
-     user && 
-     (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/signup')
-  ) {
-      const url = request.nextUrl.clone()
-      url.pathname = '/dashboard'
-      return NextResponse.redirect(url)
+  const protectedPath =
+    request.nextUrl.pathname.startsWith('/dashboard') ||
+    request.nextUrl.pathname.startsWith('/onboarding');
+
+  if (authConfirmed && !user && protectedPath) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/'
+    return NextResponse.redirect(url)
   }
 
   return supabaseResponse

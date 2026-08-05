@@ -3,6 +3,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
 import { createClient } from '@/utils/supabase/server';
+import { sanitizeForPrompt } from '@/lib/sanitize';
 
 export async function generateApplicationOutline(schoolName: string) {
   const supabase = await createClient();
@@ -19,14 +20,14 @@ export async function generateApplicationOutline(schoolName: string) {
   if (!profile) throw new Error('Profile not found');
 
   const { text: outline } = await generateText({
-    model: anthropic('claude-3-5-sonnet-20240620'),
+    model: anthropic('claude-sonnet-4-6'),
     system: `You are the Rivernova Application Architect. Your goal is to help students start their applications with zero bias.`,
-    prompt: `Generate a comprehensive application starter kit for ${schoolName}.
-    
+    prompt: `Generate a comprehensive application starter kit for ${sanitizeForPrompt(schoolName)}.
+
     Student Profile:
-    - Major: ${profile.major}
-    - GPA: ${profile.gpa}
-    - Career Goals: ${profile.careerGoals}
+    - Major: ${sanitizeForPrompt(profile.major)}
+    - GPA: ${sanitizeForPrompt(profile.gpa)}
+    - Career Goals: ${sanitizeForPrompt(profile.careerGoals)}
     
     The starter kit must include:
     1. A "Why this School" essay outline (3 bullet points).

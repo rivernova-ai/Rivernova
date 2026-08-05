@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { MessageCircle, X, Send, Loader2, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 
 export function AICounselor() {
   const [isOpen, setIsOpen] = useState(false);
@@ -115,6 +116,7 @@ export function AICounselor() {
                 <div className="text-sm leading-relaxed prose prose-sm max-w-none [&>*]:text-gray-700 [&_strong]:text-gray-900 [&_strong]:font-bold [&_em]:italic [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_a]:text-indigo-500 [&_a]:hover:underline [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:list-disc [&_ul]:list-inside [&_ul]:mb-2 [&_ol]:list-decimal [&_ol]:list-inside [&_ol]:mb-2 [&_li]:mb-1">
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeSanitize]}
                   >
                     {message.content}
                   </ReactMarkdown>

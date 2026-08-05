@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/utils/supabase/server';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 const salaryMap: Record<string, number> = {
   "data science": 88000,
@@ -70,6 +71,9 @@ export async function POST(req: NextRequest) {
     
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const rateLimitResponse = await enforceRateLimit(supabase, user.id, 'last_roi_at', 60_000, 'ROI report');
+    if (rateLimitResponse) return rateLimitResponse;
 
     const extracted = extractSchoolData(rawSchool);
     const { name: schoolName, location: schoolLocation, tuition: tuitionNum, graduationRate } = extracted;
@@ -160,12 +164,11 @@ export async function POST(req: NextRequest) {
     let aiRecommendation = "AI analysis temporarily unavailable";
     if (process.env.ANTHROPIC_API_KEY) {
       try {
-        console.log('Calling Claude ROI with model: claude-sonnet-4-20250514');
         console.log('ROI Params:', { schoolName, major, gpa, total4Years, roi });
 
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const response = await anthropic.messages.create({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-6",
           max_tokens: 200,
           system: "You are a brutally honest, commission-free college financial advisor. You give direct, specific advice based purely on numbers and student outcomes. You never recommend a school because of prestige — only because of genuine student fit and financial ROI. Keep your response to exactly 3 sentences.",
           messages: [{

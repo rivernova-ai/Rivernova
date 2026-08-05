@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, ChevronDown, ChevronUp, GitCompareArrows } from 'lucide-react';
 import MapDistance from './MapDistance';
 import { stripMarkdown, cleanText, getMatchScoreColor, getMatchScoreLabel } from '@/lib/utils';
 
@@ -34,6 +34,8 @@ export interface Match {
 interface MatchCardProps {
   match: Match;
   onFavorite?: (id: string) => void;
+  onToggleCompare?: (match: Match) => void;
+  isCompared?: boolean;
 }
 
 const probStyle = (prob: number) => {
@@ -42,7 +44,7 @@ const probStyle = (prob: number) => {
   return { color: '#d97706', background: 'rgba(217,119,6,0.08)', border: '1px solid rgba(217,119,6,0.2)' };
 };
 
-export function MatchCard({ match, onFavorite }: MatchCardProps) {
+export function MatchCard({ match, onFavorite, onToggleCompare, isCompared }: MatchCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [favorited, setFavorited] = useState(match.favorited || false);
 
@@ -227,6 +229,23 @@ export function MatchCard({ match, onFavorite }: MatchCardProps) {
         >
           {expanded ? <><ChevronUp style={{ width: '16px', height: '16px' }} />Show Less</> : <><ChevronDown style={{ width: '16px', height: '16px' }} />View Details</>}
         </button>
+        {onToggleCompare && (
+          <button
+            onClick={() => onToggleCompare(match)}
+            title={isCompared ? 'Remove from comparison' : 'Add to comparison'}
+            style={{
+              width: '46px', height: '46px', borderRadius: '100px', flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: isCompared ? 'rgba(140,45,53,0.12)' : 'rgba(140,45,53,0.05)',
+              border: isCompared ? '1px solid rgba(140,45,53,0.35)' : '1px solid rgba(140,45,53,0.15)',
+              color: '#8C2D35', cursor: 'pointer', transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.14)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isCompared ? 'rgba(140,45,53,0.12)' : 'rgba(140,45,53,0.05)'; }}
+          >
+            <GitCompareArrows style={{ width: '17px', height: '17px' }} />
+          </button>
+        )}
         <button
           style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', height: '46px', borderRadius: '100px', background: '#8C2D35', color: '#F5EDE5', border: 'none', fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit', boxShadow: '0 0 20px rgba(140,45,53,0.2)' }}
         >

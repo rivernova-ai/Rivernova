@@ -3,6 +3,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateText } from 'ai';
+import { sanitizeForPrompt } from '@/lib/sanitize';
 
 export async function completeOnboarding(profileData: any) {
   const supabase = await createClient();
@@ -15,15 +16,15 @@ export async function completeOnboarding(profileData: any) {
   // Generate a concise profile summary using Claude
   // This summary is crucial for feeding into Perplexity for school research
   const { text: summary } = await generateText({
-    model: anthropic('claude-3-5-sonnet-20240620'),
+    model: anthropic('claude-sonnet-4-6'),
     prompt: `Analyze the following student profile and generate a highly technical, context-rich 3-sentence summary that captures their academic background, career ambitions, and financial/geographic constraints. This summary will be used to research the best school matches.
-    
-    Major: ${profileData.major}
-    GPA: ${profileData.gpa}
-    Mode: ${profileData.mode}
-    Target Location: ${profileData.targetLocation}
-    Budget: ${profileData.budget}
-    Career Goals: ${profileData.careerGoals || 'Not specified'}`,
+
+    Major: ${sanitizeForPrompt(profileData.major)}
+    GPA: ${sanitizeForPrompt(profileData.gpa)}
+    Mode: ${sanitizeForPrompt(profileData.mode)}
+    Target Location: ${sanitizeForPrompt(profileData.targetLocation)}
+    Budget: ${sanitizeForPrompt(profileData.budget)}
+    Career Goals: ${sanitizeForPrompt(profileData.careerGoals) || 'Not specified'}`,
   });
 
   const { error } = await supabase

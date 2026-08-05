@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/utils/supabase/server';
+import { enforceRateLimit } from '@/lib/rateLimit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,6 +54,15 @@ function closeTruncatedJSON(str: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rateLimitResponse = await enforceRateLimit(supabase, user.id, 'last_search_at', 30_000, 'school search');
+    if (rateLimitResponse) return rateLimitResponse;
+
     const body = await request.json();
     const {
       // Rich profile fields (new)
@@ -394,6 +405,33 @@ ABSOLUTE RULES:
     });
 
     console.log(`Parsed ${cleanedSchools.length} schools (${cleanedSchools.filter((s: any) => s.tier === 'safety').length} safety / ${cleanedSchools.filter((s: any) => s.tier === 'target').length} target / ${cleanedSchools.filter((s: any) => s.tier === 'reach').length} reach)`);
+
+    // Persist matches — delete prior run for this user then insert fresh set.
+    // Fire-and-forget: a persistence failure never blocks the UI response.
+    (async () => {
+      try {
+        await supabase.from('matches').delete().eq('user_id', user.id);
+        const rows = cleanedSchools.map((s: any) => ({
+          user_id: user.id,
+          school_name: s.name,
+          school_data: s,
+          success_probability: s.match_score,
+          reasoning: s.why_matched || '',
+          cost_breakdown: {
+            tuition_instate: s.tuition_instate,
+            tuition_outofstate: s.tuition_outofstate,
+            net_price: s.net_price,
+            room_board: s.room_board,
+            annual_cost_estimate: s.annual_cost_estimate,
+          },
+          citations: citations || [],
+        }));
+        const { error } = await supabase.from('matches').insert(rows);
+        if (error) console.error('[search-schools] match persistence error:', error.message);
+      } catch (e: any) {
+        console.error('[search-schools] match persistence exception:', e?.message);
+      }
+    })();
 
     return NextResponse.json({ schools: cleanedSchools, citations });
   } catch (error: any) {

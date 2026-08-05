@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Loader2, Send, Sparkles, Bot, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -35,26 +34,12 @@ export default function AIChat() {
 
   useEffect(() => {
     const loadProfile = async () => {
-      if (!user) {
-        router.push('/');
-        return;
-      }
-
+      if (!user) { router.push('/'); return; }
       const supabase = createClient();
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (data) {
-        setProfile(data);
-      }
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      if (data) setProfile(data);
     };
-
-    if (!authLoading) {
-      loadProfile();
-    }
+    if (!authLoading) loadProfile();
   }, [user, authLoading, router]);
 
   useEffect(() => {
@@ -63,112 +48,73 @@ export default function AIChat() {
 
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
-
     const userMessage: Message = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInput('');
     setLoading(true);
-
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          userProfile: profile,
-        }),
+        body: JSON.stringify({ messages: [...messages, userMessage], userProfile: profile }),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get response');
-      }
-
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: data.message,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      if (!response.ok) throw new Error(data.error || 'Failed to get response');
+      setMessages(prev => [...prev, { role: 'assistant', content: data.message }]);
     } catch (error: any) {
       console.error('Chat error:', error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.',
-        },
-      ]);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error. Please try again.' }]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   };
 
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
-      </div>
-    );
-  }
+  if (authLoading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#F5EDE5' }}>
+      <Loader2 style={{ width: '32px', height: '32px', color: '#8C2D35', animation: 'spin 1s linear infinite' }} />
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen p-4 md:p-8 lg:p-12 max-w-[1200px] mx-auto">
+    <div style={{ background: '#F5EDE5', minHeight: '100vh', padding: '2rem 2rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
+
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-indigo-400" />
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Sparkles style={{ width: '24px', height: '24px', color: '#8C2D35' }} />
           </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white">Advisor</h1>
-          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: 300, color: '#1C0A0C', margin: 0, letterSpacing: '-0.02em' }}>Advisor</h1>
         </div>
       </div>
 
       {/* Chat Container */}
-      <div className="bg-gradient-to-br from-white/[0.03] to-white/[0.01] border border-white/[0.08] rounded-3xl backdrop-blur-xl overflow-hidden">
+      <div style={{ background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.12)', borderRadius: '24px', overflow: 'hidden' }}>
         {/* Messages */}
-        <div className="h-[600px] overflow-y-auto p-6 space-y-6">
+        <div style={{ height: '560px', overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {messages.map((message, idx) => (
-            <div
-              key={idx}
-              className={`flex gap-4 ${
-                message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-              }`}
-            >
-              {/* Avatar */}
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                  message.role === 'user'
-                    ? 'bg-gradient-to-br from-indigo-500 to-purple-500'
-                    : 'bg-white/5 border border-white/10'
-                }`}
-              >
-                {message.role === 'user' ? (
-                  <User className="w-5 h-5 text-white" />
-                ) : (
-                  <Bot className="w-5 h-5 text-indigo-400" />
-                )}
+            <div key={idx} style={{ display: 'flex', gap: '16px', flexDirection: message.role === 'user' ? 'row-reverse' : 'row' }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: message.role === 'user' ? '#8C2D35' : 'rgba(140,45,53,0.08)',
+                border: message.role === 'user' ? 'none' : '1px solid rgba(140,45,53,0.15)',
+              }}>
+                {message.role === 'user'
+                  ? <User style={{ width: '20px', height: '20px', color: '#F5EDE5' }} />
+                  : <Bot style={{ width: '20px', height: '20px', color: '#8C2D35' }} />}
               </div>
-
-              {/* Message Bubble */}
-              <div
-                className={`max-w-[70%] rounded-2xl p-4 ${
-                  message.role === 'user'
-                    ? 'bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30'
-                    : 'bg-white/5 border border-white/10'
-                }`}
-              >
-                <p className="text-white/90 text-sm leading-relaxed whitespace-pre-wrap">
+              <div style={{
+                maxWidth: '70%', borderRadius: '16px', padding: '14px 16px',
+                background: message.role === 'user' ? 'rgba(140,45,53,0.07)' : 'rgba(250,245,240,0.9)',
+                border: `1px solid ${message.role === 'user' ? 'rgba(140,45,53,0.18)' : 'rgba(140,45,53,0.08)'}`,
+              }}>
+                <p style={{ fontSize: '13px', color: 'rgba(28,10,12,0.85)', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                   {message.content}
                 </p>
               </div>
@@ -176,54 +122,51 @@ export default function AIChat() {
           ))}
 
           {loading && (
-            <div className="flex gap-4">
-              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-                <Bot className="w-5 h-5 text-indigo-400" />
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.15)' }}>
+                <Bot style={{ width: '20px', height: '20px', color: '#8C2D35' }} />
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-                  <span className="text-white/60 text-sm">Thinking...</span>
+              <div style={{ background: 'rgba(250,245,240,0.9)', border: '1px solid rgba(140,45,53,0.08)', borderRadius: '16px', padding: '14px 16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Loader2 style={{ width: '16px', height: '16px', color: '#8C2D35', animation: 'spin 1s linear infinite' }} />
+                  <span style={{ fontSize: '13px', color: 'rgba(28,10,12,0.45)' }}>Thinking...</span>
                 </div>
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
-        <div className="border-t border-white/[0.08] p-4">
-          <div className="flex gap-3">
+        <div style={{ borderTop: '1px solid rgba(140,45,53,0.10)', padding: '16px' }}>
+          <div style={{ display: 'flex', gap: '12px' }}>
             <textarea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={e => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Ask me anything about schools, applications, or your education journey..."
-              className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 resize-none"
               rows={2}
               disabled={loading}
+              style={{ flex: 1, background: 'rgba(245,237,229,0.7)', border: '1px solid rgba(140,45,53,0.14)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#1C0A0C', resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6 }}
             />
-            <Button
+            <button
               onClick={sendMessage}
               disabled={!input.trim() || loading}
-              className="h-auto px-6 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ padding: '0 24px', borderRadius: '12px', background: !input.trim() || loading ? 'rgba(140,45,53,0.3)' : '#8C2D35', color: '#F5EDE5', border: 'none', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s ease', fontFamily: 'inherit' }}
             >
-              {loading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : (
-                <Send className="w-5 h-5" />
-              )}
-            </Button>
+              {loading
+                ? <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
+                : <Send style={{ width: '20px', height: '20px' }} />}
+            </button>
           </div>
-          <p className="text-white/30 text-xs mt-2 text-center">
+          <p style={{ fontSize: '11px', color: 'rgba(28,10,12,0.35)', margin: '8px 0 0', textAlign: 'center' }}>
             AI can make mistakes. It's important you double-check. Press Enter to send, Shift+Enter for new line
           </p>
         </div>
       </div>
 
       {/* Suggested Questions */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
         {[
           'What schools match my profile?',
           'How can I improve my application?',
@@ -233,12 +176,20 @@ export default function AIChat() {
           <button
             key={idx}
             onClick={() => setInput(question)}
-            className="text-left px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-white/70 text-sm"
+            style={{ textAlign: 'left', padding: '12px 16px', borderRadius: '12px', background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)', color: 'rgba(28,10,12,0.55)', fontSize: '13px', cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(140,45,53,0.08)'; el.style.borderColor = 'rgba(140,45,53,0.20)'; }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(140,45,53,0.04)'; el.style.borderColor = 'rgba(140,45,53,0.10)'; }}
           >
             {question}
           </button>
         ))}
       </div>
+
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        textarea::placeholder { color: rgba(28,10,12,0.3); }
+        * { scrollbar-width: thin; scrollbar-color: rgba(140,45,53,0.2) transparent; }
+      `}</style>
     </div>
   );
 }

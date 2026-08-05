@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, DollarSign, GraduationCap, Briefcase, Award, MapPin, Send, Sparkles, TrendingUp, ShieldCheck } from 'lucide-react';
+import { X, Loader2, MapPin, Send, Sparkles, ShieldCheck } from 'lucide-react';
 import { ComparisonSchool } from '@/lib/comparison';
 import { cleanText } from '@/lib/utils';
 
@@ -12,10 +12,10 @@ interface ComparisonModalProps {
 }
 
 const PALETTE = [
-  { hex: '#6366f1', glow: 'rgba(99,102,241,0.35)',  bg: 'rgba(99,102,241,0.12)',  border: 'rgba(99,102,241,0.3)'  },
-  { hex: '#10b981', glow: 'rgba(16,185,129,0.35)',  bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.3)'  },
-  { hex: '#a855f7', glow: 'rgba(168,85,247,0.35)',  bg: 'rgba(168,85,247,0.12)',  border: 'rgba(168,85,247,0.3)'  },
-  { hex: '#f59e0b', glow: 'rgba(245,158,11,0.35)',  bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)'  },
+  { hex: '#8C2D35', bg: 'rgba(140,45,53,0.07)',  border: 'rgba(140,45,53,0.18)'  },
+  { hex: '#1C0A0C', bg: 'rgba(28,10,12,0.06)',   border: 'rgba(28,10,12,0.16)'   },
+  { hex: '#5C1A1F', bg: 'rgba(92,26,31,0.07)',   border: 'rgba(92,26,31,0.18)'   },
+  { hex: '#6B3A1C', bg: 'rgba(107,58,28,0.06)',  border: 'rgba(107,58,28,0.16)'  },
 ];
 
 function extractPct(v?: string): number | null {
@@ -121,27 +121,25 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
     }
   };
 
-  const scoreColor = (s: number) => s >= 80 ? '#34d399' : s >= 60 ? '#fb923c' : '#f87171';
-
   const tableRows = [
-    { label: 'Match Score',       get: (m: ReturnType<typeof buildMetrics>[0]) => m.matchScore > 0 ? `${m.matchScore}%` : 'N/A', isBetter: 'higher', getNum: (m: any) => m.matchScore },
-    { label: 'Tuition / Year',    get: (m: ReturnType<typeof buildMetrics>[0]) => m.tuition,      isBetter: 'lower',  getNum: (m: any) => m.tuitionNum },
-    { label: 'Net Price',         get: (m: ReturnType<typeof buildMetrics>[0]) => m.netPrice,     isBetter: 'lower',  getNum: (m: any) => m.netPriceNum },
-    { label: 'Acceptance Rate',   get: (m: ReturnType<typeof buildMetrics>[0]) => m.admissionRate, isBetter: 'higher', getNum: (m: any) => m.admissionNum },
-    { label: 'Graduation Rate',   get: (m: ReturnType<typeof buildMetrics>[0]) => m.graduationRate, isBetter: 'higher', getNum: (m: any) => m.graduationNum },
-    { label: 'GPA Required',      get: (m: ReturnType<typeof buildMetrics>[0]) => m.gpaMinimum,   isBetter: 'lower',  getNum: (m: any) => parseFloat(m.gpaMinimum) || null },
-    { label: 'Location',          get: (m: ReturnType<typeof buildMetrics>[0]) => m.location },
-    { label: 'Program',           get: (m: ReturnType<typeof buildMetrics>[0]) => m.program },
-    { label: 'Avg Starting Salary', get: (m: ReturnType<typeof buildMetrics>[0]) => m.avgSalary, isBetter: 'higher', getNum: (m: any) => m.salaryNum },
-    { label: 'Employment Rate',   get: (m: ReturnType<typeof buildMetrics>[0]) => m.employmentRate, isBetter: 'higher', getNum: (m: any) => m.employmentNum },
-    { label: 'Scholarships',      get: (m: ReturnType<typeof buildMetrics>[0]) => m.scholarships },
+    { label: 'Match Score',        get: (m: ReturnType<typeof buildMetrics>[0]) => m.matchScore > 0 ? `${m.matchScore}%` : 'N/A', isBetter: 'higher', getNum: (m: any) => m.matchScore },
+    { label: 'Tuition / Year',     get: (m: ReturnType<typeof buildMetrics>[0]) => m.tuition,       isBetter: 'lower',  getNum: (m: any) => m.tuitionNum },
+    { label: 'Net Price',          get: (m: ReturnType<typeof buildMetrics>[0]) => m.netPrice,      isBetter: 'lower',  getNum: (m: any) => m.netPriceNum },
+    { label: 'Acceptance Rate',    get: (m: ReturnType<typeof buildMetrics>[0]) => m.admissionRate, isBetter: 'higher', getNum: (m: any) => m.admissionNum },
+    { label: 'Graduation Rate',    get: (m: ReturnType<typeof buildMetrics>[0]) => m.graduationRate,isBetter: 'higher', getNum: (m: any) => m.graduationNum },
+    { label: 'GPA Required',       get: (m: ReturnType<typeof buildMetrics>[0]) => m.gpaMinimum,    isBetter: 'lower',  getNum: (m: any) => parseFloat(m.gpaMinimum) || null },
+    { label: 'Location',           get: (m: ReturnType<typeof buildMetrics>[0]) => m.location },
+    { label: 'Program',            get: (m: ReturnType<typeof buildMetrics>[0]) => m.program },
+    { label: 'Avg Starting Salary',get: (m: ReturnType<typeof buildMetrics>[0]) => m.avgSalary,     isBetter: 'higher', getNum: (m: any) => m.salaryNum },
+    { label: 'Employment Rate',    get: (m: ReturnType<typeof buildMetrics>[0]) => m.employmentRate,isBetter: 'higher', getNum: (m: any) => m.employmentNum },
+    { label: 'Scholarships',       get: (m: ReturnType<typeof buildMetrics>[0]) => m.scholarships },
   ];
 
   const visualMetrics = [
-    { label: 'Match Score',      vals: metrics.map(m => m.matchScore),              max: 100, fmt: (v: number) => `${v}%`,                  isBetter: 'higher' },
-    { label: 'Acceptance Rate',  vals: metrics.map(m => m.admissionNum || 0),       max: 100, fmt: (v: number) => `${v}%`,                  isBetter: 'higher' },
-    { label: 'Graduation Rate',  vals: metrics.map(m => m.graduationNum || 0),      max: 100, fmt: (v: number) => `${v}%`,                  isBetter: 'higher' },
-    { label: 'Net Price / Tuition', vals: metrics.map(m => m.netPriceNum || m.tuitionNum || 0),
+    { label: 'Match Score',        vals: metrics.map(m => m.matchScore),              max: 100, fmt: (v: number) => `${v}%`,                   isBetter: 'higher' },
+    { label: 'Acceptance Rate',    vals: metrics.map(m => m.admissionNum || 0),       max: 100, fmt: (v: number) => `${v}%`,                   isBetter: 'higher' },
+    { label: 'Graduation Rate',    vals: metrics.map(m => m.graduationNum || 0),      max: 100, fmt: (v: number) => `${v}%`,                   isBetter: 'higher' },
+    { label: 'Net Price / Tuition',vals: metrics.map(m => m.netPriceNum || m.tuitionNum || 0),
       max: Math.max(...metrics.map(m => m.netPriceNum || m.tuitionNum || 0), 1),
       fmt: (v: number) => `$${(v / 1000).toFixed(1)}k`, isBetter: 'lower' },
   ];
@@ -156,100 +154,98 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
         if (isBetter === 'lower'  && (v as number) < best) { best = v as number; idx = i; }
       }
     });
-    // Tie = no winner
     if (idx !== -1 && vals.filter(v => v === best).length > 1) return -1;
     return idx;
   }
 
+  const sectionLabel = (text: string) => (
+    <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.4)', margin: '0 0 20px' }}>{text}</p>
+  );
+
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-200"
-      style={{ background: 'rgba(0,0,0,0.78)', backdropFilter: 'blur(12px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 24px', background: 'rgba(28,10,12,0.55)', backdropFilter: 'blur(8px)' }}
     >
       <div
-        className="relative w-full max-w-5xl flex flex-col rounded-3xl overflow-hidden"
         style={{
-          background: '#0a0a18',
-          border: '1px solid rgba(255,255,255,0.09)',
+          position: 'relative', width: '100%', maxWidth: '900px',
+          display: 'flex', flexDirection: 'column', borderRadius: '24px', overflow: 'hidden',
+          background: '#F5EDE5',
+          border: '1px solid rgba(140,45,53,0.14)',
           maxHeight: '92vh',
-          boxShadow: '0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)',
+          boxShadow: '0 32px 80px rgba(28,10,12,0.18)',
         }}
       >
-        {/* Top shimmer */}
-        <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-          style={{ background: 'linear-gradient(90deg,transparent,rgba(99,102,241,0.5),transparent)' }} />
+        {/* Top crimson accent line */}
+        <div style={{ height: '2px', background: 'linear-gradient(90deg,transparent,rgba(140,45,53,0.55),transparent)', flexShrink: 0 }} />
 
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between px-8 py-5 flex-shrink-0"
-          style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 28px', borderBottom: '1px solid rgba(140,45,53,0.09)', flexShrink: 0 }}>
           <div>
-            <h2 className="text-xl font-light tracking-tight" style={{ color: '#f0f0f8' }}>School Comparison</h2>
-            <p className="text-xs mt-0.5" style={{ color: 'rgba(240,240,248,0.38)' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 300, letterSpacing: '-0.02em', color: '#1C0A0C', margin: 0 }}>School Comparison</h2>
+            <p style={{ fontSize: '12px', color: 'rgba(28,10,12,0.45)', margin: '4px 0 0' }}>
               {schools.length} schools · Rivernova Zero-Commission Engine
             </p>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:rotate-90 duration-200"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(240,240,248,0.5)' }}
+            style={{
+              width: '36px', height: '36px', borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(140,45,53,0.07)', border: '1px solid rgba(140,45,53,0.14)',
+              color: 'rgba(28,10,12,0.5)', cursor: 'pointer', transition: 'all 0.18s ease',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.12)'; (e.currentTarget as HTMLElement).style.transform = 'rotate(90deg)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.07)'; (e.currentTarget as HTMLElement).style.transform = 'rotate(0)'; }}
           >
-            <X className="w-4 h-4" />
+            <X style={{ width: '16px', height: '16px' }} />
           </button>
         </div>
 
-        {/* ── Scrollable body ── */}
-        <div className="overflow-y-auto flex-1 px-8 py-8 space-y-12">
+        {/* Scrollable body */}
+        <div style={{ overflowY: 'auto', flex: 1, padding: '28px', display: 'flex', flexDirection: 'column', gap: '48px' }}>
 
-          {/* ── 1. School Hero Cards ── */}
-          <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${schools.length},minmax(0,1fr))` }}>
+          {/* 1. School Hero Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${schools.length},minmax(0,1fr))`, gap: '12px' }}>
             {metrics.map((m, i) => {
               const p = m.palette;
-              const sc = scoreColor(m.matchScore);
-              const circ = 2 * Math.PI * 28;
               return (
                 <div
                   key={i}
-                  className="relative flex flex-col items-center text-center py-6 px-4 rounded-2xl overflow-hidden"
-                  style={{ background: p.bg, border: `1px solid ${p.border}` }}
+                  style={{
+                    position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    textAlign: 'center', padding: '24px 16px', borderRadius: '18px', overflow: 'hidden',
+                    background: p.bg, border: `1px solid ${p.border}`,
+                  }}
                 >
-                  {/* Color stripe top */}
-                  <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: p.hex }} />
+                  <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: p.hex }} />
 
                   {/* Letter badge */}
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-black mb-3"
-                    style={{ background: `${p.hex}25`, color: p.hex, border: `1px solid ${p.border}` }}
-                  >
+                  <div style={{
+                    width: '34px', height: '34px', borderRadius: '50%', marginBottom: '12px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '13px', fontWeight: 700, flexShrink: 0,
+                    background: `${p.hex}18`, color: p.hex, border: `1px solid ${p.border}`,
+                  }}>
                     {String.fromCharCode(65 + i)}
                   </div>
 
-                  {/* Name */}
-                  <p className="text-sm font-semibold mb-4 leading-snug" style={{ color: '#f0f0f8' }}>{m.name}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: '#1C0A0C', margin: '0 0 16px', lineHeight: 1.3 }}>{m.name}</p>
 
-                  {/* Mini match score ring */}
-                  <div className="relative w-[68px] h-[68px]">
-                    <svg className="w-full h-full -rotate-90">
-                      <circle cx="34" cy="34" r="28" stroke="rgba(255,255,255,0.08)" strokeWidth="5" fill="none" />
-                      <circle
-                        cx="34" cy="34" r="28"
-                        stroke={sc} strokeWidth="5" fill="none" strokeLinecap="round"
-                        style={{
-                          strokeDasharray: circ,
-                          strokeDashoffset: circ - (m.matchScore / 100) * circ,
-                          filter: `drop-shadow(0 0 5px ${sc}80)`,
-                          transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1)',
-                        }}
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-sm font-bold" style={{ color: sc }}>{m.matchScore}%</span>
-                    </div>
+                  {/* Match score badge */}
+                  <div style={{
+                    width: '68px', height: '68px', borderRadius: '16px',
+                    background: 'rgba(140,45,53,0.06)', border: '1px solid rgba(140,45,53,0.14)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{ fontSize: '22px', fontWeight: 700, color: '#1C0A0C', lineHeight: 1, letterSpacing: '-0.03em' }}>{m.matchScore}%</span>
+                    <span style={{ fontSize: '7px', fontWeight: 700, color: 'rgba(28,10,12,0.45)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '4px' }}>match</span>
                   </div>
 
-                  {/* Location */}
                   {m.location !== 'N/A' && (
-                    <p className="text-[11px] mt-3 flex items-center gap-1 font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>
-                      <MapPin className="w-3 h-3" />
+                    <p style={{ fontSize: '11px', marginTop: '12px', display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(28,10,12,0.5)', fontWeight: 300 }}>
+                      <MapPin style={{ width: '11px', height: '11px' }} />
                       {m.location}
                     </p>
                   )}
@@ -258,126 +254,110 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
             })}
           </div>
 
-          {/* ── 2. Radar / Multi-Axis ── */}
-          <div className="rounded-3xl p-8 flex flex-col md:flex-row items-center gap-10"
-            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div className="flex-1 space-y-6">
-              <div>
-                <h3 className="text-2xl font-light tracking-tight mb-2" style={{ color: '#f0f0f8' }}>Multi-Axis Analysis</h3>
-                <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(240,240,248,0.5)' }}>
-                  A larger polygon means stronger overall profile across match score, admission probability, graduation outcomes, and affordability.
-                </p>
-              </div>
-              <div className="space-y-3">
-                {metrics.map((m, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ background: m.palette.hex, boxShadow: `0 0 8px ${m.palette.hex}` }} />
-                    <span className="text-sm font-medium" style={{ color: 'rgba(240,240,248,0.75)' }}>
-                      {String.fromCharCode(65 + i)} — {m.name}
-                    </span>
+          {/* 2. Radar / Multi-Axis */}
+          <div>
+            {sectionLabel('Multi-Axis Analysis')}
+            <div style={{ borderRadius: '20px', padding: '28px', display: 'flex', flexDirection: 'column', gap: '24px', background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.09)' }}>
+              <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '32px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: 300, letterSpacing: '-0.02em', color: '#1C0A0C', margin: '0 0 8px' }}>
+                    Holistic Profile View
+                  </h3>
+                  <p style={{ fontSize: '13px', fontWeight: 300, lineHeight: 1.7, color: 'rgba(28,10,12,0.55)', margin: '0 0 20px' }}>
+                    A larger polygon reflects stronger overall scores across match, admission, graduation, and affordability.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {metrics.map((m, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: m.palette.hex, flexShrink: 0 }} />
+                        <span style={{ fontSize: '13px', fontWeight: 400, color: 'rgba(28,10,12,0.7)' }}>
+                          {String.fromCharCode(65 + i)} — {m.name}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
 
-            <div className="relative w-64 h-64 flex-shrink-0">
-              <svg viewBox="0 0 300 300" className="w-full h-full overflow-visible">
-                <defs>
-                  <filter id="cglow">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                </defs>
-                {/* Grid */}
-                {[0.25, 0.5, 0.75, 1].map((s, i) => (
-                  <circle key={i} cx="150" cy="150" r={100 * s} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
-                ))}
-                {[-Math.PI / 2, 0, Math.PI / 2, Math.PI].map((a, i) => (
-                  <line key={i} x1="150" y1="150"
-                    x2={150 + 100 * Math.cos(a)} y2={150 + 100 * Math.sin(a)}
-                    stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
-                ))}
-                <text x="150" y="36" textAnchor="middle" fill="rgba(240,240,248,0.4)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>MATCH</text>
-                <text x="265" y="153" textAnchor="start" fill="rgba(240,240,248,0.4)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>ADMIT</text>
-                <text x="150" y="270" textAnchor="middle" fill="rgba(240,240,248,0.4)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>GRAD</text>
-                <text x="35" y="153" textAnchor="end" fill="rgba(240,240,248,0.4)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>VALUE</text>
-                {/* Polygons */}
-                {metrics.map((m, i) => {
-                  const maxT = Math.max(...metrics.map(x => x.netPriceNum || x.tuitionNum || 0), 10000);
-                  const tNum = m.netPriceNum || m.tuitionNum || 0;
-                  const affordability = Math.max(0, ((maxT - tNum) / maxT) * 100);
-                  const vals = [m.matchScore, m.admissionNum || 0, m.graduationNum || 0, affordability];
-                  const angles = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
-                  const pts = vals.map((v, j) => {
-                    const r = 100 * (v / 100);
-                    return `${150 + r * Math.cos(angles[j])},${150 + r * Math.sin(angles[j])}`;
-                  }).join(' ');
-                  return (
-                    <g key={i}>
-                      <polygon
-                        points={pts}
-                        fill={m.palette.hex}
-                        fillOpacity="0.15"
-                        stroke={m.palette.hex}
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                        filter="url(#cglow)"
-                        style={{ transition: 'all 0.8s ease' }}
-                      />
-                      {vals.map((v, j) => {
+                <div style={{ width: '240px', height: '240px', flexShrink: 0 }}>
+                  <svg viewBox="0 0 300 300" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                    {[0.25, 0.5, 0.75, 1].map((s, i) => (
+                      <circle key={i} cx="150" cy="150" r={100 * s} fill="none" stroke="rgba(28,10,12,0.07)" strokeWidth="1" />
+                    ))}
+                    {[-Math.PI / 2, 0, Math.PI / 2, Math.PI].map((a, i) => (
+                      <line key={i} x1="150" y1="150"
+                        x2={150 + 100 * Math.cos(a)} y2={150 + 100 * Math.sin(a)}
+                        stroke="rgba(28,10,12,0.09)" strokeWidth="1" />
+                    ))}
+                    <text x="150" y="36" textAnchor="middle" fill="rgba(28,10,12,0.45)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>MATCH</text>
+                    <text x="265" y="153" textAnchor="start" fill="rgba(28,10,12,0.45)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>ADMIT</text>
+                    <text x="150" y="270" textAnchor="middle" fill="rgba(28,10,12,0.45)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>GRAD</text>
+                    <text x="35" y="153" textAnchor="end" fill="rgba(28,10,12,0.45)" fontSize="9" style={{ fontWeight: 700, letterSpacing: '0.1em' }}>VALUE</text>
+                    {metrics.map((m, i) => {
+                      const maxT = Math.max(...metrics.map(x => x.netPriceNum || x.tuitionNum || 0), 10000);
+                      const tNum = m.netPriceNum || m.tuitionNum || 0;
+                      const affordability = Math.max(0, ((maxT - tNum) / maxT) * 100);
+                      const vals = [m.matchScore, m.admissionNum || 0, m.graduationNum || 0, affordability];
+                      const angles = [-Math.PI / 2, 0, Math.PI / 2, Math.PI];
+                      const pts = vals.map((v, j) => {
                         const r = 100 * (v / 100);
-                        return (
-                          <circle key={j}
-                            cx={150 + r * Math.cos(angles[j])}
-                            cy={150 + r * Math.sin(angles[j])}
-                            r="4" fill="#0a0a18" stroke={m.palette.hex} strokeWidth="2"
-                          />
-                        );
-                      })}
-                    </g>
-                  );
-                })}
-              </svg>
+                        return `${150 + r * Math.cos(angles[j])},${150 + r * Math.sin(angles[j])}`;
+                      }).join(' ');
+                      return (
+                        <g key={i}>
+                          <polygon points={pts} fill={m.palette.hex} fillOpacity="0.12" stroke={m.palette.hex} strokeWidth="1.5" strokeLinejoin="round" />
+                          {vals.map((v, j) => {
+                            const r = 100 * (v / 100);
+                            return (
+                              <circle key={j}
+                                cx={150 + r * Math.cos(angles[j])}
+                                cy={150 + r * Math.sin(angles[j])}
+                                r="3.5" fill="#F5EDE5" stroke={m.palette.hex} strokeWidth="1.5"
+                              />
+                            );
+                          })}
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* ── 3. Visual Breakdown Bars ── */}
+          {/* 3. Visual Breakdown Bars */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(240,240,248,0.3)' }}>Visual Breakdown</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sectionLabel('Visual Breakdown')}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '12px' }}>
               {visualMetrics.map((vm, idx) => {
                 const winnerIdx = getWinnerIndex(vm.vals, vm.isBetter);
                 return (
-                  <div key={idx} className="p-5 rounded-2xl"
-                    style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                    <p className="text-sm font-medium mb-4" style={{ color: 'rgba(240,240,248,0.6)' }}>{vm.label}</p>
-                    <div className="space-y-4">
+                  <div key={idx} style={{ padding: '20px', borderRadius: '18px', background: 'rgba(140,45,53,0.03)', border: '1px solid rgba(140,45,53,0.09)' }}>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(28,10,12,0.65)', margin: '0 0 16px' }}>{vm.label}</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                       {metrics.map((m, i) => {
                         const val = vm.vals[i];
                         const pct = vm.max > 0 ? (val / vm.max) * 100 : 0;
                         const isWinner = i === winnerIdx;
                         const p = m.palette;
                         return (
-                          <div key={i} className="space-y-1.5">
-                            <div className="flex justify-between items-end text-xs">
-                              <span className="flex items-center gap-1.5 font-light truncate pr-2"
-                                style={{ color: isWinner ? '#f0f0f8' : 'rgba(240,240,248,0.45)' }}>
-                                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: p.hex }} />
+                          <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 400, color: isWinner ? '#1C0A0C' : 'rgba(28,10,12,0.5)' }}>
+                                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: p.hex, flexShrink: 0, display: 'inline-block' }} />
                                 {String.fromCharCode(65 + i)} — {m.name}
                               </span>
-                              <span className="font-semibold flex-shrink-0"
-                                style={{ color: isWinner ? p.hex : 'rgba(240,240,248,0.4)' }}>
+                              <span style={{ fontSize: '12px', fontWeight: 600, color: isWinner ? p.hex : 'rgba(28,10,12,0.4)' }}>
                                 {val > 0 ? vm.fmt(val) : 'N/A'}
                               </span>
                             </div>
-                            <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                            <div style={{ height: '4px', width: '100%', borderRadius: '2px', overflow: 'hidden', background: 'rgba(140,45,53,0.08)' }}>
                               <div
-                                className="h-full rounded-full transition-all duration-1000 ease-out"
                                 style={{
+                                  height: '100%', borderRadius: '2px',
                                   width: `${pct}%`,
                                   background: p.hex,
-                                  opacity: isWinner ? 1 : 0.35,
-                                  boxShadow: isWinner ? `0 0 8px ${p.hex}` : 'none',
+                                  opacity: isWinner ? 1 : 0.28,
+                                  transition: 'width 1s ease-out',
                                 }}
                               />
                             </div>
@@ -391,23 +371,20 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
             </div>
           </div>
 
-          {/* ── 4. Side-by-Side Table ── */}
+          {/* 4. Side-by-Side Table */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(240,240,248,0.3)' }}>Full Comparison</p>
-            <div className="rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-              <table className="w-full">
+            {sectionLabel('Full Comparison')}
+            <div style={{ borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(140,45,53,0.10)' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <th className="text-left px-5 py-3.5 text-[10px] font-black uppercase tracking-widest w-36"
-                      style={{ color: 'rgba(240,240,248,0.35)' }}>Metric</th>
+                  <tr style={{ background: 'rgba(140,45,53,0.04)', borderBottom: '1px solid rgba(140,45,53,0.09)' }}>
+                    <th style={{ textAlign: 'left', padding: '12px 18px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.45)', width: '140px' }}>Metric</th>
                     {metrics.map((m, i) => (
-                      <th key={i} className="text-left px-5 py-3.5 text-[10px] font-black uppercase tracking-widest"
-                        style={{ color: m.palette.hex }}>
+                      <th key={i} style={{ textAlign: 'left', padding: '12px 18px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: m.palette.hex }}>
                         {String.fromCharCode(65 + i)} — {m.name.split(' ').slice(0, 2).join(' ')}
                       </th>
                     ))}
-                    <th className="text-left px-5 py-3.5 text-[10px] font-black uppercase tracking-widest w-20"
-                      style={{ color: 'rgba(240,240,248,0.35)' }}>Best</th>
+                    <th style={{ textAlign: 'left', padding: '12px 18px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.45)', width: '72px' }}>Best</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -419,12 +396,12 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
                       <tr
                         key={ri}
                         style={{
-                          borderBottom: ri < tableRows.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-                          background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)',
+                          borderBottom: ri < tableRows.length - 1 ? '1px solid rgba(140,45,53,0.07)' : 'none',
+                          background: ri % 2 === 0 ? 'transparent' : 'rgba(140,45,53,0.02)',
                         }}
                       >
-                        <td className="px-5 py-3.5" style={{ background: 'rgba(255,255,255,0.025)' }}>
-                          <span className="text-xs font-medium" style={{ color: 'rgba(240,240,248,0.55)' }}>{row.label}</span>
+                        <td style={{ padding: '12px 18px', background: 'rgba(140,45,53,0.03)' }}>
+                          <span style={{ fontSize: '12px', fontWeight: 500, color: 'rgba(28,10,12,0.55)' }}>{row.label}</span>
                         </td>
                         {vals.map((v, ci) => {
                           const isWinner = ci === winnerIdx;
@@ -432,9 +409,9 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
                           return (
                             <td
                               key={ci}
-                              className="px-5 py-3.5 text-sm font-light"
                               style={{
-                                color: isWinner ? p.hex : v === 'N/A' ? 'rgba(240,240,248,0.2)' : 'rgba(240,240,248,0.75)',
+                                padding: '12px 18px', fontSize: '13px', fontWeight: 300,
+                                color: isWinner ? p.hex : v === 'N/A' ? 'rgba(28,10,12,0.25)' : 'rgba(28,10,12,0.75)',
                                 background: isWinner ? p.bg : 'transparent',
                               }}
                             >
@@ -442,16 +419,17 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
                             </td>
                           );
                         })}
-                        <td className="px-5 py-3.5">
+                        <td style={{ padding: '12px 18px' }}>
                           {winnerIdx !== -1 ? (
-                            <span
-                              className="text-xs font-bold px-2.5 py-1 rounded-md inline-flex items-center gap-1"
-                              style={{ background: metrics[winnerIdx].palette.bg, color: metrics[winnerIdx].palette.hex }}
-                            >
-                              ✓ {String.fromCharCode(65 + winnerIdx)}
+                            <span style={{
+                              fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                              background: metrics[winnerIdx].palette.bg, color: metrics[winnerIdx].palette.hex,
+                              border: `1px solid ${metrics[winnerIdx].palette.border}`,
+                            }}>
+                              {String.fromCharCode(65 + winnerIdx)}
                             </span>
                           ) : (
-                            <span style={{ color: 'rgba(240,240,248,0.2)' }}>—</span>
+                            <span style={{ color: 'rgba(28,10,12,0.25)' }}>—</span>
                           )}
                         </td>
                       </tr>
@@ -462,80 +440,72 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
             </div>
           </div>
 
-          {/* ── 5. Highlights ── */}
+          {/* 5. Highlights */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(240,240,248,0.3)' }}>Why Each Is a Match</p>
-            <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${schools.length},minmax(0,1fr))` }}>
+            {sectionLabel('Why Each Is a Match')}
+            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${schools.length},minmax(0,1fr))`, gap: '12px' }}>
               {metrics.map((m, i) => (
-                <div key={i} className="rounded-xl p-4"
-                  style={{ background: 'rgba(255,255,255,0.03)', border: `1px solid ${m.palette.border}` }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-2 h-2 rounded-full" style={{ background: m.palette.hex }} />
-                    <span className="text-[11px] font-semibold truncate" style={{ color: m.palette.hex }}>{m.name}</span>
+                <div key={i} style={{ borderRadius: '16px', padding: '18px', background: 'rgba(140,45,53,0.03)', border: `1px solid ${m.palette.border}` }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: m.palette.hex, flexShrink: 0 }} />
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: m.palette.hex, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</span>
                   </div>
                   {m.highlights.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {m.highlights.slice(0, 4).map((h, j) => (
-                        <li key={j} className="flex items-start gap-2 text-xs font-light leading-relaxed"
-                          style={{ color: 'rgba(240,240,248,0.6)' }}>
-                          <div className="w-1 h-1 rounded-full mt-1.5 flex-shrink-0" style={{ background: m.palette.hex, opacity: 0.6 }} />
+                        <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '12px', fontWeight: 300, lineHeight: 1.6, color: 'rgba(28,10,12,0.65)' }}>
+                          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: m.palette.hex, opacity: 0.5, flexShrink: 0, marginTop: '6px' }} />
                           {h}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-xs italic" style={{ color: 'rgba(240,240,248,0.25)' }}>No highlights</p>
+                    <p style={{ fontSize: '12px', fontStyle: 'italic', color: 'rgba(28,10,12,0.35)', margin: 0 }}>No highlights</p>
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* ── 6. AI Recommendation ── */}
-          <div
-            className="rounded-2xl p-6"
-            style={{ background: 'linear-gradient(135deg,rgba(99,102,241,0.12) 0%,rgba(139,92,246,0.08) 100%)', border: '1px solid rgba(99,102,241,0.25)' }}
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(99,102,241,0.2)', border: '1px solid rgba(99,102,241,0.3)' }}>
-                <Sparkles className="w-4 h-4" style={{ color: '#818cf8' }} />
+          {/* 6. AI Recommendation */}
+          <div style={{ borderRadius: '20px', padding: '24px', background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.12)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.18)', flexShrink: 0 }}>
+                <Sparkles style={{ width: '16px', height: '16px', color: '#8C2D35' }} />
               </div>
               <div>
-                <p className="text-sm font-semibold" style={{ color: '#f0f0f8' }}>AI Recommendation</p>
-                <p className="text-xs" style={{ color: 'rgba(240,240,248,0.4)' }}>Personalized based on your profile</p>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: '#1C0A0C', margin: 0 }}>AI Recommendation</p>
+                <p style={{ fontSize: '11px', color: 'rgba(28,10,12,0.45)', margin: '2px 0 0' }}>Personalized based on your profile</p>
               </div>
-              <div className="ml-auto flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5" style={{ color: '#34d399' }} />
-                <span className="text-[10px] font-semibold" style={{ color: '#34d399' }}>Zero Commission</span>
+              <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ShieldCheck style={{ width: '13px', height: '13px', color: '#8C2D35' }} />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#8C2D35' }}>Zero Commission</span>
               </div>
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center py-10 gap-3">
-                <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#818cf8' }} />
-                <span className="text-sm font-light" style={{ color: 'rgba(240,240,248,0.4)' }}>Synthesizing your comparison…</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 0', gap: '12px' }}>
+                <Loader2 style={{ width: '18px', height: '18px', color: '#8C2D35', animation: 'spin 1s linear infinite' }} />
+                <span style={{ fontSize: '13px', fontWeight: 300, color: 'rgba(28,10,12,0.5)' }}>Synthesizing your comparison…</span>
               </div>
             ) : (
-              <div className="space-y-5">
-                {/* Recommendation text */}
-                <div className="p-5 rounded-xl" style={{ background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <p className="text-sm leading-relaxed font-light whitespace-pre-wrap" style={{ color: 'rgba(240,240,248,0.82)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ padding: '18px', borderRadius: '14px', background: 'rgba(245,237,229,0.8)', border: '1px solid rgba(140,45,53,0.10)' }}>
+                  <p style={{ fontSize: '14px', lineHeight: 1.75, fontWeight: 300, color: 'rgba(28,10,12,0.82)', margin: 0, whiteSpace: 'pre-wrap' }}>
                     {cleanText(recommendation)}
                   </p>
                 </div>
 
-                {/* Chat history */}
                 {chatMessages.length > 0 && (
-                  <div className="space-y-3 max-h-52 overflow-y-auto">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '200px', overflowY: 'auto' }}>
                     {chatMessages.map((msg, i) => (
-                      <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div
-                          className="max-w-[80%] rounded-xl px-4 py-2.5 text-sm font-light"
-                          style={msg.role === 'user'
-                            ? { background: 'rgba(99,102,241,0.25)', color: '#f0f0f8', border: '1px solid rgba(99,102,241,0.35)' }
-                            : { background: 'rgba(255,255,255,0.05)', color: 'rgba(240,240,248,0.8)', border: '1px solid rgba(255,255,255,0.08)' }}
-                        >
+                      <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                        <div style={{
+                          maxWidth: '80%', borderRadius: '14px', padding: '10px 14px', fontSize: '13px', fontWeight: 300,
+                          ...(msg.role === 'user'
+                            ? { background: 'rgba(140,45,53,0.10)', color: '#1C0A0C', border: '1px solid rgba(140,45,53,0.18)' }
+                            : { background: 'rgba(140,45,53,0.04)', color: 'rgba(28,10,12,0.82)', border: '1px solid rgba(140,45,53,0.10)' }),
+                        }}>
                           {cleanText(msg.content)}
                         </div>
                       </div>
@@ -543,32 +513,35 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
                   </div>
                 )}
 
-                {/* Chat input */}
-                <form onSubmit={handleChat} className="flex gap-3">
+                <form onSubmit={handleChat} style={{ display: 'flex', gap: '10px' }}>
                   <input
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}
                     placeholder="Ask about these schools…"
                     disabled={chatLoading}
-                    className="flex-1 rounded-full px-5 py-2.5 text-sm outline-none transition-all"
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: '#f0f0f8',
-                      caretColor: '#6366f1',
+                      flex: 1, borderRadius: '100px', padding: '10px 18px', fontSize: '13px', outline: 'none',
+                      background: 'rgba(245,237,229,0.9)', border: '1px solid rgba(140,45,53,0.18)',
+                      color: '#1C0A0C', fontFamily: 'inherit', transition: 'border-color 0.15s ease',
                     }}
-                    onFocus={e => e.target.style.borderColor = 'rgba(99,102,241,0.5)'}
-                    onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                    onFocus={e => e.target.style.borderColor = 'rgba(140,45,53,0.4)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(140,45,53,0.18)'}
                   />
                   <button
                     type="submit"
                     disabled={chatLoading || !chatInput.trim()}
-                    className="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:scale-105 active:scale-95 disabled:opacity-30"
-                    style={{ background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff' }}
+                    style={{
+                      width: '40px', height: '40px', borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: '#8C2D35', color: '#F5EDE5', border: 'none',
+                      cursor: chatLoading || !chatInput.trim() ? 'not-allowed' : 'pointer',
+                      opacity: chatLoading || !chatInput.trim() ? 0.4 : 1,
+                      transition: 'all 0.15s ease', flexShrink: 0,
+                    }}
                   >
                     {chatLoading
-                      ? <Loader2 className="w-4 h-4 animate-spin" />
-                      : <Send className="w-4 h-4" />}
+                      ? <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+                      : <Send style={{ width: '15px', height: '15px' }} />}
                   </button>
                 </form>
               </div>
@@ -576,20 +549,26 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
           </div>
         </div>
 
-        {/* ── Footer ── */}
-        <div className="flex-shrink-0 flex items-center justify-between px-8 py-4"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.07)', background: 'rgba(8,8,16,0.6)' }}>
-          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'rgba(240,240,248,0.25)' }}>
+        {/* Footer */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 28px', borderTop: '1px solid rgba(140,45,53,0.09)', background: 'rgba(140,45,53,0.02)' }}>
+          <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.35)', margin: 0 }}>
             Rivernova · $0.00 Commission · Unbiased Analysis
           </p>
           <button
             onClick={onClose}
-            className="rounded-full px-6 h-9 text-sm font-medium transition-all hover:scale-[1.03] active:scale-[0.97]"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(240,240,248,0.7)' }}
+            style={{
+              borderRadius: '100px', padding: '0 20px', height: '34px', fontSize: '13px', fontWeight: 500,
+              background: 'rgba(140,45,53,0.07)', border: '1px solid rgba(140,45,53,0.16)',
+              color: 'rgba(28,10,12,0.6)', cursor: 'pointer', transition: 'all 0.15s ease', fontFamily: 'inherit',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.12)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(140,45,53,0.07)'; }}
           >
             Done
           </button>
         </div>
+
+        <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       </div>
     </div>
   );

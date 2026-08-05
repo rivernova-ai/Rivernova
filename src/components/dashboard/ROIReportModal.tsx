@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, TrendingUp, AlertCircle, Briefcase, ShieldCheck, GraduationCap, ArrowUpRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
 
 interface ROIReportModalProps {
   school: any;
@@ -389,7 +390,7 @@ export function ROIReportModal({ school, userProfile, onClose }: ROIReportModalP
                 }}>
                   {msg.role === 'assistant' ? (
                     <div style={{ fontSize: '12px', lineHeight: 1.7 }}>
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize]}>{msg.content}</ReactMarkdown>
                     </div>
                   ) : (
                     <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{msg.content}</p>

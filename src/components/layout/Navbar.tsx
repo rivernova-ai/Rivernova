@@ -23,38 +23,42 @@ export const Navbar = () => {
       <nav
         className="fixed top-0 left-0 right-0 z-50 py-4 transition-all duration-400"
         style={{
-          background: scrolled ? 'rgba(8,8,16,0.85)' : 'rgba(8,8,16,0.4)',
+          background: scrolled ? 'rgba(245,237,229,0.95)' : 'rgba(245,237,229,0.6)',
           backdropFilter: 'blur(40px) saturate(180%)',
           WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-          borderBottom: scrolled ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.04)',
+          borderBottom: scrolled ? '1px solid rgba(140,45,53,0.12)' : '1px solid rgba(140,45,53,0.06)',
         }}
       >
         <div className="max-w-[1200px] mx-auto px-6 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="w-8 h-8 flex items-center justify-center text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.4)] group-hover:drop-shadow-[0_0_16px_rgba(99,102,241,0.7)] transition-all">
-              <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="8" strokeLinejoin="round" className="w-8 h-8">
-                <polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" />
-                <text x="50" y="55" fontSize="46" fontWeight="bold" fontFamily="sans-serif" fill="currentColor" stroke="none" textAnchor="middle" dominantBaseline="middle">R</text>
-              </svg>
-            </span>
-            <span className="text-xl font-bold tracking-tight" style={{ color: '#f0f0f8' }}>Rivernova</span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <svg viewBox="0 0 100 100" className="w-8 h-8 flex-shrink-0 drop-shadow-[0_2px_6px_rgba(140,45,53,0.3)] group-hover:drop-shadow-[0_2px_12px_rgba(140,45,53,0.5)] transition-all" aria-hidden="true">
+              <polygon points="31.4,5 68.6,5 95,31.4 95,68.6 68.6,95 31.4,95 5,68.6 5,31.4" fill="#8C2D35" />
+              <text x="50" y="71" fontSize="58" fontFamily="Georgia, 'Times New Roman', serif" fill="#F5EDE5" textAnchor="middle" fontWeight="bold">R</text>
+            </svg>
+            <span className="text-xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>Rivernova</span>
           </Link>
 
           <div className="flex items-center gap-4">
-            <Link href="#how-it-works" className="hidden md:block text-sm font-medium transition-colors" style={{ color: 'rgba(240,240,248,0.45)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#f0f0f8')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,240,248,0.45)')}>
+            <Link
+              href="#how-it-works"
+              className="hidden md:block text-sm font-medium transition-colors"
+              style={{ color: '#1C0A0C' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#1C0A0C')}
+            >
               How It Works
             </Link>
 
             {user ? (
               <div className="flex items-center gap-3 ml-4">
                 <Link href="/dashboard">
-                  <Button variant="ghost" style={{ color: 'rgba(240,240,248,0.7)' }}>Dashboard</Button>
+                  <Button variant="ghost" style={{ color: '#1C0A0C' }}>Dashboard</Button>
                 </Link>
-                <Button variant="outline"
-                  style={{ borderColor: 'rgba(255,255,255,0.12)', color: 'rgba(240,240,248,0.7)', background: 'rgba(255,255,255,0.05)' }}
-                  onClick={() => signOut()}>
+                <Button
+                  variant="outline"
+                  style={{ borderColor: 'rgba(140,45,53,0.2)', color: '#1C0A0C', background: 'rgba(140,45,53,0.04)' }}
+                  onClick={() => signOut()}
+                >
                   <LogOut className="w-4 h-4 mr-2" />Sign Out
                 </Button>
               </div>
@@ -62,7 +66,8 @@ export const Navbar = () => {
               <Button
                 onClick={() => setAuthModalOpen(true)}
                 className="ml-4 rounded-xl text-white border-0 px-6"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 0 24px rgba(99,102,241,0.35)' }}>
+                style={{ background: '#8C2D35', boxShadow: '0 0 20px rgba(140,45,53,0.3)' }}
+              >
                 Get Started <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             )}
