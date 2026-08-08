@@ -683,8 +683,7 @@ export default function SchoolProfile() {
                 AI Advisor
               </h2>
               <p style={{ fontSize: '14px', fontWeight: 300, color: 'rgba(28,10,12,0.55)', margin: '10px 0 0', lineHeight: 1.65, maxWidth: '420px' }}>
-                Real-time intel on safety, culture, and campus life.{' '}
-                <span style={{ color: 'rgba(140,45,53,0.55)' }}>No consultant. No commission.</span>
+                Is this campus right for you? Ask anything.
               </p>
             </div>
             <div style={{
