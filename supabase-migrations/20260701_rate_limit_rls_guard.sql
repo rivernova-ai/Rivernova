@@ -24,10 +24,16 @@ DECLARE
   ];
   col TEXT;
   new_val TIMESTAMPTZ;
+  old_val TIMESTAMPTZ;
 BEGIN
   FOREACH col IN ARRAY rate_limit_cols LOOP
     EXECUTE format('SELECT ($1).%I', col) INTO new_val USING NEW;
-    IF new_val IS NOT NULL AND new_val < NOW() - INTERVAL '5 seconds' THEN
+    EXECUTE format('SELECT ($1).%I', col) INTO old_val USING OLD;
+    -- Only block if the value is actually being changed to a past timestamp.
+    -- Unchanged columns carried over by PostgreSQL on partial updates are fine.
+    IF new_val IS NOT NULL
+       AND new_val IS DISTINCT FROM old_val
+       AND new_val < NOW() - INTERVAL '5 seconds' THEN
       RAISE EXCEPTION
         'profiles.% cannot be set to a past timestamp (attempted: %, current: %)',
         col, new_val, NOW();

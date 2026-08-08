@@ -21,11 +21,11 @@ interface Metrics {
 }
 
 const SCAN_PHASES = [
-  'CONNECTING TO INTELLIGENCE NETWORK',
-  'SCANNING CRIME & SAFETY DATA',
+  'CONNECTING TO AI NETWORK',
+  'GENERATING SAFETY CONTEXT',
   'ANALYZING STUDENT CULTURE',
-  'CROSS-REFERENCING LOCAL DATA',
-  'SYNTHESIZING STRATEGIC BRIEF',
+  'BUILDING LOCAL INSIGHTS',
+  'SYNTHESIZING AI BRIEF',
 ];
 
 export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorProps) {
@@ -94,7 +94,7 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
       setMessages([{
         id: `system-${Date.now()}`,
         role: 'assistant',
-        content: `Initializing deep-intelligence protocol for **${schoolName}**...\n\nScanning real-time databases for campus safety metrics, student life sentiment, and local infrastructure data.`
+        content: `Generating AI-powered insights for **${schoolName}**...\n\nAnalyzing available knowledge on campus environment, student life, and career outcomes.`
       }]);
 
       const researchQuery = `Provide a comprehensive, brutally honest briefing for a prospective student studying ${program} at ${schoolName} in ${location}.
@@ -249,6 +249,9 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
           </div>
 
           {/* ── Radar Chart ── */}
+          <div className="space-y-1">
+            <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: 'rgba(28,10,12,0.35)' }}>AI Predicted Outcomes</p>
+          </div>
           <motion.div
             className="relative w-full aspect-square flex items-center justify-center"
             animate={researchComplete ? {
@@ -415,6 +418,11 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
             </svg>
           </motion.div>
 
+          {/* AI disclaimer */}
+          <p className="text-[9px] leading-relaxed text-center px-2" style={{ color: 'rgba(28,10,12,0.38)' }}>
+            AI-estimated scores based on general knowledge. Not sourced from live databases. AI can make mistakes — verify important decisions independently.
+          </p>
+
           {/* ── Stat Tiles ── */}
           <div className="grid grid-cols-2 gap-3">
             {[
@@ -511,7 +519,7 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
         >
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#8C2D35', flexShrink: 0, animation: 'haloPulse 2s infinite' }} />
           <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: '#8C2D35' }}>
-            Live Intelligence · $0 Commission
+            AI Intelligence · $0 Commission
           </p>
         </motion.div>
       </div>
