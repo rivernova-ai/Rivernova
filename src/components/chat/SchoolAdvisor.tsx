@@ -250,7 +250,7 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
 
           {/* ── Radar Chart ── */}
           <div className="space-y-1">
-            <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: 'rgba(28,10,12,0.35)' }}>AI Predicted Outcomes</p>
+            <p className="text-[9px] font-black uppercase tracking-[0.25em]" style={{ color: 'rgba(28,10,12,0.75)' }}>AI Predicted Outcomes</p>
           </div>
           <motion.div
             className="relative w-full aspect-square flex items-center justify-center"
@@ -419,7 +419,7 @@ Format this as a strategic briefing with bold headers. Be specific and honest �
           </motion.div>
 
           {/* AI disclaimer */}
-          <p className="text-[9px] leading-relaxed text-center px-2" style={{ color: 'rgba(28,10,12,0.38)' }}>
+          <p className="text-[9px] leading-relaxed text-center px-2" style={{ color: 'rgba(28,10,12,0.72)' }}>
             AI-estimated scores based on general knowledge. Not sourced from live databases. AI can make mistakes — verify important decisions independently.
           </p>
 

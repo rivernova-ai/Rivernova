@@ -827,7 +827,6 @@ export default function SchoolProfile() {
             <ShieldCheck style={{ width: '17px', height: '17px', color: '#8C2D35', flexShrink: 0 }} />
             <div>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#8C2D35' }}>$0.00 Commission Received </span>
-              <span style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(28,10,12,0.5)' }}>· Cryptographically verified · No kickbacks · No conflicts of interest</span>
             </div>
           </div>
         </div>
