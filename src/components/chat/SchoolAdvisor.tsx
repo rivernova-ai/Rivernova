@@ -419,7 +419,7 @@ Format this as a strategic briefing with bold headers. Be specific and honest â€
           </motion.div>
 
           {/* AI disclaimer */}
-          <p className="text-[9px] leading-relaxed text-center px-2" style={{ color: 'rgba(28,10,12,0.72)' }}>
+          <p className="text-[11px] leading-relaxed text-center px-2" style={{ color: 'rgba(28,10,12,0.88)' }}>
             AI-estimated scores based on general knowledge. Not sourced from live databases. AI can make mistakes â€” verify important decisions independently.
           </p>
 
