@@ -5,6 +5,21 @@ import { MapPin, TrendingUp, DollarSign, Heart, ExternalLink, ShieldCheck, Chevr
 import MapDistance from './MapDistance';
 import { stripMarkdown, cleanText, getMatchScoreColor, getMatchScoreLabel } from '@/lib/utils';
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  AUD: 'AU$', GBP: '£', CAD: 'CA$', EUR: '€', NZD: 'NZ$',
+  SGD: 'S$', HKD: 'HK$', CHF: 'CHF ', SEK: 'kr ', INR: '₹',
+  JPY: '¥', CNY: '¥', MXN: 'MX$', ZAR: 'R ', USD: '$',
+};
+
+function formatTuition(usdAmount: number, localAmount?: number, localCurrency?: string): string {
+  if (!localAmount || !localCurrency || localCurrency === 'USD') {
+    return `$${usdAmount.toLocaleString()}`;
+  }
+  const symbol = CURRENCY_SYMBOLS[localCurrency] || `${localCurrency} `;
+  const usdK = usdAmount >= 1000 ? `~$${(usdAmount / 1000).toFixed(0)}K USD` : `~$${usdAmount} USD`;
+  return `${symbol}${localAmount.toLocaleString()} (${usdK})`;
+}
+
 export interface Match {
   id?: string;
   schoolName: string;
@@ -18,6 +33,8 @@ export interface Match {
     living: number;
     total: number;
     scholarshipPotential?: number;
+    tuitionLocalAmount?: number;
+    tuitionLocalCurrency?: string;
   };
   highlights: string[];
   admissionRequirements?: {
@@ -122,8 +139,16 @@ export function MatchCard({ match, onFavorite, onToggleCompare, isCompared }: Ma
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 18px', borderRadius: '12px', background: 'rgba(140,45,53,0.05)', border: '1px solid rgba(140,45,53,0.12)', color: '#1C0A0C' }}>
           <DollarSign style={{ width: '18px', height: '18px', color: '#8C2D35' }} />
           <div>
-            <div style={{ fontSize: '22px', fontWeight: 700, lineHeight: 1 }}>${(match.costBreakdown.total / 1000).toFixed(0)}k</div>
-            <div style={{ fontSize: '10px', color: 'rgba(28,10,12,0.5)', marginTop: '2px' }}>Total/Year</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, lineHeight: 1 }}>
+              {match.costBreakdown.tuitionLocalAmount && match.costBreakdown.tuitionLocalCurrency && match.costBreakdown.tuitionLocalCurrency !== 'USD'
+                ? `${CURRENCY_SYMBOLS[match.costBreakdown.tuitionLocalCurrency] || match.costBreakdown.tuitionLocalCurrency + ' '}${(match.costBreakdown.tuitionLocalAmount / 1000).toFixed(0)}k`
+                : `$${(match.costBreakdown.total / 1000).toFixed(0)}k`}
+            </div>
+            <div style={{ fontSize: '10px', color: 'rgba(28,10,12,0.5)', marginTop: '2px' }}>
+              {match.costBreakdown.tuitionLocalCurrency && match.costBreakdown.tuitionLocalCurrency !== 'USD'
+                ? `Tuition (${match.costBreakdown.tuitionLocalCurrency})`
+                : 'Total/Year'}
+            </div>
           </div>
         </div>
       </div>
@@ -153,7 +178,7 @@ export function MatchCard({ match, onFavorite, onToggleCompare, isCompared }: Ma
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(28,10,12,0.65)' }}>
                 <span>Tuition</span>
-                <span style={{ fontWeight: 600 }}>${match.costBreakdown.tuition.toLocaleString()}</span>
+                <span style={{ fontWeight: 600 }}>{formatTuition(match.costBreakdown.tuition, match.costBreakdown.tuitionLocalAmount, match.costBreakdown.tuitionLocalCurrency)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(28,10,12,0.65)' }}>
                 <span>Living Expenses</span>

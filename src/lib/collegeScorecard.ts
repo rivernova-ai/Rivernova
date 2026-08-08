@@ -37,6 +37,8 @@ export interface CollegeScorecardData {
   country?: string;
   postGradWorkRights?: string;      // e.g. "3-year PGWP (Canada)"
   englishRequirements?: string;     // e.g. "IELTS 6.5 / TOEFL 90"
+  tuitionLocalAmount?: number | null;   // original local currency amount e.g. 42500
+  tuitionLocalCurrency?: string;        // ISO code e.g. "AUD", "GBP", "CAD"
   source?: 'scorecard' | 'perplexity';
 }
 
@@ -217,6 +219,8 @@ export async function lookupSchool(
       netPricePrivate: null,
       tuitionInState: intlData.tuitionDomestic,          // domestic tuition
       tuitionOutOfState: intlData.tuitionInternational,  // international student tuition — used when isInternational=true
+      tuitionLocalAmount: intlData.tuitionLocalAmount,
+      tuitionLocalCurrency: intlData.tuitionLocalCurrency || 'USD',
       medianEarnings10yr: intlData.medianEarnings,
       enrollment: intlData.enrollment,
       dataYear: intlData.dataYear || `${currentYear - 1}-${currentYear}`,
@@ -246,6 +250,8 @@ export async function lookupSchool(
       country: mapped.country,
       post_grad_work_rights: mapped.postGradWorkRights,
       english_requirements: mapped.englishRequirements,
+      tuition_local_amount: mapped.tuitionLocalAmount ?? null,
+      tuition_local_currency: mapped.tuitionLocalCurrency ?? null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'unit_id' });
 
@@ -288,6 +294,10 @@ export function applyVerifiedData(match: any, scorecard: CollegeScorecardData, i
         ...match.costBreakdown,
         tuition,
         total: tuition + (match.costBreakdown?.living || 15000),
+        ...(scorecard.tuitionLocalAmount != null && {
+          tuitionLocalAmount: scorecard.tuitionLocalAmount,
+          tuitionLocalCurrency: scorecard.tuitionLocalCurrency || 'USD',
+        }),
       },
     }),
     ...(netPrice !== null && {

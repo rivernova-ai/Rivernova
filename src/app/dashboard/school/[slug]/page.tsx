@@ -191,7 +191,15 @@ export default function SchoolProfile() {
           stemOpt: enriched.stemOpt || prev.stemOpt,
           dataSource: enriched.dataSource || prev.dataSource,
           tuition: enriched.costBreakdown?.tuition
-            ? `$${enriched.costBreakdown.tuition.toLocaleString()}`
+            ? (() => {
+                const { tuition, tuitionLocalAmount, tuitionLocalCurrency } = enriched.costBreakdown;
+                if (tuitionLocalAmount && tuitionLocalCurrency && tuitionLocalCurrency !== 'USD') {
+                  const symbols: Record<string,string> = { AUD:'AU$',GBP:'£',CAD:'CA$',EUR:'€',NZD:'NZ$',SGD:'S$',HKD:'HK$',CHF:'CHF ',INR:'₹',JPY:'¥',CNY:'¥',MXN:'MX$',ZAR:'R ' };
+                  const sym = symbols[tuitionLocalCurrency] || `${tuitionLocalCurrency} `;
+                  return `${sym}${tuitionLocalAmount.toLocaleString()} (~$${(tuition/1000).toFixed(0)}K USD)`;
+                }
+                return `$${tuition.toLocaleString()}`;
+              })()
             : prev.tuition,
         }));
       })

@@ -154,8 +154,10 @@ Respond with the JSON object ONLY.`;
 export interface InternationalSchoolData {
   name: string;
   country: string;
-  tuitionInternational: number | null;  // what international students pay (USD)
-  tuitionDomestic: number | null;        // what domestic/home students pay (USD, for reference)
+  tuitionInternational: number | null;  // what international students pay (USD equivalent)
+  tuitionDomestic: number | null;        // what domestic/home students pay (USD equivalent)
+  tuitionLocalAmount: number | null;    // original local currency amount e.g. 42500
+  tuitionLocalCurrency: string;         // ISO currency code e.g. "AUD", "GBP", "CAD"
   admissionRate: number | null;           // 0–1 decimal
   completionRate: number | null;          // 0–1 decimal
   medianEarnings: number | null;          // USD post-graduation
@@ -188,7 +190,9 @@ Return ONLY this JSON (no markdown, no explanation):
 {
   "name": "${schoolName}",
   "country": "Full country name e.g. Canada, United Kingdom, Australia, Germany",
-  "tuition_international_usd": 45000,
+  "tuition_local_amount": 42500,
+  "tuition_local_currency": "AUD",
+  "tuition_international_usd": 28000,
   "tuition_domestic_usd": 12000,
   "admission_rate": 0.43,
   "completion_rate": 0.85,
@@ -201,7 +205,9 @@ Return ONLY this JSON (no markdown, no explanation):
 }
 
 FIELD RULES:
-- "tuition_international_usd": Convert to USD using current exchange rate. Include ALL mandatory fees international students pay. Source ONLY from the official international student fees page. Do not guess.
+- "tuition_local_amount": The tuition in the ORIGINAL local currency as published on the university's fees page. Do NOT convert. e.g. 42500 for an Australian university charging AU$42,500.
+- "tuition_local_currency": ISO 4217 currency code. e.g. "AUD" for Australia, "GBP" for UK, "CAD" for Canada, "EUR" for EU countries, "NZD" for New Zealand, "SGD" for Singapore. Use "USD" only for US schools.
+- "tuition_international_usd": Convert tuition_local_amount to USD using today's exchange rate. Include ALL mandatory fees. Source from the official international student fees page. Do not guess.
 - "tuition_domestic_usd": Local/home student tuition in USD. Use 0 if unknown.
 - "admission_rate": As decimal 0–1. From official admissions statistics page.
 - "completion_rate": Graduation or completion rate as decimal 0–1.
@@ -228,6 +234,8 @@ If any field is genuinely unavailable after searching, use null for numbers and 
       country: data.country || 'Unknown',
       tuitionInternational: data.tuition_international_usd ?? null,
       tuitionDomestic: data.tuition_domestic_usd ?? null,
+      tuitionLocalAmount: data.tuition_local_amount ?? null,
+      tuitionLocalCurrency: data.tuition_local_currency || 'USD',
       admissionRate: data.admission_rate ?? null,
       completionRate: data.completion_rate ?? null,
       medianEarnings: data.median_earnings_usd ?? null,
