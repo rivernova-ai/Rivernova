@@ -13,7 +13,7 @@ export interface SchoolResearchQuery {
   preferredCountries: string[];
   mode: 'domestic' | 'international' | 'lifelong';
   gpa?: string;
-  testScores?: string;
+  qualificationContext?: string;
 }
 
 /**
@@ -54,7 +54,20 @@ export async function researchSchools(query: SchoolResearchQuery): Promise<Schoo
   const currentYear = new Date().getFullYear();
   const admissionCycle = `${currentYear}-${currentYear + 1}`;
 
-  const prompt = `You are a real-time school data API with live web access. Search the official university websites, Common Data Sets, and admissions pages RIGHT NOW to find accurate data for the ${admissionCycle} admissions cycle.
+  const nonUSCountries = query.preferredCountries.filter(c => c !== 'United States');
+  const countryDistributionRule = nonUSCountries.length > 0
+    ? `\nMANDATORY COUNTRY DISTRIBUTION:
+The student has selected these preferred countries: ${query.preferredCountries.join(', ')}.
+You MUST include 2-3 schools from EACH selected country. Do NOT return a US-only list.
+${query.preferredCountries.includes('United Kingdom') ? '- For UK schools: search Russell Group universities. Report entry requirements in A-Level grades or IB points.' : ''}
+${query.preferredCountries.includes('Canada') ? '- For Canadian schools: search U15 universities. Report tuition in CAD. Note PGWP eligibility.' : ''}
+${query.preferredCountries.includes('Australia') ? '- For Australian schools: search Go8 universities. Report tuition in AUD. Note Temporary Graduate visa duration.' : ''}
+${query.preferredCountries.includes('Germany') ? '- For German schools: search TU9 / Excellence Initiative universities. Note tuition-free or low-fee status.' : ''}
+${query.preferredCountries.includes('Singapore') ? '- For Singapore schools: include NUS and NTU. Report tuition in SGD.' : ''}
+`
+    : '';
+
+  const prompt = `You are a real-time school data API with live web access. Search the official university websites and admissions pages RIGHT NOW to find accurate data for the ${admissionCycle} admissions cycle.
 
 STUDENT PROFILE:
 - Major/Field: ${query.major}
@@ -63,7 +76,8 @@ STUDENT PROFILE:
 - Preferred Countries: ${query.preferredCountries.join(', ')}
 - Mode: ${query.mode}
 ${query.gpa ? `- GPA: ${query.gpa}` : ''}
-${query.testScores ? `- Test Scores: ${query.testScores}` : ''}
+${query.qualificationContext ? `- Academic Credentials: ${query.qualificationContext}` : ''}
+${countryDistributionRule}
 
 CRITICAL INSTRUCTIONS:
 1. Search the live web RIGHT NOW for each school's official admissions data for ${admissionCycle}.

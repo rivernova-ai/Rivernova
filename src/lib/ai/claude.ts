@@ -14,7 +14,7 @@ export interface MatchSynthesisInput {
     careerField: string;
     dreamJob: string;
     gpa?: string;
-    testScores?: string;
+    qualificationContext?: string;
     budget: { min: number; max: number };
     preferredCountries: string[];
     mode: string;
@@ -40,16 +40,26 @@ ${JSON.stringify(input.verifiedFacts, null, 2)}
 Your job is ONLY to add: reasoning, highlights, why_matched, concern, whyUnbiased, and the tier classification. Every number and policy fact must come from the verified data above.\n`
     : '';
 
+  const nonUSCountries = input.userProfile.preferredCountries.filter(c => c !== 'United States');
+  const countryAdmissionsNote = nonUSCountries.length > 0 ? `
+COUNTRY-SPECIFIC ADMISSION STANDARDS:
+${input.userProfile.preferredCountries.includes('United Kingdom') ? '- UK universities: entry requirements are stated in A-Level grades (e.g. AAA, AAB) or IB points (e.g. 36+). Match this student\'s qualifications against those thresholds.' : ''}
+${input.userProfile.preferredCountries.includes('Canada') ? '- Canadian universities: entry requirements are stated as a high school average percentage (e.g. 85%+, 90%+). Translate this student\'s credentials accordingly.' : ''}
+${input.userProfile.preferredCountries.includes('Australia') ? '- Australian universities: use ATAR equivalents for international students. Top Go8 schools typically require 90+ ATAR equivalent.' : ''}
+${input.userProfile.preferredCountries.includes('Germany') ? '- German universities: assess on Abitur equivalent. Many public universities have low or no tuition for international students.' : ''}
+You MUST include matches from each of the student\'s preferred countries: ${input.userProfile.preferredCountries.join(', ')}. Do not cluster all matches in one country.
+` : '';
+
   const prompt = `You are an expert education counselor. Based on the verified real-time research data below and the student's profile, synthesize 8-12 ranked school matches.
 
 STUDENT PROFILE:
 - Major: ${input.userProfile.major}
 - Career Goal: ${input.userProfile.careerField} (Dream Job: ${input.userProfile.dreamJob})
-- GPA: ${input.userProfile.gpa || 'Not provided'}
-- Test Scores: ${input.userProfile.testScores || 'Not provided'}
+- Academic Credentials: ${input.userProfile.qualificationContext || input.userProfile.gpa || 'Not provided'}
 - Budget: $${input.userProfile.budget.min} - $${input.userProfile.budget.max} USD/year
 - Preferred Countries: ${input.userProfile.preferredCountries.join(', ')}
 - Mode: ${input.userProfile.mode}
+${countryAdmissionsNote}
 ${verifiedFactsBlock}
 FULL RESEARCH CONTEXT:
 ${input.researchData}

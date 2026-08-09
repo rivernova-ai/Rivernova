@@ -109,12 +109,22 @@ const SCHOOL_SIZES = [
   { id: 'any', label: 'Any Size', sub: "No pref" },
 ];
 
+const CURRICULUM_TYPES = [
+  { id: 'us-gpa', label: 'US GPA' },
+  { id: 'igcse', label: 'Cambridge IGCSE' },
+  { id: 'alevel', label: 'Cambridge A-Level' },
+  { id: 'ib', label: 'IB Diploma' },
+  { id: 'indian-board', label: 'Indian Board (CBSE/ISC)' },
+  { id: 'other', label: 'Other National Curriculum' },
+];
+
 const ENGLISH_PROFICIENCY_TYPES = [
   { id: 'ielts', label: 'IELTS' },
   { id: 'toefl', label: 'TOEFL' },
   { id: 'det', label: 'Duolingo (DET)' },
-  { id: 'cambridge', label: 'Cambridge' },
+  { id: 'cambridge-english', label: 'Cambridge English' },
   { id: 'native', label: 'Native Speaker' },
+  { id: 'not-yet', label: 'Not Yet Taken' },
 ];
 
 const FUNDING_SOURCES_INTL = [
@@ -153,11 +163,16 @@ interface EditData {
   residenceCity: string;
   currentEducation: string;
   schoolName: string;
+  curriculumType: string;
   gpa: string;
   gpaScale: string;
+  igcseGrades: string;
+  aLevelGrades: string;
+  ibScore: string;
+  indianBoardPercent: string;
+  nationalExamDetails: string;
   satScore: string;
   actScore: string;
-  ibScore: string;
   ieltsToeflScore: string;
   englishProficiencyType: string;
   firstGenStudent: boolean;
@@ -310,11 +325,16 @@ export default function EditProfilePage() {
     residenceCity: '',
     currentEducation: '',
     schoolName: '',
+    curriculumType: '',
     gpa: '',
     gpaScale: '4.0',
+    igcseGrades: '',
+    aLevelGrades: '',
+    ibScore: '',
+    indianBoardPercent: '',
+    nationalExamDetails: '',
     satScore: '',
     actScore: '',
-    ibScore: '',
     ieltsToeflScore: '',
     englishProficiencyType: '',
     firstGenStudent: false,
@@ -361,13 +381,18 @@ export default function EditProfilePage() {
           residenceCity: lp.residenceCity || '',
           currentEducation: ab.currentEducation || '',
           schoolName: ab.schoolName || '',
+          curriculumType: ab.curriculumType || (ab.ibScore ? 'ib' : ab.gpa ? 'us-gpa' : ''),
           gpa: ab.gpa || '',
           gpaScale: ab.gpaScale || '4.0',
+          igcseGrades: ab.igcseGrades || '',
+          aLevelGrades: ab.aLevelGrades || '',
+          ibScore: ab.ibScore || '',
+          indianBoardPercent: ab.indianBoardPercent || '',
+          nationalExamDetails: ab.nationalExamDetails || '',
           satScore: ab.satScore || '',
           actScore: ab.actScore || '',
-          ibScore: ab.ibScore || '',
           ieltsToeflScore: ab.ieltsToeflScore || '',
-          englishProficiencyType: ab.englishProficiencyType || '',
+          englishProficiencyType: ab.englishProficiencyType === 'cambridge' ? 'cambridge-english' : (ab.englishProficiencyType || ''),
           firstGenStudent: ab.firstGenStudent || false,
           major: ab.major || '',
           dreamJob: cg.dreamJob || '',
@@ -419,11 +444,16 @@ export default function EditProfilePage() {
         academic_background: {
           currentEducation: data.currentEducation,
           schoolName: data.schoolName,
+          curriculumType: data.curriculumType,
           gpa: data.gpa,
           gpaScale: data.gpaScale,
+          igcseGrades: data.igcseGrades,
+          aLevelGrades: data.aLevelGrades,
+          ibScore: data.ibScore,
+          indianBoardPercent: data.indianBoardPercent,
+          nationalExamDetails: data.nationalExamDetails,
           satScore: data.satScore,
           actScore: data.actScore,
-          ibScore: data.ibScore,
           ieltsToeflScore: data.ieltsToeflScore,
           englishProficiencyType: data.englishProficiencyType,
           firstGenStudent: data.firstGenStudent,
@@ -663,12 +693,11 @@ export default function EditProfilePage() {
             <EPTextInput value={data.schoolName} onChange={(v: string) => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
           </EPField>
 
-          <EPField label="GPA">
-            <EPTextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
-          </EPField>
-
           {data.mode === 'domestic' ? (
             <>
+              <EPField label="GPA">
+                <EPTextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
+              </EPField>
               <div className="grid grid-cols-2 gap-4">
                 <EPField label="SAT Score">
                   <EPTextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
@@ -687,7 +716,65 @@ export default function EditProfilePage() {
             </>
           ) : (
             <>
-              <EPField label="English Proficiency Test">
+              {/* ── Academic Qualifications ─────────────────────────────── */}
+              <EPField label="Curriculum / Exam System">
+                <div className="flex flex-wrap gap-2">
+                  {CURRICULUM_TYPES.map(c => (
+                    <EPChip key={c.id} label={c.label} selected={data.curriculumType === c.id} onClick={() => upd('curriculumType', c.id)} accentColor={accent} />
+                  ))}
+                </div>
+              </EPField>
+
+              <AnimatePresence>
+                {data.curriculumType === 'us-gpa' && (
+                  <motion.div key="us-gpa" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <EPField label="GPA">
+                      <EPTextInput value={data.gpa} onChange={(v: string) => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
+                    </EPField>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'igcse' && (
+                  <motion.div key="igcse" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <EPField label="IGCSE Subject Grades">
+                      <EPTextInput value={data.igcseGrades} onChange={(v: string) => upd('igcseGrades', v)}
+                        placeholder="e.g., Mathematics A*, Physics A*, Chemistry A, English A, Economics B" />
+                    </EPField>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'alevel' && (
+                  <motion.div key="alevel" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <EPField label="A-Level Subject Grades">
+                      <EPTextInput value={data.aLevelGrades} onChange={(v: string) => upd('aLevelGrades', v)}
+                        placeholder="e.g., Mathematics A*, Physics A, Chemistry B" />
+                    </EPField>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'ib' && (
+                  <motion.div key="ib" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <EPField label="IB Diploma Score (out of 45)">
+                      <EPTextInput value={data.ibScore} onChange={(v: string) => upd('ibScore', v)} placeholder="e.g., 38" type="number" />
+                    </EPField>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'indian-board' && (
+                  <motion.div key="indian-board" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <EPField label="Board Percentage">
+                      <EPTextInput value={data.indianBoardPercent} onChange={(v: string) => upd('indianBoardPercent', v)} placeholder="e.g., 93.6%" />
+                    </EPField>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'other' && (
+                  <motion.div key="other" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
+                    <EPField label="Exam / Credential Details">
+                      <EPTextInput value={data.nationalExamDetails} onChange={(v: string) => upd('nationalExamDetails', v)}
+                        placeholder="e.g., Myanmar Matriculation — Distinction in Mathematics, Physics, Chemistry, Biology" />
+                    </EPField>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* ── English Proficiency ──────────────────────────────────── */}
+              <EPField label="English Proficiency">
                 <div className="flex flex-wrap gap-2">
                   {ENGLISH_PROFICIENCY_TYPES.map(e => (
                     <EPChip key={e.id} label={e.label} selected={data.englishProficiencyType === e.id} onClick={() => upd('englishProficiencyType', e.id)} accentColor={accent} />
@@ -696,27 +783,22 @@ export default function EditProfilePage() {
               </EPField>
 
               <AnimatePresence>
-                {data.englishProficiencyType && data.englishProficiencyType !== 'native' && (
+                {data.englishProficiencyType && data.englishProficiencyType !== 'native' && data.englishProficiencyType !== 'not-yet' && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
                     <EPField label={`${ENGLISH_PROFICIENCY_TYPES.find(e => e.id === data.englishProficiencyType)?.label || 'Test'} Score`}>
                       <EPTextInput
                         value={data.ieltsToeflScore}
                         onChange={(v: string) => upd('ieltsToeflScore', v)}
-                        placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : 'Your score'}
+                        placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : data.englishProficiencyType === 'det' ? 'e.g., 120' : 'Your score / grade'}
                       />
                     </EPField>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="grid grid-cols-2 gap-4">
-                <EPField label="IB Score (optional)">
-                  <EPTextInput value={data.ibScore} onChange={(v: string) => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
-                </EPField>
-                <EPField label="SAT Score (optional)">
-                  <EPTextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
-                </EPField>
-              </div>
+              <EPField label="SAT Score (optional)">
+                <EPTextInput value={data.satScore} onChange={(v: string) => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+              </EPField>
             </>
           )}
 

@@ -4,6 +4,7 @@ import { enforceRateLimit } from '@/lib/rateLimit';
 import { researchSchools } from '@/lib/ai/perplexity';
 import { synthesizeMatches } from '@/lib/ai/claude';
 import { lookupSchool, applyVerifiedData } from '@/lib/collegeScorecard';
+import { normalizeQualification } from '@/lib/qualificationNormalizer';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +35,14 @@ export async function POST(request: NextRequest) {
     const budget = profile.budget || {};
     const location = profile.location_preferences || {};
 
+    // Build structured qualification context from the student's credentials
+    const qualContext = normalizeQualification(academic);
+    const preferredCountries: string[] = Array.isArray(location.preferredCountries)
+      ? location.preferredCountries
+      : location.preferredCountries
+        ? location.preferredCountries.split(',').map((c: string) => c.trim())
+        : ['United States'];
+
     // Step 1: Research schools using Perplexity (returns live facts + raw text)
     console.log('Researching schools with Perplexity...');
     const { rawText, schools: verifiedFacts } = await researchSchools({
@@ -41,12 +50,10 @@ export async function POST(request: NextRequest) {
       careerField: career.careerField || 'Various',
       budgetMin: parseInt(budget.min) || 10000,
       budgetMax: parseInt(budget.max) || 50000,
-      preferredCountries: location.preferredCountries
-        ? location.preferredCountries.split(',').map((c: string) => c.trim())
-        : ['United States'],
+      preferredCountries,
       mode: profile.mode || 'international',
       gpa: academic.gpa,
-      testScores: academic.testScores,
+      qualificationContext: qualContext.aiPromptDescription,
     });
 
     // Step 2: Synthesize matches using Claude (verified facts are passed as locked ground truth)
@@ -59,14 +66,12 @@ export async function POST(request: NextRequest) {
         careerField: career.careerField || 'Various',
         dreamJob: career.dreamJob || 'Professional',
         gpa: academic.gpa,
-        testScores: academic.testScores,
+        qualificationContext: qualContext.aiPromptDescription,
         budget: {
           min: parseInt(budget.min) || 10000,
           max: parseInt(budget.max) || 50000,
         },
-        preferredCountries: location.preferredCountries
-          ? location.preferredCountries.split(',').map((c: string) => c.trim())
-          : ['United States'],
+        preferredCountries,
         mode: profile.mode || 'international',
       },
     });

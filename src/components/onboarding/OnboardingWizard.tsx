@@ -152,12 +152,22 @@ const STUDY_TIMELINES = [
   { id: 'exploring', label: 'Just Exploring', sub: 'No fixed timeline' },
 ];
 
+const CURRICULUM_TYPES = [
+  { id: 'us-gpa', label: 'US GPA' },
+  { id: 'igcse', label: 'Cambridge IGCSE' },
+  { id: 'alevel', label: 'Cambridge A-Level' },
+  { id: 'ib', label: 'IB Diploma' },
+  { id: 'indian-board', label: 'Indian Board (CBSE/ISC)' },
+  { id: 'other', label: 'Other National Curriculum' },
+];
+
 const ENGLISH_PROFICIENCY_TYPES = [
   { id: 'ielts', label: 'IELTS' },
   { id: 'toefl', label: 'TOEFL' },
   { id: 'det', label: 'Duolingo (DET)' },
-  { id: 'cambridge', label: 'Cambridge' },
+  { id: 'cambridge-english', label: 'Cambridge English' },
   { id: 'native', label: 'Native Speaker' },
+  { id: 'not-yet', label: 'Not Yet Taken' },
 ];
 
 const STEPS = ['Profile', 'You', 'Academic', 'Vision', 'Budget', 'Location'];
@@ -172,11 +182,16 @@ interface OnboardingData {
   residenceCity: string;
   currentEducation: string;
   schoolName: string;
+  curriculumType: string;
   gpa: string;
   gpaScale: string;
+  igcseGrades: string;
+  aLevelGrades: string;
+  ibScore: string;
+  indianBoardPercent: string;
+  nationalExamDetails: string;
   satScore: string;
   actScore: string;
-  ibScore: string;
   ieltsToeflScore: string;
   englishProficiencyType: string;
   firstGenStudent: boolean;
@@ -341,11 +356,16 @@ export function OnboardingWizard() {
     residenceCity: '',
     currentEducation: '',
     schoolName: '',
+    curriculumType: '',
     gpa: '',
     gpaScale: '4.0',
+    igcseGrades: '',
+    aLevelGrades: '',
+    ibScore: '',
+    indianBoardPercent: '',
+    nationalExamDetails: '',
     satScore: '',
     actScore: '',
-    ibScore: '',
     ieltsToeflScore: '',
     englishProficiencyType: '',
     firstGenStudent: false,
@@ -399,8 +419,8 @@ export function OnboardingWizard() {
 
     if (step === 3) {
       if (!data.currentEducation) errs.currentEducation = 'Please select your education level.';
-      if (!data.gpa.trim()) errs.gpa = 'Please enter your GPA.';
       if (!data.major.trim()) errs.major = 'Please enter your intended major.';
+      if (data.mode === 'domestic' && !data.gpa.trim()) errs.gpa = 'Please enter your GPA.';
     }
 
     if (step === 4) {
@@ -450,11 +470,16 @@ export function OnboardingWizard() {
         academic_background: {
           currentEducation: data.currentEducation,
           schoolName: data.schoolName,
+          curriculumType: data.curriculumType,
           gpa: data.gpa,
           gpaScale: data.gpaScale,
+          igcseGrades: data.igcseGrades,
+          aLevelGrades: data.aLevelGrades,
+          ibScore: data.ibScore,
+          indianBoardPercent: data.indianBoardPercent,
+          nationalExamDetails: data.nationalExamDetails,
           satScore: data.satScore,
           actScore: data.actScore,
-          ibScore: data.ibScore,
           ieltsToeflScore: data.ieltsToeflScore,
           englishProficiencyType: data.englishProficiencyType,
           firstGenStudent: data.firstGenStudent,
@@ -689,12 +714,11 @@ export function OnboardingWizard() {
             <TextInput value={data.schoolName} onChange={v => upd('schoolName', v)} placeholder="e.g., Lincoln High School, UCLA" />
           </Field>
 
-          <Field label="GPA" required error={errors.gpa}>
-            <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
-          </Field>
-
-          {data.mode === 'domestic' && (
+          {data.mode === 'domestic' ? (
             <>
+              <Field label="GPA" required error={errors.gpa}>
+                <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
+              </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="SAT Score">
                   <TextInput value={data.satScore} onChange={v => upd('satScore', v)} placeholder="400 – 1600" type="number" />
@@ -709,11 +733,68 @@ export function OnboardingWizard() {
                 accentColor="#10b981"
               />
             </>
-          )}
-
-          {data.mode !== 'domestic' && (
+          ) : (
             <>
-              <Field label="English Proficiency Test">
+              {/* ── Academic Qualifications ─────────────────────────────── */}
+              <Field label="Curriculum / Exam System">
+                <div className="flex flex-wrap gap-2">
+                  {CURRICULUM_TYPES.map(c => (
+                    <Chip key={c.id} label={c.label} selected={data.curriculumType === c.id}
+                      onClick={() => upd('curriculumType', c.id)} accentColor={accent} />
+                  ))}
+                </div>
+              </Field>
+
+              <AnimatePresence>
+                {data.curriculumType === 'us-gpa' && (
+                  <motion.div key="us-gpa" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <Field label="GPA">
+                      <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
+                    </Field>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'igcse' && (
+                  <motion.div key="igcse" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <Field label="IGCSE Subject Grades">
+                      <TextInput value={data.igcseGrades} onChange={v => upd('igcseGrades', v)}
+                        placeholder="e.g., Mathematics A*, Physics A*, Chemistry A, English A, Economics B" />
+                    </Field>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'alevel' && (
+                  <motion.div key="alevel" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <Field label="A-Level Subject Grades">
+                      <TextInput value={data.aLevelGrades} onChange={v => upd('aLevelGrades', v)}
+                        placeholder="e.g., Mathematics A*, Physics A, Chemistry B" />
+                    </Field>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'ib' && (
+                  <motion.div key="ib" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <Field label="IB Diploma Score (out of 45)">
+                      <TextInput value={data.ibScore} onChange={v => upd('ibScore', v)} placeholder="e.g., 38" type="number" />
+                    </Field>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'indian-board' && (
+                  <motion.div key="indian-board" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <Field label="Board Percentage">
+                      <TextInput value={data.indianBoardPercent} onChange={v => upd('indianBoardPercent', v)} placeholder="e.g., 93.6%" />
+                    </Field>
+                  </motion.div>
+                )}
+                {data.curriculumType === 'other' && (
+                  <motion.div key="other" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
+                    <Field label="Exam / Credential Details">
+                      <TextInput value={data.nationalExamDetails} onChange={v => upd('nationalExamDetails', v)}
+                        placeholder="e.g., Myanmar Matriculation — Distinction in Mathematics, Physics, Chemistry, Biology" />
+                    </Field>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* ── English Proficiency ──────────────────────────────────── */}
+              <Field label="English Proficiency">
                 <div className="flex flex-wrap gap-2">
                   {ENGLISH_PROFICIENCY_TYPES.map(e => (
                     <Chip key={e.id} label={e.label} selected={data.englishProficiencyType === e.id}
@@ -723,27 +804,22 @@ export function OnboardingWizard() {
               </Field>
 
               <AnimatePresence>
-                {data.englishProficiencyType && data.englishProficiencyType !== 'native' && (
+                {data.englishProficiencyType && data.englishProficiencyType !== 'native' && data.englishProficiencyType !== 'not-yet' && (
                   <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
                     <Field label={`${ENGLISH_PROFICIENCY_TYPES.find(e => e.id === data.englishProficiencyType)?.label || 'Test'} Score`}>
                       <TextInput
                         value={data.ieltsToeflScore}
                         onChange={v => upd('ieltsToeflScore', v)}
-                        placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : 'Your score'}
+                        placeholder={data.englishProficiencyType === 'ielts' ? 'e.g., 7.5' : data.englishProficiencyType === 'toefl' ? 'e.g., 105' : data.englishProficiencyType === 'det' ? 'e.g., 120' : 'Your score / grade'}
                       />
                     </Field>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="IB Score (optional)">
-                  <TextInput value={data.ibScore} onChange={v => upd('ibScore', v)} placeholder="e.g., 38 / 45" />
-                </Field>
-                <Field label="SAT Score (optional)">
-                  <TextInput value={data.satScore} onChange={v => upd('satScore', v)} placeholder="400 – 1600" type="number" />
-                </Field>
-              </div>
+              <Field label="SAT Score (optional)">
+                <TextInput value={data.satScore} onChange={v => upd('satScore', v)} placeholder="400 – 1600" type="number" />
+              </Field>
             </>
           )}
 
