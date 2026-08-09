@@ -68,7 +68,7 @@ export default function Home() {
             </div>
             <div className="text-3xl font-light" style={{ color: 'rgba(28,10,12,0.3)' }}>→</div>
             <div className="text-center">
-              <p className="text-3xl md:text-4xl font-semibold" style={{ color: '#1C0A0C' }}>${PRICING_DISPLAY}</p>
+              <p className="text-3xl md:text-4xl font-semibold" style={{ color: '#1C0A0C' }}>{PRICING_DISPLAY}</p>
               <p className="text-xs font-medium uppercase tracking-widest mt-1" style={{ color: '#1C0A0C' }}>Rivernova · 99% less</p>
             </div>
             <div className="hidden sm:block w-px h-10" style={{ background: 'rgba(140,45,53,0.15)' }} />
@@ -302,7 +302,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.12),transparent)' }} />
-                  <span className="relative">Start Free — ${PRICING_DISPLAY} after</span>
+                  <span className="relative">Start Free — {PRICING_DISPLAY} after</span>
                   <ArrowRight className="relative w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
