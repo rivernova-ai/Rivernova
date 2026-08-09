@@ -293,7 +293,7 @@ export function applyVerifiedData(match: any, scorecard: CollegeScorecardData, i
       costBreakdown: {
         ...match.costBreakdown,
         tuition,
-        total: tuition + (match.costBreakdown?.living || 15000),
+        total: tuition + (match.costBreakdown?.living || 0),
         ...(scorecard.tuitionLocalAmount != null && {
           tuitionLocalAmount: scorecard.tuitionLocalAmount,
           tuitionLocalCurrency: scorecard.tuitionLocalCurrency || 'USD',

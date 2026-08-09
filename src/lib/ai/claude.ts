@@ -1,4 +1,5 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
+import { TIER_THRESHOLDS } from '@/lib/constants';
 import { generateText } from 'ai';
 import { type VerifiedSchoolFact } from './perplexity';
 
@@ -110,9 +111,9 @@ Please provide a JSON response with this exact structure:
 }
 
 For the "tier" field, classify each school as:
-- "reach": successProbability below 45 (admission is ambitious given the student's profile)
-- "target": successProbability 45–74 (realistic and well-aligned with the student's profile)
-- "safety": successProbability 75 or above (high confidence of admission)
+- "reach": successProbability below ${TIER_THRESHOLDS.TARGET_MIN} (admission is ambitious given the student's profile)
+- "target": successProbability ${TIER_THRESHOLDS.TARGET_MIN}–${TIER_THRESHOLDS.SAFETY_MIN - 1} (realistic and well-aligned with the student's profile)
+- "safety": successProbability ${TIER_THRESHOLDS.SAFETY_MIN} or above (high confidence of admission)
 
 For the "ranking" field: CRITICAL — US News publishes TWO entirely separate ranking lists:
 1. National Universities (~440 research-focused schools: MIT, Stanford, UCLA, Michigan, etc.)

@@ -2,73 +2,35 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient } from '@/utils/supabase/server';
 import { enforceRateLimit } from '@/lib/rateLimit';
-
-const salaryMap: Record<string, number> = {
-  "data science": 88000,
-  "computer science": 92000,
-  "software engineering": 95000,
-  "engineering": 78000,
-  "electrical engineering": 82000,
-  "mechanical engineering": 76000,
-  "business": 62000,
-  "finance": 68000,
-  "accounting": 58000,
-  "marketing": 52000,
-  "nursing": 70000,
-  "healthcare": 65000,
-  "biology": 46000,
-  "pre-med": 52000,
-  "psychology": 42000,
-  "education": 44000,
-  "communications": 44000,
-  "arts": 40000,
-  "humanities": 39000,
-  "political science": 48000,
-  "economics": 62000,
-  "default": 52000
-};
-
-const majorCities = ["New York", "Los Angeles", "Chicago", "Boston", "Seattle", "San Francisco", "Washington", "Miami", "Philadelphia", "Houston", "Atlanta", "Denver"];
+import { lookupSchool } from '@/lib/collegeScorecard';
+import { researchROIData } from '@/lib/ai/perplexity';
 
 const extractSchoolData = (school: any) => {
   const text = JSON.stringify(school);
-  
-  // Extract tuition — look for dollar amounts near words like "tuition", "cost", "in-state"
+
   const tuitionMatch = text.match(/(?:tuition|in-state|annual cost)[^\d]*\$?([\d,]+)/i);
   const tuition = tuitionMatch ? parseInt(tuitionMatch[1].replace(/,/g, '')) : null;
 
-  // Extract net price
   const netMatch = text.match(/net\s*(?:price|cost)[^\d]*\$?([\d,]+)/i);
   const netPrice = netMatch ? parseInt(netMatch[1].replace(/,/g, '')) : tuition;
 
-  // Extract graduation rate
   const gradMatch = text.match(/(\d+\.?\d*)\s*%\s*grad/i);
   const graduationRate = gradMatch ? parseFloat(gradMatch[1]) : null;
 
-  // Extract acceptance rate  
   const acceptMatch = text.match(/(\d+\.?\d*)\s*%\s*accept/i);
   const acceptanceRate = acceptMatch ? parseFloat(acceptMatch[1]) : null;
 
-  // Extract location from school name or location field
   const location = school.location || school.city || '';
-  
-  // Extract school name — strip all markdown
   const name = (school.name || school.title || '').replace(/\*\*/g, '').trim();
 
-  return { 
-    name, 
-    location, 
-    tuition: netPrice || tuition, 
-    graduationRate, 
-    acceptanceRate 
-  };
+  return { name, location, tuition: netPrice || tuition, graduationRate, acceptanceRate };
 };
 
 export async function POST(req: NextRequest) {
   try {
     const { school: rawSchool, gpa, citizenship } = await req.json();
     const supabase = await createClient();
-    
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -78,7 +40,15 @@ export async function POST(req: NextRequest) {
     const extracted = extractSchoolData(rawSchool);
     const { name: schoolName, location: schoolLocation, tuition: tuitionNum, graduationRate } = extracted;
 
-    // 1. Check for existing report
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('academic_background, budget')
+      .eq('id', user.id)
+      .single();
+
+    const major = profile?.academic_background?.major || 'General Studies';
+
+    // Return cached report if it exists for this school + major combination
     const { data: existingReport } = await supabase
       .from('roi_reports')
       .select('*')
@@ -86,135 +56,129 @@ export async function POST(req: NextRequest) {
       .eq('school_name', schoolName)
       .single();
 
-    // Get user profile for major
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('academic_background, budget')
-      .eq('id', user.id)
-      .single();
-
-    const major = profile?.academic_background?.major?.toLowerCase() || 'default';
-    
-    if (existingReport && existingReport.major === major) {
+    if (existingReport && existingReport.major === major.toLowerCase()) {
       return NextResponse.json(existingReport);
     }
 
-    // 2. Calculations
-    let livingCost = 13000; // Mid-size default
-    let roi = 0;
-    let breakeven = 0;
-    let warning = null;
+    // ── Step 1: Get salary from College Scorecard (real, school-specific data) ──
+    let medianSalary: number | null = null;
+    let salarySource = '';
+    let livingCostPerYear: number | null = null;
+    let livingCostSource = '';
 
-    // Detect living costs based on location
-    const cityMatch = majorCities.some(city => schoolLocation?.toLowerCase().includes(city.toLowerCase()));
-    if (cityMatch) {
-      livingCost = 20000;
-    } else if (schoolLocation?.toLowerCase().includes('rural') || schoolLocation?.toLowerCase().includes('town')) {
-      livingCost = 8000;
+    const scorecard = await lookupSchool(schoolName, supabase);
+    if (scorecard?.medianEarnings10yr) {
+      medianSalary = scorecard.medianEarnings10yr;
+      salarySource = `College Scorecard — ${schoolName} median earnings 10 years after enrollment`;
     }
 
-    // Bug 1 Fix: Ensure tuition + living + books are all added and multiplied by 4
+    // ── Step 2: Perplexity fills what College Scorecard doesn't have ──
+    // Always call Perplexity for living cost (Scorecard doesn't have this).
+    // Also call for salary if Scorecard had nothing (international schools, etc.).
+    const needsSalary = medianSalary === null;
+    const roiLive = await researchROIData(schoolName, major, schoolLocation);
+
+    if (needsSalary && roiLive.medianSalary) {
+      medianSalary = roiLive.medianSalary;
+      salarySource = roiLive.salarySource;
+    }
+    if (roiLive.livingCostPerYear) {
+      livingCostPerYear = roiLive.livingCostPerYear;
+      livingCostSource = roiLive.livingCostSource;
+    }
+
+    // ── Step 3: Calculate ROI ──
     const annualTuition = tuitionNum || 0;
-    const annualBooks = 1200;
-    const totalPerYear = annualTuition + livingCost + annualBooks;
+    // If Perplexity found a living cost, use it. Otherwise flag as unknown.
+    const livingCost = livingCostPerYear ?? null;
+    const annualBooks = 1200; // IPEDS standard books/supplies estimate — minor, not salary-scale
+    const totalPerYear = annualTuition + (livingCost ?? 0) + annualBooks;
     const total4Years = totalPerYear * 4;
 
-    // Sanity log for Bug 1
-    if (total4Years < 60000) {
-      console.log('DEBUG: Low 4-Year Cost Detected', { 
-        school: schoolName, 
-        annualTuition, 
-        livingCost, 
-        annualBooks, 
-        total4Years 
-      });
+    let roi: number | null = null;
+    let breakeven: number | null = null;
+    const warnings: string[] = [];
+
+    if (!medianSalary) {
+      warnings.push('Graduate salary data unavailable for this school and major — ROI estimate omitted.');
+    }
+    if (!livingCost) {
+      warnings.push('Living cost data unavailable for this location — cost estimate may be incomplete.');
     }
 
-    // Salary mapping
-    let matchedSalary = salaryMap.default;
-    for (const [key, value] of Object.entries(salaryMap)) {
-      if (key !== 'default' && major.includes(key)) {
-        matchedSalary = value;
-        break;
-      }
-    }
+    if (medianSalary && total4Years > 0) {
+      // 5-year earnings projection — noted as estimate in the report
+      const year1 = medianSalary;
+      const year2 = year1 * 1.05;
+      const year3 = year1 * 1.10;
+      const year4 = year1 * 1.15;
+      const year5 = year1 * 1.21;
+      const total5yrEarnings = year1 + year2 + year3 + year4 + year5;
 
-    const year1 = matchedSalary;
-    const year2 = year1 * 1.05;
-    const year3 = year1 * 1.10;
-    const year4 = year1 * 1.15;
-    const year5 = year1 * 1.21;
-    const total5yrEarnings = year1 + year2 + year3 + year4 + year5;
-
-    if (total4Years > 0) {
       roi = ((total5yrEarnings - total4Years) / total4Years) * 100;
-      
-      // Bug 2 Fix: Realistic Breakeven (Taxes + Surplus)
-      const effectiveTakeHome = year1 * 0.72; // 28% tax
-      const annualSurplus = effectiveTakeHome - 18000; // Living expenses while working
-      breakeven = total4Years / annualSurplus;
 
-      // Bug 3 Fix: ROI Sanity Check (> 400%)
-      if (roi > 400) {
-        warning = "Cost data incomplete — ROI estimate may be inaccurate. Visit school website for exact tuition figures.";
-      }
+      // Breakeven: take-home minus living expenses
+      // Tax rate and salary growth are estimates — disclosed in warnings
+      const effectiveTakeHome = year1 * 0.72;
+      const annualSurplus = effectiveTakeHome - (livingCost ?? 18000);
+      if (annualSurplus > 0) breakeven = total4Years / annualSurplus;
+
+      warnings.push(
+        'Salary growth (5%/year) and tax rate (28% effective) are national averages used as estimates — actual figures vary by location, employer, and year.',
+      );
     }
 
-    // 3. AI Recommendation
-    let aiRecommendation = "AI analysis temporarily unavailable";
+    // ── Step 4: Claude analysis ──
+    let aiRecommendation = 'AI analysis temporarily unavailable';
     if (process.env.ANTHROPIC_API_KEY) {
       try {
-        console.log('ROI Params:', { schoolName, major, gpa, total4Years, roi });
-
         const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
         const response = await anthropic.messages.create({
-          model: "claude-sonnet-4-6",
+          model: 'claude-sonnet-4-6',
           max_tokens: 200,
-          system: "You are a brutally honest, commission-free college financial advisor. You give direct, specific advice based purely on numbers and student outcomes. You never recommend a school because of prestige — only because of genuine student fit and financial ROI. Keep your response to exactly 3 sentences.",
+          system: 'You are a brutally honest, commission-free college financial advisor. You give direct, specific advice based purely on numbers and student outcomes. You never recommend a school because of prestige — only because of genuine student fit and financial ROI. Keep your response to exactly 3 sentences.',
           messages: [{
-            role: "user",
+            role: 'user',
             content: `Student profile: GPA ${gpa}, intended major ${major}, annual budget ${profile?.budget?.max}, citizenship ${citizenship}.
 School: ${schoolName} in ${schoolLocation}.
 True 4-year cost: ${total4Years > 0 ? '$' + total4Years.toLocaleString() : 'Data unavailable'}.
-Estimated ROI score: ${total4Years > 0 ? roi.toFixed(1) + '%' : 'Data unavailable'}.
-Break-even: ${total4Years > 0 ? breakeven.toFixed(1) + ' years' : 'Data unavailable'}.
+Salary data source: ${salarySource || 'unavailable'}.
+Median salary (${salarySource ? 'real data' : 'unavailable'}): ${medianSalary ? '$' + medianSalary.toLocaleString() : 'unknown'}.
+Living cost source: ${livingCostSource || 'unavailable'}.
+Estimated ROI: ${roi !== null ? roi.toFixed(1) + '%' : 'Data unavailable'}.
+Break-even: ${breakeven !== null ? breakeven.toFixed(1) + ' years' : 'Data unavailable'}.
 Graduation rate: ${graduationRate || 'Data unavailable'}%.
 
-Give your honest 3-sentence verdict on whether this is a smart choice for this specific student. Be direct. Start with either 'This is a smart choice' or 'Think carefully before choosing this school' — then explain exactly why with the numbers.`
-          }]
+Give your honest 3-sentence verdict on whether this is a smart choice for this specific student. Be direct. Start with either 'This is a smart choice' or 'Think carefully before choosing this school' — then explain exactly why with the numbers.`,
+          }],
         });
-        
+
         if (response.content[0].type === 'text') {
           aiRecommendation = response.content[0].text;
-          console.log('Claude ROI Response Success');
         }
       } catch (e: any) {
-        console.error('CRITICAL: Claude ROI Error:', e);
-        console.error('Error Status:', e?.status);
-        console.error('Error Message:', e?.message);
-        console.error('Error Type:', e?.type);
+        console.error('Claude ROI Error:', e?.message);
       }
-    } else {
-      console.error('ANTHROPIC_API_KEY is missing in ROI route');
     }
 
     const newReport = {
       user_id: user.id,
       school_name: schoolName,
       total_cost_4yr: total4Years || null,
-      roi_score: roi || null,
-      breakeven_years: breakeven || null,
+      roi_score: roi ?? null,
+      breakeven_years: breakeven ?? null,
       ai_recommendation: aiRecommendation,
-      data_warning: warning,
-      major: major,
+      data_warning: warnings.length > 0 ? warnings.join(' ') : null,
+      major: major.toLowerCase(),
       tuition_per_year: tuitionNum || 0,
-      living_costs_per_year: livingCost,
-      year1_salary: year1,
-      year3_salary: year3,
-      year5_salary: year5,
+      living_costs_per_year: livingCost ?? 0,
+      year1_salary: medianSalary ?? null,
+      year3_salary: medianSalary ? medianSalary * 1.10 : null,
+      year5_salary: medianSalary ? medianSalary * 1.21 : null,
+      salary_source: salarySource || null,
+      living_cost_source: livingCostSource || null,
     };
 
-    // Store in Supabase
     const { data: savedReport, error: saveError } = await supabase
       .from('roi_reports')
       .upsert(newReport)
@@ -230,4 +194,3 @@ Give your honest 3-sentence verdict on whether this is a smart choice for this s
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

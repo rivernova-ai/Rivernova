@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         scorecardFields.costBreakdown = {
           ...(existing.costBreakdown || {}),
           tuition,
-          total: tuition + (existing.costBreakdown?.living || 15000),
+          total: tuition + (existing.costBreakdown?.living || 0),
         };
       }
       if (netPrice !== null)

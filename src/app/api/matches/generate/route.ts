@@ -5,6 +5,7 @@ import { researchSchools } from '@/lib/ai/perplexity';
 import { synthesizeMatches } from '@/lib/ai/claude';
 import { lookupSchool, applyVerifiedData } from '@/lib/collegeScorecard';
 import { normalizeQualification } from '@/lib/qualificationNormalizer';
+import { DEFAULT_BUDGET_MIN, DEFAULT_BUDGET_MAX } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,8 +49,8 @@ export async function POST(request: NextRequest) {
     const { rawText, schools: verifiedFacts } = await researchSchools({
       major: academic.major || 'General Studies',
       careerField: career.careerField || 'Various',
-      budgetMin: parseInt(budget.min) || 10000,
-      budgetMax: parseInt(budget.max) || 50000,
+      budgetMin: parseInt(budget.min) || DEFAULT_BUDGET_MIN,
+      budgetMax: parseInt(budget.max) || DEFAULT_BUDGET_MAX,
       preferredCountries,
       mode: profile.mode || 'international',
       gpa: academic.gpa,
@@ -68,8 +69,8 @@ export async function POST(request: NextRequest) {
         gpa: academic.gpa,
         qualificationContext: qualContext.aiPromptDescription,
         budget: {
-          min: parseInt(budget.min) || 10000,
-          max: parseInt(budget.max) || 50000,
+          min: parseInt(budget.min) || DEFAULT_BUDGET_MIN,
+          max: parseInt(budget.max) || DEFAULT_BUDGET_MAX,
         },
         preferredCountries,
         mode: profile.mode || 'international',

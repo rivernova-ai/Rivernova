@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/client';
 import { cleanText, calculateMatchScore, getMatchScoreLabel } from '@/lib/utils';
+import { matchScoreToTier, MATCH_SCORE_THRESHOLDS } from '@/lib/constants';
 import {
   ArrowLeft, MapPin, GraduationCap, DollarSign, TrendingUp, Award,
   Calendar, Heart, ShieldCheck, CheckCircle2,
@@ -92,7 +93,7 @@ export default function SchoolProfile() {
 
             const rawTier = s.tier;
             const validTier = rawTier && ['safety', 'target', 'reach'].includes(rawTier) ? rawTier : null;
-            const derivedTier = matchScore >= 80 ? 'safety' : matchScore >= 65 ? 'target' : 'reach';
+            const derivedTier = matchScoreToTier(matchScore);
 
             const schoolName = cleanText(match.school_name);
             setSchool({
@@ -292,19 +293,18 @@ export default function SchoolProfile() {
 
   const currentStatusCfg = APP_STATUS_CONFIG.find(s => s.value === appStatus);
 
-  const strengths: { label: string; pct: number }[] = [];
-  const risks: { label: string; pct: number }[] = [];
-  if (school.tuitionNum < 25000 && school.tuitionNum > 0) strengths.push({ label: 'High Affordability', pct: 92 });
-  else if (school.tuitionNum > 50000) risks.push({ label: 'High Tuition Cost', pct: 85 });
-  if (school.admissionNum > 0 && school.admissionNum < 15) risks.push({ label: 'Highly Competitive', pct: 95 });
-  else if (school.admissionNum > 60) strengths.push({ label: 'Accessible Admission', pct: 82 });
-  if (school.graduationNum > 85) strengths.push({ label: 'Excellent Outcomes', pct: 94 });
-  else if (school.graduationNum > 0 && school.graduationNum < 50) risks.push({ label: 'Low Graduation Rate', pct: 72 });
-  if (school.employmentNum > 90) strengths.push({ label: 'Strong Job Placement', pct: 97 });
-  if (school.matchScore >= 80) strengths.push({ label: 'Strong Profile Fit', pct: school.matchScore });
-  else if (school.matchScore < 60) risks.push({ label: 'Profile Mismatch', pct: 100 - school.matchScore });
-  if (strengths.length === 0) strengths.push({ label: 'Academic Prestige', pct: 78 });
-  if (risks.length === 0) risks.push({ label: 'Program Intensity', pct: 58 });
+  // Labels are derived from real data fields only — no fabricated scores
+  const strengths: string[] = [];
+  const risks: string[] = [];
+  if (school.tuitionNum > 0 && school.tuitionNum < 25000) strengths.push('High Affordability');
+  else if (school.tuitionNum > 50000) risks.push('High Tuition Cost');
+  if (school.admissionNum > 0 && school.admissionNum < 15) risks.push('Highly Competitive');
+  else if (school.admissionNum > 60) strengths.push('Accessible Admission');
+  if (school.graduationNum > 85) strengths.push('Excellent Outcomes');
+  else if (school.graduationNum > 0 && school.graduationNum < 50) risks.push('Low Graduation Rate');
+  if (school.employmentNum > 90) strengths.push('Strong Job Placement');
+  if (school.matchScore >= MATCH_SCORE_THRESHOLDS.SAFETY_MIN) strengths.push('Strong Profile Fit');
+  else if (school.matchScore < MATCH_SCORE_THRESHOLDS.TARGET_MIN) risks.push('Profile Mismatch');
 
   const statsRail = [
     { label: 'Tuition', value: school.tuition || '—', color: '#1C0A0C', sub: '/year' },
@@ -784,7 +784,7 @@ export default function SchoolProfile() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <AnalysisCard title="Strengths" color="#8C2D35" colorRGB="140,45,53" items={strengths}
               icon={<TrendingUp style={{ width: '14px', height: '14px', color: '#8C2D35' }} />} />
-            <AnalysisCard title="Risk Factors" color="#1C0A0C" colorRGB="28,10,12" items={risks}
+            <AnalysisCard title="Risk Factors" color="rgba(28,10,12,0.75)" colorRGB="28,10,12" items={risks}
               icon={<TrendingUp style={{ width: '14px', height: '14px', color: 'rgba(28,10,12,0.5)', transform: 'rotate(180deg)' }} />} />
           </div>
         </div>
@@ -1071,7 +1071,7 @@ function AnalysisCard({
   title: string;
   color: string;
   colorRGB: string;
-  items: { label: string; pct: number }[];
+  items: string[];
   icon: React.ReactNode;
 }) {
   return (
@@ -1080,30 +1080,32 @@ function AnalysisCard({
       border: `1px solid rgba(${colorRGB},0.1)`,
       borderRadius: '20px',
       padding: '26px',
+      minHeight: '110px',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '22px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
         {icon}
         <span style={{ fontSize: '11px', fontWeight: 700, color, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{title}</span>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {items.map((s, i) => (
-          <div key={i}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 400, color: 'rgba(28,10,12,0.68)' }}>{s.label}</span>
-              <span style={{ fontSize: '11px', fontWeight: 700, color, letterSpacing: '0.03em' }}>{s.pct}%</span>
-            </div>
-            <div style={{ height: '3px', background: 'rgba(140,45,53,0.07)', borderRadius: '2px', overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: '2px',
-                width: `${s.pct}%`,
-                background: `linear-gradient(90deg, ${color}, ${color}aa)`,
-                boxShadow: `0 0 5px rgba(${colorRGB},0.35)`,
-                transition: 'width 1.7s cubic-bezier(0.16,1,0.3,1)',
-              }} />
-            </div>
-          </div>
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p style={{ fontSize: '12px', color: 'rgba(28,10,12,0.35)', margin: 0, fontStyle: 'italic' }}>
+          Not enough data to assess
+        </p>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {items.map((label, i) => (
+            <span key={i} style={{
+              fontSize: '12px', fontWeight: 500,
+              color,
+              background: `rgba(${colorRGB},0.07)`,
+              border: `1px solid rgba(${colorRGB},0.14)`,
+              padding: '5px 12px',
+              borderRadius: '100px',
+            }}>
+              {label}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

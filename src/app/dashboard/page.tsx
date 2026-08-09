@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
+import { matchScoreToTier } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, Search, MapPin, Award, Calendar,
@@ -189,7 +190,7 @@ export default function Dashboard() {
             why_matched: s.why_matched || '',
             concern: s.concern || '',
             program_rank: s.program_rank || '',
-            tier: s.tier || (ms >= 80 ? 'safety' : ms >= 65 ? 'target' : 'reach') as 'safety' | 'target' | 'reach',
+            tier: s.tier || (matchScoreToTier(ms)) as 'safety' | 'target' | 'reach',
             test_policy: s.test_policy || '',
             acceptance_rate: s.acceptance_rate || 0,
             median_earnings_10yr: s.median_earnings_10yr || 0,
@@ -300,7 +301,7 @@ export default function Dashboard() {
         const tier: 'safety' | 'target' | 'reach' =
           (rawTier === 'safety' || rawTier === 'target' || rawTier === 'reach')
             ? rawTier
-            : ms >= 80 ? 'safety' : ms >= 65 ? 'target' : 'reach';
+            : matchScoreToTier(ms);
 
         return {
           ...s,

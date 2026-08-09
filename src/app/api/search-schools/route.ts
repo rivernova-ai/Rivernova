@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { enforceRateLimit } from '@/lib/rateLimit';
+import { matchScoreToTier, DEFAULT_BUDGET_MIN } from '@/lib/constants';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     const budgetNum =
       budgetPerYear ||
       (budget ? parseInt(String(budget).replace(/[^0-9]/g, '')) : 0) ||
-      30000;
+      DEFAULT_BUDGET_MIN;
 
     // Resolve location preferences
     const countryList = Array.isArray(preferredCountries)
@@ -347,7 +348,7 @@ ABSOLUTE RULES:
       // Resolve tier — trust AI first, fall back to score-based
       let tier: string = school.tier;
       if (!VALID_TIERS.has(tier)) {
-        tier = matchScore >= 80 ? 'safety' : matchScore >= 65 ? 'target' : 'reach';
+        tier = matchScoreToTier(matchScore);
       }
 
       const testPolicy = VALID_TEST_POLICIES.has(school.test_policy)

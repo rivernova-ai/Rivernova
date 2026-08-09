@@ -265,6 +265,62 @@ If any field is genuinely unavailable after searching, use null for numbers and 
   }
 }
 
+export interface ROILiveData {
+  medianSalary: number | null;
+  salarySource: string;
+  livingCostPerYear: number | null;
+  livingCostSource: string;
+}
+
+export async function researchROIData(
+  schoolName: string,
+  major: string,
+  location: string
+): Promise<ROILiveData> {
+  const currentYear = new Date().getFullYear();
+  const prompt = `Search right now for two pieces of data for a college ROI calculator.
+
+1. SALARY: What is the median starting salary or median early-career salary for ${major} graduates specifically from ${schoolName}? Search the university's own career outcomes reports, LinkedIn salary insights, Glassdoor, PayScale, or any graduate employment survey for ${schoolName}. If no school-specific data exists, report the national median entry-level salary for ${major} from BLS Occupational Outlook Handbook ${currentYear}.
+
+2. LIVING COST: What is the estimated annual cost of living for a student in ${location}? Include rent for a shared apartment, groceries, transport, utilities. Search for cost of living estimates or student budget guides for ${location}.
+
+Return ONLY this JSON (no markdown, no explanation):
+{
+  "median_salary_usd": 75000,
+  "salary_source": "Source name and URL",
+  "living_cost_per_year_usd": 18000,
+  "living_cost_source": "Source name and URL"
+}
+
+RULES:
+- "median_salary_usd": number in USD. If salary is reported in another currency, convert to USD using today's exchange rate.
+- "salary_source": the actual source you found (e.g. "MIT Career Services 2024 Employment Report", "BLS OOH 2024").
+- "living_cost_per_year_usd": total annual student living cost in USD (rent + food + transport + utilities). Do NOT include tuition.
+- "living_cost_source": the source you used.
+- Use null for any field you cannot find after searching. Never guess.`;
+
+  try {
+    const { text } = await generateText({
+      model: perplexity('sonar-pro'),
+      prompt,
+    });
+
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return { medianSalary: null, salarySource: '', livingCostPerYear: null, livingCostSource: '' };
+
+    const data = JSON.parse(jsonMatch[0]);
+    return {
+      medianSalary: data.median_salary_usd ?? null,
+      salarySource: data.salary_source || '',
+      livingCostPerYear: data.living_cost_per_year_usd ?? null,
+      livingCostSource: data.living_cost_source || '',
+    };
+  } catch (err) {
+    console.error('Perplexity ROI research failed:', err);
+    return { medianSalary: null, salarySource: '', livingCostPerYear: null, livingCostSource: '' };
+  }
+}
+
 export async function researchScholarships(schoolName: string, major: string) {
   const prompt = `Research scholarship opportunities at ${schoolName} for ${major} students. Include:
 - Merit-based scholarships
