@@ -155,7 +155,15 @@ export default function Dashboard() {
       if (!p?.onboarding_completed) { router.push('/onboarding'); return; }
       setProfile(p);
 
-      const { data: m } = await supabase.from('matches').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      const { data: rawMatches } = await supabase.from('matches').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+      // Deduplicate by school name — keep most recent per school (handles legacy accumulated data)
+      const seen = new Set<string>();
+      const m = (rawMatches || []).filter(match => {
+        const key = (match.school_name || '').toLowerCase().trim();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
       if (m && m.length > 0) {
         const ep = (t: string) => { if (!t) return ''; const x = t.match(/(\d+\.?\d*)\s*%/); return x ? `${parseFloat(x[1])}%` : ''; };
         const fmt = m.map(match => {
@@ -335,6 +343,7 @@ export default function Dashboard() {
       setFilteredResults(scored);
 
       if (scored.length > 0) {
+        await createClient().from('matches').delete().eq('user_id', user!.id);
         await createClient().from('matches').insert(scored.map(s => ({
           user_id: user!.id,
           school_name: s.name,

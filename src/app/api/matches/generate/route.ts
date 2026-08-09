@@ -105,6 +105,8 @@ export async function POST(request: NextRequest) {
       citations: match.citations || [],
     }));
 
+    await supabase.from('matches').delete().eq('user_id', user.id);
+
     const { error: insertError } = await supabase
       .from('matches')
       .insert(matchesToSave);
