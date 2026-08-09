@@ -51,15 +51,22 @@ ${input.userProfile.preferredCountries.includes('Germany') ? '- German universit
 You MUST include matches from each of the student\'s preferred countries: ${input.userProfile.preferredCountries.join(', ')}. Do not cluster all matches in one country.
 ` : '';
 
+  const qualCtx = input.userProfile.qualificationContext || input.userProfile.gpa || 'Not provided';
+  const isInternationalCredential = qualCtx !== 'Not provided' && !qualCtx.startsWith('GPA:');
+  const credentialNote = isInternationalCredential
+    ? `\nINTERNATIONAL CREDENTIAL RULE: This student uses an international credential system, NOT a US GPA. Their record is shown above. You MUST NOT write "GPA not provided" or "no GPA" anywhere in your response — it is factually wrong because US GPA is not their credential system. Assess their academic strength and admission likelihood using the international credential shown. Cambridge IGCSE A* and A grades, Cambridge A-Level grades, IB Diploma scores, and national board percentages are complete, recognised academic profiles accepted by universities worldwide.`
+    : '';
+
   const prompt = `You are an expert education counselor. Based on the verified real-time research data below and the student's profile, synthesize 8-12 ranked school matches.
 
 STUDENT PROFILE:
 - Major: ${input.userProfile.major}
 - Career Goal: ${input.userProfile.careerField} (Dream Job: ${input.userProfile.dreamJob})
-- Academic Credentials: ${input.userProfile.qualificationContext || input.userProfile.gpa || 'Not provided'}
+- Academic Credentials: ${qualCtx}
 - Budget: $${input.userProfile.budget.min} - $${input.userProfile.budget.max} USD/year
 - Preferred Countries: ${input.userProfile.preferredCountries.join(', ')}
 - Mode: ${input.userProfile.mode}
+${credentialNote}
 ${countryAdmissionsNote}
 ${verifiedFactsBlock}
 FULL RESEARCH CONTEXT:
