@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { enforceRateLimit } from '@/lib/rateLimit';
 import { matchScoreToTier, DEFAULT_BUDGET_MIN } from '@/lib/constants';
+import { normalizeQualification } from '@/lib/qualificationNormalizer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -99,6 +100,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Major is required' }, { status: 400 });
     }
 
+    // Fetch profile to get full academic_background for credential normalization
+    const { data: userProfile } = await supabase.from('profiles').select('academic_background').eq('id', user.id).single();
+    const qualCtx = normalizeQualification(userProfile?.academic_background || {});
+    const credentialDescription = qualCtx.aiPromptDescription || (gpa ? `GPA: ${gpa} / ${gpaScale || '4.0'} scale` : 'Not provided');
+    const isInternationalCredential = credentialDescription !== 'Not provided' && !credentialDescription.startsWith('GPA:');
+
     if (!process.env.PERPLEXITY_API_KEY) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
@@ -126,7 +133,7 @@ export async function POST(request: NextRequest) {
     const studentBlock = [
       `STUDENT PROFILE:`,
       `- Intended Major: ${major}`,
-      `- GPA: ${gpa || 'Not provided'} / ${gpaScale} scale`,
+      `- Academic Credentials: ${credentialDescription}`,
       `- Annual Budget (all-in, tuition + living): $${budgetNum.toLocaleString()}`,
       `- Career Goal: ${dreamJob || goals || 'Not specified'}`,
       `- Career Field: ${careerField || 'Not specified'}`,
@@ -283,7 +290,8 @@ ABSOLUTE RULES:
 - match_score MUST span at least 40 points across all 20 schools.
 - concern field must be specific, honest, and directly reference this student's profile vs this school's data.
 - A student will make a life-changing $100,000+ decision based on your output. Accuracy is non-negotiable.
-- why_matched must reference the student's specific GPA: ${gpa || 'provided'}, budget: $${budgetNum.toLocaleString()}, and major: ${major}.`,
+- why_matched must reference the student's specific credentials: ${credentialDescription}, budget: $${budgetNum.toLocaleString()}, and major: ${major}.${isInternationalCredential ? `
+- INTERNATIONAL CREDENTIAL RULE: This student uses an international credential system, NOT a US GPA. Their credentials are shown in the student profile above. You MUST NOT write "GPA not provided" or "no GPA" anywhere — it is factually wrong. Assess admission likelihood using the international credential shown. Cambridge IGCSE A*/A grades, A-Level grades, IB Diploma scores, and national board results are complete, recognised academic profiles accepted by universities worldwide.` : ''}`,
           },
           {
             role: 'user',
