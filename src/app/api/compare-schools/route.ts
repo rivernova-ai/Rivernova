@@ -83,22 +83,36 @@ STUDENT PROFILE:
 SCHOOLS TO COMPARE:
 ${schoolsText}
 
-Provide a detailed, honest comparison in this exact format:
+Write a clear, well-structured comparison using proper markdown formatting. Use ## headings, bullet points, bold text, and a markdown table for the financial section. Do NOT use plain text section separators like dashes or ALL-CAPS headers.
 
-RECOMMENDATION:
-[Your main recommendation - which school is the better fit and why, considering the student's profile, goals, and financial situation. Be specific about factors like program quality, career outcomes, affordability, and admission likelihood.]
+Use exactly this structure:
 
-ALTERNATIVE PERSPECTIVE:
-[The honest case for the other school(s) - what makes it a compelling choice despite not being the top recommendation. Acknowledge its strengths.]
+## Our Recommendation
+[2-3 paragraphs. Name the top pick and give the specific reasons why — program quality, career outcomes, affordability, admission likelihood. Reference the student's actual credentials and budget.]
 
-KEY DIFFERENCES:
-[3-4 bullet points highlighting the most important differences between the schools]
+## The Case for [Other School]
+[1-2 paragraphs. Honest strengths of the other school(s). What would make it the better choice?]
 
-FINANCIAL ANALYSIS:
-[Compare the financial aspects - tuition, potential aid, ROI based on salary outcomes]
+## Key Differences
+- **[Topic]:** [concrete comparison]
+- **[Topic]:** [concrete comparison]
+- **[Topic]:** [concrete comparison]
+- **[Topic]:** [concrete comparison]
 
-NEXT STEPS:
-[Specific action items the student should take to decide between these schools]`;
+## Financial Breakdown
+| Factor | [School A] | [School B] |
+|--------|-----------|-----------|
+| Annual Tuition | ... | ... |
+| Est. 4-Year Cost | ... | ... |
+| Budget Fit | ✅/❌ | ✅/❌ |
+| Aid Potential | ... | ... |
+
+[1 paragraph on ROI and earnings potential.]
+
+## Next Steps
+1. [Specific action item]
+2. [Specific action item]
+3. [Specific action item]`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',

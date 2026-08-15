@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, MapPin, Send, Sparkles, ShieldCheck } from 'lucide-react';
 import { ComparisonSchool } from '@/lib/comparison';
 import { cleanText } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ComparisonModalProps {
   schools: ComparisonSchool[];
@@ -490,10 +492,64 @@ export function ComparisonModal({ schools, userProfile, onClose }: ComparisonMod
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ padding: '18px', borderRadius: '14px', background: 'rgba(245,237,229,0.8)', border: '1px solid rgba(140,45,53,0.10)' }}>
-                  <p style={{ fontSize: '14px', lineHeight: 1.75, fontWeight: 300, color: 'rgba(28,10,12,0.82)', margin: 0, whiteSpace: 'pre-wrap' }}>
-                    {cleanText(recommendation)}
-                  </p>
+                <div style={{ padding: '18px 22px', borderRadius: '14px', background: 'rgba(245,237,229,0.8)', border: '1px solid rgba(140,45,53,0.10)' }}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      h2: ({ children }) => (
+                        <h2 style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#8C2D35', margin: '20px 0 10px', paddingBottom: '6px', borderBottom: '1px solid rgba(140,45,53,0.12)' }}>
+                          {children}
+                        </h2>
+                      ),
+                      p: ({ children }) => (
+                        <p style={{ fontSize: '13.5px', lineHeight: 1.75, fontWeight: 300, color: 'rgba(28,10,12,0.82)', margin: '0 0 12px' }}>
+                          {children}
+                        </p>
+                      ),
+                      ul: ({ children }) => (
+                        <ul style={{ margin: '0 0 12px', paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {children}
+                        </ul>
+                      ),
+                      ol: ({ children }) => (
+                        <ol style={{ margin: '0 0 12px', paddingLeft: '20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {children}
+                        </ol>
+                      ),
+                      li: ({ children }) => (
+                        <li style={{ fontSize: '13.5px', lineHeight: 1.65, fontWeight: 300, color: 'rgba(28,10,12,0.80)' }}>
+                          {children}
+                        </li>
+                      ),
+                      strong: ({ children }) => (
+                        <strong style={{ fontWeight: 600, color: '#1C0A0C' }}>{children}</strong>
+                      ),
+                      table: ({ children }) => (
+                        <div style={{ overflowX: 'auto', margin: '8px 0 16px' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+                            {children}
+                          </table>
+                        </div>
+                      ),
+                      thead: ({ children }) => (
+                        <thead style={{ background: 'rgba(140,45,53,0.06)', borderBottom: '1px solid rgba(140,45,53,0.14)' }}>
+                          {children}
+                        </thead>
+                      ),
+                      th: ({ children }) => (
+                        <th style={{ padding: '8px 12px', textAlign: 'left', fontWeight: 700, fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.55)', whiteSpace: 'nowrap' }}>
+                          {children}
+                        </th>
+                      ),
+                      td: ({ children }) => (
+                        <td style={{ padding: '8px 12px', borderBottom: '1px solid rgba(140,45,53,0.07)', color: 'rgba(28,10,12,0.75)', fontWeight: 300, verticalAlign: 'top' }}>
+                          {children}
+                        </td>
+                      ),
+                    }}
+                  >
+                    {recommendation}
+                  </ReactMarkdown>
                 </div>
 
                 {chatMessages.length > 0 && (
