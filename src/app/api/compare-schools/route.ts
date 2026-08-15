@@ -1,13 +1,11 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { generateText } from 'ai';
+import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { enforceRateLimit } from '@/lib/rateLimit';
 import { sanitizeForPrompt } from '@/lib/sanitize';
+import { normalizeQualification } from '@/lib/qualificationNormalizer';
 
-const anthropic = createAnthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,10 +35,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize all user-controlled strings before prompt interpolation.
-    const safeMajor = sanitizeForPrompt(userProfile.major);
-    const safeCareerField = sanitizeForPrompt(userProfile.careerField);
-    const safeDreamJob = sanitizeForPrompt(userProfile.dreamJob);
-    const safeLocation = sanitizeForPrompt(userProfile.preferredCountries);
+    const safeMajor = sanitizeForPrompt(userProfile?.major);
+    const safeCareerField = sanitizeForPrompt(userProfile?.careerField);
+    const safeDreamJob = sanitizeForPrompt(userProfile?.dreamJob);
+    const safeLocation = sanitizeForPrompt(userProfile?.preferredCountries);
+
+    // Resolve academic credentials — same pattern as search-schools and claude.ts
+    const { data: profileRow } = await supabase
+      .from('profiles')
+      .select('academic_background')
+      .eq('id', user.id)
+      .single();
+
+    const qualCtx = normalizeQualification(profileRow?.academic_background || {});
+    const credentialDescription = qualCtx.aiPromptDescription ||
+      (userProfile?.gpa ? `GPA: ${userProfile.gpa}` : 'Not provided');
+    const isInternationalCredential =
+      credentialDescription !== 'Not provided' && !credentialDescription.startsWith('GPA:');
+    const credentialRule = isInternationalCredential
+      ? `\nINTERNATIONAL CREDENTIAL RULE: This student uses an international credential system, NOT a US GPA. You MUST NOT write "GPA not provided" — it is factually wrong. Reference their actual credential as shown above.\n`
+      : '';
 
     const schoolsText = schools
       .map(
@@ -58,13 +72,12 @@ Highlights: ${school.highlights?.map((h: string) => sanitizeForPrompt(h)).join('
       )
       .join('\n');
 
-    const prompt = `You are an expert education counselor providing personalized school comparison advice.
-
+    const prompt = `You are an expert education counselor providing personalized school comparison advice.${credentialRule}
 STUDENT PROFILE:
 - Major: ${safeMajor}
 - Career Goal: ${safeCareerField} (Dream Job: ${safeDreamJob})
-- GPA: ${userProfile.gpa || 'Not provided'}
-- Budget: $${userProfile.budgetMin || 0} - $${userProfile.budgetMax || 0} USD/year
+- Academic Credentials: ${credentialDescription}
+- Budget: $${userProfile?.budgetMin || 0} - $${userProfile?.budgetMax || 0} USD/year
 - Location Preference: ${safeLocation || 'Not specified'}
 
 SCHOOLS TO COMPARE:
@@ -87,11 +100,16 @@ FINANCIAL ANALYSIS:
 NEXT STEPS:
 [Specific action items the student should take to decide between these schools]`;
 
-    const { text } = await generateText({
-      model: anthropic('claude-sonnet-4-6'),
-      prompt,
-      temperature: 0.7,
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }],
     });
+
+    const text = response.content
+      .filter(block => block.type === 'text')
+      .map(block => (block as { type: 'text'; text: string }).text)
+      .join('');
 
     return NextResponse.json({ recommendation: text });
   } catch (error) {
