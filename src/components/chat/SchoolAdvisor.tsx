@@ -11,6 +11,19 @@ interface SchoolAdvisorProps {
   schoolName: string;
   location: string;
   program: string;
+  matchScore?: number;
+  matchReasoning?: string;
+  concern?: string;
+  admissionRate?: string;
+  tuition?: string;
+  userProfile?: {
+    full_name?: string;
+    mode?: string;
+    academic_background?: any;
+    career_goals?: any;
+    budget?: any;
+    location_preferences?: any;
+  } | null;
 }
 
 interface Metrics {
@@ -28,7 +41,7 @@ const SCAN_PHASES = [
   'SYNTHESIZING AI BRIEF',
 ];
 
-export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorProps) {
+export function SchoolAdvisor({ schoolName, location, program, matchScore, matchReasoning, concern, admissionRate, tuition, userProfile }: SchoolAdvisorProps) {
   const [messages, setMessages] = useState<Array<{ id: string; role: string; content: string }>>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -97,15 +110,41 @@ export function SchoolAdvisor({ schoolName, location, program }: SchoolAdvisorPr
         content: `Generating AI-powered insights for **${schoolName}**...\n\nAnalyzing available knowledge on campus environment, student life, and career outcomes.`
       }]);
 
-      const researchQuery = `Provide a comprehensive, brutally honest briefing for a prospective student studying ${program} at ${schoolName} in ${location}.
+      const academic = userProfile?.academic_background || {};
+      const career = userProfile?.career_goals || {};
+      const budget = userProfile?.budget || {};
+      const budgetNum = budget.perYear || budget.max || null;
+      const credentials = academic.qualificationContext || (academic.gpa ? `GPA ${academic.gpa}/${academic.gpaScale || '4.0'}` : null);
+      const studentName = userProfile?.full_name || 'This student';
+      const citizenship = userProfile?.location_preferences?.citizenshipCountry || (userProfile?.mode === 'international' ? 'international student' : 'domestic student');
+
+      const studentContext = [
+        `STUDENT PROFILE:`,
+        credentials ? `- Academic Credentials: ${credentials}` : null,
+        budgetNum ? `- Annual Budget: $${Number(budgetNum).toLocaleString()}` : null,
+        academic.major ? `- Major: ${academic.major}` : null,
+        career.dreamJob ? `- Dream Job: ${career.dreamJob}` : null,
+        career.careerField ? `- Career Field: ${career.careerField}` : null,
+        `- Student Type: ${citizenship}`,
+        matchScore ? `- Match Score for ${schoolName}: ${matchScore}%` : null,
+        admissionRate ? `- School Admission Rate: ${admissionRate}` : null,
+        tuition ? `- School Tuition: ${tuition}` : null,
+        matchReasoning ? `- Why Matched: ${matchReasoning}` : null,
+        concern ? `- Known Concern: ${concern}` : null,
+      ].filter(Boolean).join('\n');
+
+      const researchQuery = `${studentContext}
+
+You are advising ${studentName} on whether ${schoolName} is the right choice for them specifically. Provide a brutally honest briefing that directly references their profile above.
 
 Include:
-1. **CAMPUS LIFE**: What is the actual vibe? Social scene, clubs, study culture, and student pressure.
-2. **SAFETY INTEL**: Real crime sentiment in ${location}. Safe to walk at night? Specific areas to avoid.
-3. **LOCAL INFRASTRUCTURE**: Transportation, food scene, and cost of living for a student.
-4. **ROI & CAREER**: Job placement for ${program} graduates, average starting salary, and alumni network strength.
+1. **ADMISSION LIKELIHOOD**: Given their credentials and the school's profile, what are their real chances? Be specific.
+2. **CAMPUS LIFE**: What is the actual vibe? Social scene, clubs, study culture, and student pressure.
+3. **SAFETY INTEL**: Real crime sentiment in ${location}. Safe to walk at night? Specific areas to avoid.
+4. **LOCAL INFRASTRUCTURE**: Transportation, food scene, and cost of living relevant to their budget.
+5. **ROI & CAREER**: Job placement for ${program} graduates, average starting salary, and whether this school gets them to their goal of ${career.dreamJob || 'their target career'}.
 
-Format this as a strategic briefing with bold headers. Be specific and honest â€” not a marketing pitch. After writing the briefing, call the report_metrics tool with your honest scores (0â€“100) for safety, social, local, and roi.`;
+Format this as a strategic briefing with bold headers. Reference this student's specific profile, not generic advice. After writing the briefing, call the report_metrics tool with your honest scores (0â€“100) for safety, social, local, and roi.`;
 
       try {
         const response = await fetch('/api/chat', {
@@ -113,7 +152,7 @@ Format this as a strategic briefing with bold headers. Be specific and honest â€
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             messages: [{ role: 'user', content: researchQuery }],
-            context: { schoolName, location, program, type: 'deep-research' }
+            context: { schoolName, location, program, type: 'deep-research', userProfile, matchScore, matchReasoning, concern, admissionRate, tuition }
           }),
         });
 
@@ -181,7 +220,7 @@ Format this as a strategic briefing with bold headers. Be specific and honest â€
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: apiMessages,
-          context: { schoolName, location, program }
+          context: { schoolName, location, program, userProfile, matchScore, matchReasoning, concern, admissionRate, tuition }
         }),
       });
 

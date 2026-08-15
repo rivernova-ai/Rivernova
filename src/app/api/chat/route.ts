@@ -46,6 +46,29 @@ export async function POST(req: NextRequest) {
     const safeSchoolName = sanitizeForPrompt(context?.schoolName);
     const safeLocation = sanitizeForPrompt(context?.location);
 
+    // Build student context block from profile data
+    const up = context?.userProfile;
+    const academic = up?.academic_background || {};
+    const career = up?.career_goals || {};
+    const budget = up?.budget || {};
+    const budgetNum = budget.perYear || budget.max || null;
+    const credentials = academic.qualificationContext || (academic.gpa ? `GPA ${academic.gpa}/${academic.gpaScale || '4.0'}` : null);
+    const citizenship = up?.location_preferences?.citizenshipCountry || (up?.mode === 'international' ? 'international student' : 'domestic student');
+    const studentContextLines = [
+      credentials ? `Credentials: ${credentials}` : null,
+      budgetNum ? `Annual budget: $${Number(budgetNum).toLocaleString()}` : null,
+      academic.major ? `Major: ${academic.major}` : null,
+      career.dreamJob ? `Dream job: ${career.dreamJob}` : null,
+      career.careerField ? `Career field: ${career.careerField}` : null,
+      `Student type: ${citizenship}`,
+      context?.matchScore ? `Match score for this school: ${context.matchScore}%` : null,
+      context?.admissionRate ? `School admission rate: ${context.admissionRate}` : null,
+      context?.tuition ? `School tuition: ${context.tuition}` : null,
+      context?.matchReasoning ? `Why matched: ${context.matchReasoning}` : null,
+      context?.concern ? `Known concern: ${context.concern}` : null,
+    ].filter(Boolean).join('\n');
+    const studentContextBlock = studentContextLines ? `\nSTUDENT PROFILE (use this to personalise every response):\n${studentContextLines}\n` : '';
+
     // ── DEEP RESEARCH MODE: Perplexity real-time intel ──
     let researchedData = '';
     if (isDeepResearch && safeSchoolName && process.env.PERPLEXITY_API_KEY) {
@@ -92,15 +115,16 @@ Return a concise data-rich briefing.`,
     // ── SYSTEM PROMPT ──
     const systemPrompt = `You are a high-level Strategic Education Advisor for Rivernova.
 You provide elite, data-backed intelligence to help students make life-changing decisions.
-${researchedData ? `\nREAL-TIME INTEL (prioritize this):\n${researchedData}\n` : ''}
+${studentContextBlock}${researchedData ? `\nREAL-TIME INTEL (prioritize this):\n${researchedData}\n` : ''}
 ${safeSchoolName ? `Focusing on: ${safeSchoolName} (${safeLocation})` : ''}
 
 Rules:
 1. Be brutally honest. If a city is dangerous or a school has a toxic culture, say it directly.
-2. Use provided real-time intel to back up claims.
-3. Keep responses professional, surgical, and actionable.
-4. Start deep-research responses with a bold STRATEGIC BRIEFING header.
-5. CRITICAL: Always write your complete text briefing FIRST. Only call tools AFTER your full text response is written. Never skip the text.`;
+2. Always reference the student's specific credentials, budget, and goals — never give generic advice.
+3. Use provided real-time intel to back up claims.
+4. Keep responses professional, surgical, and actionable.
+5. Start deep-research responses with a bold STRATEGIC BRIEFING header.
+6. CRITICAL: Always write your complete text briefing FIRST. Only call tools AFTER your full text response is written. Never skip the text.`;
 
     const anthropicMessages = cappedMessages.map((msg: { role: string; content: string }) => ({
       role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',

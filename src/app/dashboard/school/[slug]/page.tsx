@@ -38,6 +38,7 @@ export default function SchoolProfile() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [profileMode, setProfileMode] = useState<'international' | 'domestic'>('international');
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [appStatus, setAppStatus] = useState('');
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const statusMenuRef = useRef<HTMLDivElement>(null);
@@ -67,6 +68,7 @@ export default function SchoolProfile() {
 
         const mode = profileData?.mode === 'domestic' ? 'domestic' : 'international';
         setProfileMode(mode);
+        setUserProfile(profileData);
 
         const { data: matches } = await supabase
           .from('matches').select('*').eq('user_id', user.id);
@@ -704,7 +706,17 @@ export default function SchoolProfile() {
               <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.13em', textTransform: 'uppercase', color: '#8C2D35' }}>Live</span>
             </div>
           </div>
-          <SchoolAdvisor schoolName={school.name} location={school.location} program={school.program} />
+          <SchoolAdvisor
+            schoolName={school.name}
+            location={school.location}
+            program={school.program}
+            matchScore={school.matchScore}
+            matchReasoning={school.why_matched}
+            concern={school.concern}
+            admissionRate={school.admissionRate}
+            tuition={school.tuition}
+            userProfile={userProfile}
+          />
         </div>
 
         {/* Match Highlights */}
