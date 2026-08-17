@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
   Loader2, Search, MapPin, Award, Calendar,
   Heart, ArrowRight, Plus, Check, Globe, Home,
-  ShieldCheck, Sparkles, ChevronRight, ChevronDown,
+  ShieldCheck, Sparkles, ChevronRight, ChevronDown, ChevronUp, AlertTriangle,
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import MatchFilters, { FilterOptions } from '@/components/matches/MatchFilters';
@@ -105,6 +105,14 @@ const APP_STATUS_CONFIG: Record<string, { label: string; color: string; bg: stri
   rejected:     { label: 'Not Selected', color: 'rgba(28,10,12,0.4)',  bg: 'rgba(28,10,12,0.04)',  border: 'rgba(28,10,12,0.12)' },
 };
 
+const TRACKER_DOCS = [
+  { key: 'sop', label: 'Statement of Purpose' },
+  { key: 'lor', label: 'Letters of Rec.' },
+  { key: 'transcripts', label: 'Transcripts' },
+  { key: 'english_test', label: 'English Test' },
+  { key: 'financial', label: 'Financial Docs' },
+];
+
 const DEFAULT_FILTERS: FilterOptions = {
   budgetRange: 'all', location: 'all', successRate: 'all',
   programType: 'all', tier: 'all', testPolicy: 'all',
@@ -128,6 +136,10 @@ export default function Dashboard() {
   const [loadingSchool, setLoadingSchool] = useState<{ name: string; program: string; matchScore: number; location: string } | null>(null);
   const [applicationStatuses, setApplicationStatuses] = useState<Record<string, string>>({});
   const [statusDropdown, setStatusDropdown] = useState<string | null>(null);
+  const [trackerOpen, setTrackerOpen] = useState<Set<string>>(new Set());
+  const [appDocuments, setAppDocuments] = useState<Record<string, Record<string, boolean>>>({});
+  const [appDeadlines, setAppDeadlines] = useState<Record<string, string>>({});
+  const [appNotes, setAppNotes] = useState<Record<string, string>>({});
   const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load applicationStatuses from localStorage
@@ -137,6 +149,28 @@ export default function Dashboard() {
       if (stored) setApplicationStatuses(JSON.parse(stored));
     } catch { /* ignore */ }
   }, []);
+
+  // Load tracker data from Supabase applications table
+  useEffect(() => {
+    if (!user) return;
+    createClient().from('applications').select('*').eq('user_id', user.id).then(({ data }) => {
+      if (!data) return;
+      const statuses: Record<string, string> = {};
+      const docs: Record<string, Record<string, boolean>> = {};
+      const deadlines: Record<string, string> = {};
+      const notes: Record<string, string> = {};
+      data.forEach((row: any) => {
+        if (row.status) statuses[cleanText(row.school_name)] = row.status;
+        if (row.documents && Object.keys(row.documents).length > 0) docs[row.school_slug] = row.documents;
+        if (row.deadline) deadlines[row.school_slug] = row.deadline;
+        if (row.notes) notes[row.school_slug] = row.notes;
+      });
+      if (Object.keys(statuses).length > 0) setApplicationStatuses(prev => ({ ...prev, ...statuses }));
+      setAppDocuments(docs);
+      setAppDeadlines(deadlines);
+      setAppNotes(notes);
+    });
+  }, [user]);
 
   // Close status dropdown on outside click
   useEffect(() => {
@@ -375,6 +409,16 @@ export default function Dashboard() {
           success_probability: s.matchScore || 75,
           reasoning: s.why_matched || 'Match based on your profile',
         })));
+        // Seed applications table — preserves existing tracker data on slug conflict
+        await createClient().from('applications').upsert(
+          scored.map(s => ({
+            user_id: user!.id,
+            school_name: cleanText(s.name),
+            school_slug: toSlug(s.name),
+            tier: s.tier || 'target',
+          })),
+          { onConflict: 'user_id,school_slug' }
+        );
       }
     } catch (e: any) {
       alert(e.message || 'Failed to search');
@@ -404,10 +448,40 @@ export default function Dashboard() {
 
   const updateApplicationStatus = (schoolName: string, status: string) => {
     const key = cleanText(schoolName);
+    const slug = toSlug(schoolName);
     const updated = { ...applicationStatuses, [key]: status };
     setApplicationStatuses(updated);
     try { localStorage.setItem('rv_app_statuses', JSON.stringify(updated)); } catch { /* ignore */ }
     setStatusDropdown(null);
+    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, status }, { onConflict: 'user_id,school_slug' }).then();
+  };
+
+  const toggleTracker = (schoolName: string) => {
+    const slug = toSlug(schoolName);
+    setTrackerOpen(prev => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug); else next.add(slug);
+      return next;
+    });
+  };
+
+  const updateTrackerDoc = (schoolName: string, docKey: string, checked: boolean) => {
+    const slug = toSlug(schoolName);
+    const updated = { ...(appDocuments[slug] || {}), [docKey]: checked };
+    setAppDocuments(prev => ({ ...prev, [slug]: updated }));
+    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, documents: updated }, { onConflict: 'user_id,school_slug' }).then();
+  };
+
+  const updateTrackerDeadline = (schoolName: string, deadline: string) => {
+    const slug = toSlug(schoolName);
+    setAppDeadlines(prev => ({ ...prev, [slug]: deadline }));
+    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, deadline }, { onConflict: 'user_id,school_slug' }).then();
+  };
+
+  const updateTrackerNote = (schoolName: string, notes: string) => {
+    const slug = toSlug(schoolName);
+    setAppNotes(prev => ({ ...prev, [slug]: notes }));
+    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, notes }, { onConflict: 'user_id,school_slug' }).then();
   };
 
   const applyFiltersAndSort = (list: SchoolMatch[], f: FilterOptions, by: 'match' | 'tuition' | 'admit') => {
@@ -510,6 +584,14 @@ export default function Dashboard() {
     const appStatus = applicationStatuses[cleanText(school.name)] || '';
     const appCfg = APP_STATUS_CONFIG[appStatus];
     const isStatusOpen = statusDropdown === school.name;
+    const slug = toSlug(school.name);
+    const isTrackerOpen = trackerOpen.has(slug);
+    const docs = appDocuments[slug] || {};
+    const deadline = appDeadlines[slug] || '';
+    const notes = appNotes[slug] || '';
+    const daysLeft = deadline ? Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000) : null;
+    const incompleteDocs = TRACKER_DOCS.filter(d => !docs[d.key]).length;
+    const showDeadlineWarning = daysLeft !== null && daysLeft <= 7 && incompleteDocs > 0;
 
     return (
       <div
@@ -752,13 +834,92 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <span
-            style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 500, color: 'rgba(28,10,12,0.55)', transition: 'color 0.2s ease', letterSpacing: '-0.01em' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#1C0A0C')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.55)')}>
-            Deep Dive <ChevronRight style={{ width: '14px', height: '14px' }} />
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 500, color: 'rgba(28,10,12,0.55)', transition: 'color 0.2s ease', letterSpacing: '-0.01em' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#1C0A0C')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.55)')}>
+              Deep Dive <ChevronRight style={{ width: '14px', height: '14px' }} />
+            </span>
+            <button
+              onClick={e => { e.stopPropagation(); toggleTracker(school.name); }}
+              title="Application tracker"
+              style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isTrackerOpen ? 'rgba(140,45,53,0.10)' : 'rgba(140,45,53,0.05)', border: `1px solid ${isTrackerOpen ? 'rgba(140,45,53,0.25)' : 'rgba(140,45,53,0.10)'}`, color: isTrackerOpen ? '#8C2D35' : 'rgba(28,10,12,0.3)', cursor: 'pointer', transition: 'all 0.2s ease', flexShrink: 0 }}>
+              {isTrackerOpen ? <ChevronUp style={{ width: '11px', height: '11px' }} /> : <ChevronDown style={{ width: '11px', height: '11px' }} />}
+            </button>
+          </div>
         </div>
+
+        {/* Application Tracker */}
+        {isTrackerOpen && (
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ borderTop: '1px solid rgba(140,45,53,0.10)', background: 'rgba(250,245,240,0.6)', padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}
+          >
+            {showDeadlineWarning && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.40)', color: '#92400E' }}>
+                <AlertTriangle style={{ width: '12px', height: '12px', flexShrink: 0 }} />
+                <span style={{ fontSize: '11px', fontWeight: 500 }}>
+                  {daysLeft! <= 0 ? 'Deadline passed' : `Deadline in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`} — {incompleteDocs} doc{incompleteDocs === 1 ? '' : 's'} still missing
+                </span>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.38)', flexShrink: 0 }}>Deadline</span>
+              <input
+                type="date"
+                value={deadline}
+                onChange={e => { e.stopPropagation(); updateTrackerDeadline(school.name, e.target.value); }}
+                onClick={e => e.stopPropagation()}
+                style={{ flex: 1, fontSize: '12px', color: deadline ? '#1C0A0C' : 'rgba(28,10,12,0.3)', background: 'transparent', border: '1px solid rgba(140,45,53,0.15)', borderRadius: '6px', padding: '5px 8px', outline: 'none', fontFamily: 'inherit', cursor: 'pointer' }}
+              />
+            </div>
+
+            <div>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.38)', margin: '0 0 8px' }}>Documents</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px' }}>
+                {TRACKER_DOCS.map(doc => (
+                  <label key={doc.key} onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={!!docs[doc.key]}
+                      onChange={e => { e.stopPropagation(); updateTrackerDoc(school.name, doc.key, e.target.checked); }}
+                      style={{ accentColor: '#8C2D35', width: '13px', height: '13px', flexShrink: 0, cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '12px', fontWeight: 300, color: docs[doc.key] ? 'rgba(28,10,12,0.38)' : 'rgba(28,10,12,0.7)', textDecoration: docs[doc.key] ? 'line-through' : 'none', lineHeight: 1.3 }}>
+                      {doc.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.38)', margin: '0 0 6px' }}>Notes</p>
+              <textarea
+                placeholder="Add notes..."
+                value={notes}
+                onClick={e => e.stopPropagation()}
+                onChange={e => { e.stopPropagation(); setAppNotes(prev => ({ ...prev, [slug]: e.target.value })); }}
+                onBlur={e => updateTrackerNote(school.name, e.target.value)}
+                rows={2}
+                style={{ width: '100%', resize: 'none', fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.75)', background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(140,45,53,0.12)', borderRadius: '8px', padding: '8px 10px', outline: 'none', fontFamily: 'inherit', lineHeight: 1.5, boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(28,10,12,0.42)' }}>
+                {TRACKER_DOCS.length - incompleteDocs}/{TRACKER_DOCS.length} docs ready
+              </span>
+              {appStatus && appCfg && (
+                <span style={{ fontSize: '11px', fontWeight: 500, color: appCfg.color, background: appCfg.bg, border: `1px solid ${appCfg.border}`, padding: '2px 8px', borderRadius: '100px' }}>
+                  {appCfg.label}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
