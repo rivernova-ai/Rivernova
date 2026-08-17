@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { createClient } from '@/utils/supabase/client';
-import { cleanText, calculateMatchScore, getMatchScoreLabel } from '@/lib/utils';
+import { cleanText, calculateMatchScore, getMatchScoreLabel, toSlug } from '@/lib/utils';
 import { matchScoreToTier, MATCH_SCORE_THRESHOLDS } from '@/lib/constants';
 import {
   ArrowLeft, MapPin, GraduationCap, DollarSign, TrendingUp, Award,
@@ -44,7 +44,6 @@ export default function SchoolProfile() {
   const statusMenuRef = useRef<HTMLDivElement>(null);
 
   const slug = params.slug as string;
-  const decodedName = decodeURIComponent(slug);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -74,7 +73,7 @@ export default function SchoolProfile() {
           .from('matches').select('*').eq('user_id', user.id);
 
         if (matches) {
-          const match = matches.find(m => cleanText(m.school_name) === decodedName);
+          const match = matches.find(m => toSlug(m.school_name) === slug);
           if (match) {
             const s = match.school_data || {};
 
@@ -151,7 +150,7 @@ export default function SchoolProfile() {
       }
     };
     fetchData();
-  }, [user, authLoading, decodedName, router]);
+  }, [user, authLoading, slug, router]);
 
   useEffect(() => {
     if (school) {
@@ -256,7 +255,7 @@ export default function SchoolProfile() {
           color: '#1C0A0C', letterSpacing: '-0.035em', lineHeight: 0.95,
           textAlign: 'center', margin: '0 0 14px', padding: '0 32px',
         }}>
-          {decodedName}
+          {school?.name || slug}
         </h2>
         <p style={{
           fontSize: '11px', fontWeight: 500, letterSpacing: '0.16em',

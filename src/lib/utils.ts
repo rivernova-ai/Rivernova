@@ -98,6 +98,16 @@ export function cleanText(text: string | undefined | null): string {
   return s.trim();
 }
 
+export function toSlug(name: string | undefined | null): string {
+  if (!name) return '';
+  return cleanText(name)
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
+}
+
 /**
  * 5-component match score formula.
  * Returns null if the school scores below 55 (should be filtered out).

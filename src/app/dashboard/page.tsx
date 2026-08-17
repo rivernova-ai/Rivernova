@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import MatchFilters, { FilterOptions } from '@/components/matches/MatchFilters';
-import { calculateMatchScore, isValidMatchScore, stripMarkdown, cleanText } from '@/lib/utils';
+import { calculateMatchScore, isValidMatchScore, stripMarkdown, cleanText, toSlug } from '@/lib/utils';
 import { parseSchoolJSON, validateSchoolData } from '@/lib/schoolParser';
 import { ComparisonBar } from '@/components/comparison/ComparisonBar';
 import { ComparisonModal } from '@/components/comparison/ComparisonModal';
@@ -480,7 +480,7 @@ export default function Dashboard() {
 
   const handleSchoolClick = (s: SchoolMatch) => {
     setLoadingSchool({ name: cleanText(s.name), program: cleanText(s.program) || 'General Admission', matchScore: s.matchScore || 0, location: cleanText(s.location) });
-    setTimeout(() => router.push('/dashboard/school/' + encodeURIComponent(cleanText(s.name))), 1900);
+    setTimeout(() => router.push('/dashboard/school/' + toSlug(s.name)), 1900);
   };
 
   const isSel = (n: string) => comparison.schools.some(s => s.name === n);
