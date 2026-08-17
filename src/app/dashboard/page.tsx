@@ -174,7 +174,7 @@ export default function Dashboard() {
       const notes: Record<string, string> = {};
       data.forEach((row: any) => {
         if (row.status) statuses[cleanText(row.school_name)] = row.status;
-        if (row.documents && Object.keys(row.documents).length > 0) docs[row.school_slug] = row.documents;
+        if (row.documents != null) docs[row.school_slug] = row.documents;
         if (row.deadline) deadlines[row.school_slug] = row.deadline;
         if (row.notes) notes[row.school_slug] = row.notes;
       });
@@ -479,23 +479,40 @@ export default function Dashboard() {
     });
   };
 
+  const saveTrackerField = async (schoolName: string, fields: Record<string, unknown>) => {
+    if (!user) return;
+    const slug = toSlug(schoolName);
+    const { error } = await createClient()
+      .from('applications')
+      .update(fields)
+      .eq('user_id', user.id)
+      .eq('school_slug', slug);
+    if (error) {
+      // Row might not exist yet (e.g. opened tracker before running a search). Fall back to upsert.
+      await createClient().from('applications').upsert(
+        { user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, ...fields },
+        { onConflict: 'user_id,school_slug' }
+      );
+    }
+  };
+
   const updateTrackerDoc = (schoolName: string, docKey: string, checked: boolean) => {
     const slug = toSlug(schoolName);
     const updated = { ...(appDocuments[slug] || {}), [docKey]: checked };
     setAppDocuments(prev => ({ ...prev, [slug]: updated }));
-    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, documents: updated }, { onConflict: 'user_id,school_slug' }).then();
+    saveTrackerField(schoolName, { documents: updated });
   };
 
   const updateTrackerDeadline = (schoolName: string, deadline: string) => {
     const slug = toSlug(schoolName);
     setAppDeadlines(prev => ({ ...prev, [slug]: deadline }));
-    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, deadline }, { onConflict: 'user_id,school_slug' }).then();
+    saveTrackerField(schoolName, { deadline });
   };
 
   const updateTrackerNote = (schoolName: string, notes: string) => {
     const slug = toSlug(schoolName);
     setAppNotes(prev => ({ ...prev, [slug]: notes }));
-    if (user) createClient().from('applications').upsert({ user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, notes }, { onConflict: 'user_id,school_slug' }).then();
+    saveTrackerField(schoolName, { notes });
   };
 
   const applyFiltersAndSort = (list: SchoolMatch[], f: FilterOptions, by: 'match' | 'tuition' | 'admit') => {
