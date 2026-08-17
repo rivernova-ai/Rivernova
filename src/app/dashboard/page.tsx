@@ -484,16 +484,11 @@ export default function Dashboard() {
     const slug = toSlug(schoolName);
     const { error } = await createClient()
       .from('applications')
-      .update(fields)
-      .eq('user_id', user.id)
-      .eq('school_slug', slug);
-    if (error) {
-      // Row might not exist yet (e.g. opened tracker before running a search). Fall back to upsert.
-      await createClient().from('applications').upsert(
+      .upsert(
         { user_id: user.id, school_name: cleanText(schoolName), school_slug: slug, ...fields },
         { onConflict: 'user_id,school_slug' }
       );
-    }
+    if (error) console.error('[tracker save failed]', error.message, { slug, fields });
   };
 
   const updateTrackerDoc = (schoolName: string, docKey: string, checked: boolean) => {
