@@ -8,6 +8,7 @@ import {
   Loader2, Search, MapPin, Award, Calendar,
   Heart, ArrowRight, Plus, Check, Globe, Home,
   ShieldCheck, Sparkles, ChevronRight, ChevronDown, ChevronUp, AlertTriangle,
+  Activity, Clock,
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import MatchFilters, { FilterOptions } from '@/components/matches/MatchFilters';
@@ -113,6 +114,8 @@ const TRACKER_DOCS = [
   { key: 'financial', label: 'Financial Docs' },
 ];
 
+const TRACKER_ACTIVE_STATUSES = ['applying', 'submitted', 'accepted', 'waitlisted', 'rejected'];
+
 const DEFAULT_FILTERS: FilterOptions = {
   budgetRange: 'all', location: 'all', successRate: 'all',
   programType: 'all', tier: 'all', testPolicy: 'all',
@@ -140,7 +143,17 @@ export default function Dashboard() {
   const [appDocuments, setAppDocuments] = useState<Record<string, Record<string, boolean>>>({});
   const [appDeadlines, setAppDeadlines] = useState<Record<string, string>>({});
   const [appNotes, setAppNotes] = useState<Record<string, string>>({});
+  const [trackerStripOpen, setTrackerStripOpen] = useState(true);
   const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const getDeadlineInfo = (deadline: string) => {
+    if (!deadline) return null;
+    const days = Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000);
+    if (days < 0)  return { days, label: 'Overdue',     color: '#991B1B', bg: 'rgba(153,27,27,0.08)',  border: 'rgba(153,27,27,0.25)' };
+    if (days < 14) return { days, label: `${days}d left`, color: '#DC2626', bg: 'rgba(220,38,38,0.07)',  border: 'rgba(220,38,38,0.25)' };
+    if (days < 30) return { days, label: `${days}d left`, color: '#D97706', bg: 'rgba(217,119,6,0.08)', border: 'rgba(217,119,6,0.28)' };
+    return           { days, label: `${days}d left`, color: '#059669', bg: 'rgba(5,150,105,0.07)',  border: 'rgba(5,150,105,0.22)' };
+  };
 
   // Load applicationStatuses from localStorage
   useEffect(() => {
@@ -409,15 +422,16 @@ export default function Dashboard() {
           success_probability: s.matchScore || 75,
           reasoning: s.why_matched || 'Match based on your profile',
         })));
-        // Seed applications table — preserves existing tracker data on slug conflict
+        // Seed applications — new rows get 'considering', existing rows untouched
         await createClient().from('applications').upsert(
           scored.map(s => ({
             user_id: user!.id,
             school_name: cleanText(s.name),
             school_slug: toSlug(s.name),
             tier: s.tier || 'target',
+            status: 'considering',
           })),
-          { onConflict: 'user_id,school_slug' }
+          { onConflict: 'user_id,school_slug', ignoreDuplicates: true }
         );
       }
     } catch (e: any) {
@@ -924,6 +938,144 @@ export default function Dashboard() {
     );
   };
 
+  // ── Active Applications command center strip ───────────────────────────────
+  const renderTrackerStrip = () => {
+    const activeSchools = results.filter(s =>
+      TRACKER_ACTIVE_STATUSES.includes(applicationStatuses[cleanText(s.name)] || '')
+    );
+    if (activeSchools.length === 0) return null;
+
+    return (
+      <div style={{ borderRadius: '16px', border: '1px solid rgba(140,45,53,0.14)', background: 'rgba(140,45,53,0.025)', overflow: 'hidden' }}>
+        {/* Header — collapses/expands the strip */}
+        <button
+          onClick={() => setTrackerStripOpen(p => !p)}
+          style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 20px', background: 'transparent', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderBottom: trackerStripOpen ? '1px solid rgba(140,45,53,0.08)' : 'none' }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Activity style={{ width: '13px', height: '13px', color: '#8C2D35' }} />
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.10em', textTransform: 'uppercase', color: '#1C0A0C' }}>Active Applications</span>
+            <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(28,10,12,0.5)', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.12)', padding: '1px 7px', borderRadius: '100px' }}>{activeSchools.length}</span>
+          </div>
+          {trackerStripOpen
+            ? <ChevronUp style={{ width: '13px', height: '13px', color: 'rgba(28,10,12,0.35)' }} />
+            : <ChevronDown style={{ width: '13px', height: '13px', color: 'rgba(28,10,12,0.35)' }} />}
+        </button>
+
+        {/* Rows */}
+        {trackerStripOpen && (
+          <div>
+            {activeSchools.map((school, idx) => {
+              const slug = toSlug(school.name);
+              const appStatus = applicationStatuses[cleanText(school.name)] || '';
+              const appCfg = APP_STATUS_CONFIG[appStatus];
+              const docs = appDocuments[slug] || {};
+              const userDeadline = appDeadlines[slug] || '';
+              const docsComplete = TRACKER_DOCS.filter(d => !!docs[d.key]).length;
+              const missingDocs = TRACKER_DOCS.filter(d => !docs[d.key]);
+              const deadlineInfo = userDeadline ? getDeadlineInfo(userDeadline) : null;
+              const showUrgency = missingDocs.length > 0 && deadlineInfo !== null && deadlineInfo.days < 30;
+              const isStripDropOpen = statusDropdown === school.name + '_strip';
+              const tierCfg = TIER_CONFIG[school.tier || 'target'];
+
+              return (
+                <div key={slug} style={{ borderTop: idx > 0 ? '1px solid rgba(140,45,53,0.06)' : 'none', padding: showUrgency ? '11px 20px 10px' : '11px 20px' }}>
+                  {/* Main row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {/* Tier badge + name */}
+                    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: tierCfg.color, background: `${tierCfg.color}18`, border: `1px solid ${tierCfg.color}28`, padding: '2px 6px', borderRadius: '4px', flexShrink: 0 }}>
+                        {school.tier || 'target'}
+                      </span>
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: '#1C0A0C', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {cleanText(school.name)}
+                      </span>
+                    </div>
+
+                    {/* Inline status dropdown */}
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <button
+                        onClick={e => { e.stopPropagation(); setStatusDropdown(p => p === school.name + '_strip' ? null : school.name + '_strip'); }}
+                        style={{ display: 'flex', alignItems: 'center', gap: '5px', height: '26px', padding: '0 9px', borderRadius: '13px', fontSize: '11px', fontWeight: 500, background: appCfg ? appCfg.bg : 'rgba(140,45,53,0.05)', border: `1px solid ${appCfg ? appCfg.border : 'rgba(140,45,53,0.12)'}`, color: appCfg ? appCfg.color : 'rgba(28,10,12,0.4)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: appCfg?.color || 'rgba(28,10,12,0.3)', flexShrink: 0, display: 'inline-block' }} />
+                        <span>{appCfg?.label || 'Set status'}</span>
+                        <ChevronDown style={{ width: '9px', height: '9px', opacity: 0.6 }} />
+                      </button>
+                      {isStripDropOpen && (
+                        <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: '30px', left: 0, zIndex: 300, background: '#FAF5F0', border: '1px solid rgba(140,45,53,0.15)', borderRadius: '12px', padding: '6px', minWidth: '160px', boxShadow: '0 8px 24px rgba(140,45,53,0.12)' }}>
+                          {Object.entries(APP_STATUS_CONFIG).map(([val, cfg]) => (
+                            <button key={val} onClick={e => { e.stopPropagation(); updateApplicationStatus(school.name, val); }}
+                              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', borderRadius: '8px', border: 'none', background: appStatus === val ? cfg.bg : 'transparent', color: appStatus === val ? cfg.color : 'rgba(28,10,12,0.6)', fontSize: '12px', fontWeight: appStatus === val ? 600 : 400, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: cfg.color, flexShrink: 0, display: 'inline-block' }} />
+                              <span>{cfg.label}</span>
+                            </button>
+                          ))}
+                          {appStatus && (
+                            <>
+                              <div style={{ height: '1px', background: 'rgba(140,45,53,0.10)', margin: '4px 0' }} />
+                              <button onClick={e => { e.stopPropagation(); updateApplicationStatus(school.name, ''); }}
+                                style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: 'none', background: 'transparent', color: 'rgba(28,10,12,0.3)', fontSize: '11px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
+                                Clear status
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Doc progress bar */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                      <div style={{ width: '44px', height: '3px', background: 'rgba(28,10,12,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${(docsComplete / TRACKER_DOCS.length) * 100}%`, background: docsComplete === TRACKER_DOCS.length ? '#059669' : '#8C2D35', borderRadius: '2px', transition: 'width 0.4s ease' }} />
+                      </div>
+                      <span style={{ fontSize: '11px', fontWeight: 500, color: 'rgba(28,10,12,0.42)', whiteSpace: 'nowrap' }}>{docsComplete}/{TRACKER_DOCS.length}</span>
+                    </div>
+
+                    {/* Deadline pill */}
+                    <div style={{ flexShrink: 0, minWidth: '80px', textAlign: 'right' }}>
+                      {deadlineInfo ? (
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: deadlineInfo.color, background: deadlineInfo.bg, border: `1px solid ${deadlineInfo.border}`, padding: '2px 9px', borderRadius: '100px' }}>
+                          {deadlineInfo.label}
+                        </span>
+                      ) : school.deadline ? (
+                        <span style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(28,10,12,0.38)' }}>{cleanText(school.deadline)}</span>
+                      ) : (
+                        <span style={{ fontSize: '11px', color: 'rgba(28,10,12,0.22)' }}>No deadline</span>
+                      )}
+                    </div>
+
+                    {/* Deep dive arrow */}
+                    <button onClick={() => handleSchoolClick(school)}
+                      style={{ flexShrink: 0, display: 'flex', alignItems: 'center', padding: '4px', background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(28,10,12,0.28)', borderRadius: '6px', transition: 'color 0.15s ease' }}
+                      onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
+                      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.28)')}>
+                      <ChevronRight style={{ width: '13px', height: '13px' }} />
+                    </button>
+                  </div>
+
+                  {/* Urgency flag row */}
+                  {showUrgency && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '7px', paddingLeft: '2px' }}>
+                      <AlertTriangle style={{ width: '10px', height: '10px', color: '#DC2626', flexShrink: 0 }} />
+                      <span style={{ fontSize: '11px', color: '#DC2626', fontWeight: 400 }}>
+                        {missingDocs[0].label} not started{missingDocs.length > 1 ? ` +${missingDocs.length - 1} more` : ''}
+                      </span>
+                      <button
+                        onClick={() => toggleTracker(school.name)}
+                        style={{ fontSize: '10px', fontWeight: 500, color: '#8C2D35', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.20)', padding: '2px 9px', borderRadius: '100px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                        Open tracker
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // ── Tier section renderer ──────────────────────────────────────────────────
   const renderTierSection = (tier: 'safety' | 'target' | 'reach') => {
     const schools = filteredResults.filter(s => s.tier === tier);
@@ -1135,6 +1287,9 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {/* Active Applications command center */}
+            {renderTrackerStrip()}
 
             {/* Filters */}
             <MatchFilters onFilterChange={handleFilterChange} />
