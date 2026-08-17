@@ -739,10 +739,13 @@ export default function Dashboard() {
 
         {/* Concern */}
         {school.concern && (
-          <div style={{ padding: '10px 22px', display: 'flex', alignItems: 'flex-start', borderTop: '1px solid rgba(140,45,53,0.07)' }}>
-            <p style={{ fontSize: '11px', fontWeight: 300, color: 'rgba(28,10,12,0.55)', lineHeight: 1.55, margin: 0 }}>
-              {school.concern}
-            </p>
+          <div style={{ padding: '8px 14px 12px' }}>
+            <div style={{ padding: '9px 13px', borderRadius: '10px', background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+              <span style={{ fontSize: '11px', color: 'rgba(140,45,53,0.5)', flexShrink: 0, marginTop: '1px' }}>◈</span>
+              <p style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(28,10,12,0.72)', lineHeight: 1.6, margin: 0 }}>
+                {school.concern}
+              </p>
+            </div>
           </div>
         )}
 
@@ -751,22 +754,22 @@ export default function Dashboard() {
           <>
             <div style={{ height: '1px', background: 'rgba(140,45,53,0.08)', margin: '0 22px' }} />
             <div style={{ padding: '10px 22px', display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', color: 'rgba(28,10,12,0.5)', border: '1px solid rgba(140,45,53,0.12)' }}>
-                <ShieldCheck style={{ width: '10px', height: '10px' }} />$0 Commission
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px', background: 'rgba(140,45,53,0.07)', color: '#1C0A0C', border: '1px solid rgba(140,45,53,0.18)' }}>
+                <ShieldCheck style={{ width: '10px', height: '10px', color: '#8C2D35' }} />$0 Commission
               </span>
               {withinBudget && (
-                <span style={{ fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.09)', color: '#8C2D35', border: '1px solid rgba(140,45,53,0.2)' }}>
+                <span style={{ fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px', background: 'rgba(140,45,53,0.09)', color: '#8C2D35', border: '1px solid rgba(140,45,53,0.22)' }}>
                   Within Budget
                 </span>
               )}
               {school.scholarships && school.scholarships.toLowerCase() !== 'none' && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', color: 'rgba(28,10,12,0.55)', border: '1px solid rgba(140,45,53,0.12)' }}>
-                  <Award style={{ width: '10px', height: '10px' }} />{cleanText(school.scholarships)}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px', background: 'rgba(140,45,53,0.07)', color: '#1C0A0C', border: '1px solid rgba(140,45,53,0.18)' }}>
+                  <Award style={{ width: '10px', height: '10px', color: '#8C2D35' }} />{cleanText(school.scholarships)}
                 </span>
               )}
               {school.deadline && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 500, padding: '3px 9px', borderRadius: '100px', background: 'rgba(140,45,53,0.05)', color: 'rgba(28,10,12,0.55)', border: '1px solid rgba(140,45,53,0.12)' }}>
-                  <Calendar style={{ width: '10px', height: '10px' }} />Due {cleanText(school.deadline)}
+                <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 600, padding: '3px 10px', borderRadius: '100px', background: 'rgba(140,45,53,0.07)', color: '#1C0A0C', border: '1px solid rgba(140,45,53,0.18)' }}>
+                  <Calendar style={{ width: '10px', height: '10px', color: '#8C2D35' }} />Due {cleanText(school.deadline)}
                 </span>
               )}
             </div>
