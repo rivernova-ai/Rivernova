@@ -870,17 +870,11 @@ export default function Dashboard() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.55)')}>
               Deep Dive <ChevronRight style={{ width: '14px', height: '14px' }} />
             </span>
-            <button
-              onClick={e => { e.stopPropagation(); toggleTracker(school.name); }}
-              title="Application tracker"
-              style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isTrackerOpen ? 'rgba(140,45,53,0.10)' : 'rgba(140,45,53,0.05)', border: `1px solid ${isTrackerOpen ? 'rgba(140,45,53,0.25)' : 'rgba(140,45,53,0.10)'}`, color: isTrackerOpen ? '#8C2D35' : 'rgba(28,10,12,0.3)', cursor: 'pointer', transition: 'all 0.2s ease', flexShrink: 0 }}>
-              {isTrackerOpen ? <ChevronUp style={{ width: '11px', height: '11px' }} /> : <ChevronDown style={{ width: '11px', height: '11px' }} />}
-            </button>
           </div>
         </div>
 
-        {/* Application Tracker */}
-        {isTrackerOpen && (
+        {/* Application Tracker — hidden, code preserved */}
+        {false && (
           <div
             onClick={e => e.stopPropagation()}
             style={{ borderTop: '1px solid rgba(140,45,53,0.10)', background: 'rgba(250,245,240,0.6)', padding: '16px 22px', display: 'flex', flexDirection: 'column', gap: '14px' }}
@@ -1303,8 +1297,8 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Active Applications command center */}
-            {renderTrackerStrip()}
+            {/* Active Applications command center — hidden, code preserved */}
+            {/* {renderTrackerStrip()} */}
 
             {/* Filters */}
             <MatchFilters onFilterChange={handleFilterChange} />
