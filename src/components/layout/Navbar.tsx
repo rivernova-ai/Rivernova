@@ -40,13 +40,22 @@ export const Navbar = () => {
 
           <div className="flex items-center gap-4">
             <Link
-              href="#how-it-works"
+              href="/#how-it-works"
               className="hidden md:block text-sm font-medium transition-colors"
               style={{ color: '#1C0A0C' }}
               onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
               onMouseLeave={e => (e.currentTarget.style.color = '#1C0A0C')}
             >
               How It Works
+            </Link>
+            <Link
+              href="/pricing"
+              className="hidden md:block text-sm font-medium transition-colors"
+              style={{ color: '#1C0A0C' }}
+              onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
+              onMouseLeave={e => (e.currentTarget.style.color = '#1C0A0C')}
+            >
+              Pricing
             </Link>
 
             {user ? (

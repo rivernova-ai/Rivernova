@@ -31,7 +31,7 @@ export const DEFAULT_BUDGET_MIN = 10_000;
 export const DEFAULT_BUDGET_MAX = 50_000;
 
 // Pricing — single place to update when pricing changes
-export const PRICING_MONTHLY = 49;
+export const PRICING_MONTHLY = 19.99;
 export const PRICING_DISPLAY = `$${PRICING_MONTHLY}/mo`;
 
 // College Scorecard cache TTL

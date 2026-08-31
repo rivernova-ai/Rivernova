@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Navbar } from '@/components/layout/Navbar';
 import { CookieConsent } from '@/components/layout/CookieConsent';
 import { ArrowRight, ShieldCheck, Target, Brain, Rocket, Search, BarChart3, Bookmark, MessageSquare, X, TrendingDown, Lock } from 'lucide-react';
@@ -59,6 +60,14 @@ export default function Home() {
               See How It Works
             </button>
           </div>
+
+          {/* Pricing nudge */}
+          <Link href="/pricing" className="text-sm font-medium transition-colors" style={{ color: 'rgba(28,10,12,0.4)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#8C2D35')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.4)')}
+          >
+            See pricing →
+          </Link>
 
           {/* Price contrast */}
           <div className="pt-6 flex flex-col sm:flex-row items-center gap-6 sm:gap-12">
@@ -332,8 +341,8 @@ export default function Home() {
             <div>
               <p className="text-sm font-semibold mb-4" style={{ color: '#1C0A0C' }}>Product</p>
               <ul className="space-y-2.5">
-                {['Features', 'Pricing', 'FAQ'].map(l => (
-                  <li key={l}><a href="#" className="text-sm font-light transition-colors" style={{ color: 'rgba(28,10,12,0.4)' }}>{l}</a></li>
+                {[['Features', '/'], ['Pricing', '/pricing'], ['FAQ', '/pricing']].map(([l, h]) => (
+                  <li key={l}><a href={h} className="text-sm font-light transition-colors" style={{ color: 'rgba(28,10,12,0.4)' }}>{l}</a></li>
                 ))}
               </ul>
             </div>
