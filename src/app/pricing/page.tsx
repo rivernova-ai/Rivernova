@@ -23,6 +23,33 @@ const PRO_FEATURES = [
 export default function PricingPage() {
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly');
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    const priceId = billing === 'monthly'
+      ? process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID
+      : process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID;
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        // Not logged in — show auth modal
+        setAuthModalOpen(true);
+      }
+    } catch {
+      setAuthModalOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const proMonthly = 19.99;
   const proYearly = 149;
@@ -143,13 +170,14 @@ export default function PricingPage() {
             </ul>
 
             <button
-              onClick={() => setAuthModalOpen(true)}
-              className="group w-full rounded-full py-3.5 text-sm font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative"
+              onClick={handleUpgrade}
+              disabled={loading}
+              className="group w-full rounded-full py-3.5 text-sm font-semibold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 overflow-hidden relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
               style={{ background: '#8C2D35', color: '#F5EDE5', boxShadow: '0 0 28px rgba(140,45,53,0.5)' }}
             >
               <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.1),transparent)' }} />
-              <span className="relative">Get Pro</span>
-              <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span className="relative">{loading ? 'Redirecting...' : 'Get Pro'}</span>
+              {!loading && <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
             </button>
           </div>
         </div>
