@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth';
 import { Navbar } from '@/components/layout/Navbar';
 import { CookieConsent } from '@/components/layout/CookieConsent';
 import { AuthModal } from '@/components/auth/AuthModal';
@@ -21,9 +22,28 @@ const PRO_FEATURES = [
 ];
 
 export default function PricingPage() {
+  const { user } = useAuth();
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly');
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // After login: if the user had clicked upgrade, auto-fire checkout
+  useEffect(() => {
+    if (!user) return;
+    const pendingPriceId = sessionStorage.getItem('rv_pending_price_id');
+    if (!pendingPriceId) return;
+    sessionStorage.removeItem('rv_pending_price_id');
+    setLoading(true);
+    fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId: pendingPriceId }),
+    })
+      .then(r => r.json())
+      .then(data => { if (data.url) window.location.href = data.url; })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [user]);
 
   const handleUpgrade = async () => {
     const priceId = billing === 'monthly'
@@ -41,7 +61,8 @@ export default function PricingPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        // Not logged in — show auth modal
+        // Not logged in — save intent and show auth modal
+        sessionStorage.setItem('rv_pending_price_id', priceId || '');
         setAuthModalOpen(true);
       }
     } catch {
