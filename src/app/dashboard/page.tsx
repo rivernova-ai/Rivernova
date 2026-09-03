@@ -8,7 +8,7 @@ import {
   Loader2, Search, MapPin, Award, Calendar,
   Heart, ArrowRight, Plus, Check, Globe, Home,
   ShieldCheck, Sparkles, ChevronRight, ChevronDown, ChevronUp, AlertTriangle,
-  Activity, Clock,
+  Activity, Clock, Lock,
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import MatchFilters, { FilterOptions } from '@/components/matches/MatchFilters';
@@ -145,6 +145,7 @@ export default function Dashboard() {
   const [appNotes, setAppNotes] = useState<Record<string, string>>({});
   const [trackerStripOpen, setTrackerStripOpen] = useState(true);
   const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free');
 
   const getDeadlineInfo = (deadline: string) => {
     if (!deadline) return null;
@@ -201,6 +202,7 @@ export default function Dashboard() {
       const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       if (!p?.onboarding_completed) { router.push('/onboarding'); return; }
       setProfile(p);
+      setUserPlan(p.plan === 'pro' ? 'pro' : 'free');
 
       const { data: rawMatches } = await supabase.from('matches').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
       // Deduplicate by school name — keep most recent per school (handles legacy accumulated data)
@@ -264,6 +266,16 @@ export default function Dashboard() {
     };
     init();
   }, [user, loading, router]);
+
+  const handleManageBilling = async () => {
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {
+      alert('Failed to open billing portal. Please try again.');
+    }
+  };
 
   const handleModeChange = async (mode: 'domestic' | 'international') => {
     if (!user) return;
@@ -596,6 +608,69 @@ export default function Dashboard() {
     </div>
   );
   if (!profile) return null;
+
+  // ── Locked card (free plan, beyond limit) ─────────────────────────────────
+  const renderLockedCard = (school: SchoolMatch, idx: number) => {
+    const sc = school.matchScore || 0;
+    const tier = school.tier || 'target';
+    const tierCfg = TIER_CONFIG[tier];
+    return (
+      <div key={`locked-${school.name}-${idx}`} style={{ position: 'relative', borderRadius: '20px', overflow: 'hidden' }}>
+        {/* Blurred card preview */}
+        <div style={{ filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none', background: 'rgba(140,45,53,0.04)', border: '1px solid rgba(140,45,53,0.10)', borderRadius: '20px' }}>
+          <div style={{ height: '2px', background: `linear-gradient(90deg, ${tierCfg.color}80, transparent)` }} />
+          <div style={{ padding: '20px 22px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.4)' }}>{tier}</span>
+                </div>
+                <h3 style={{ fontSize: '17px', fontWeight: 600, color: '#1C0A0C', margin: '0 0 6px', letterSpacing: '-0.01em', lineHeight: 1.3 }}>{cleanText(school.name)}</h3>
+                <p style={{ fontSize: '12px', color: 'rgba(28,10,12,0.6)', margin: 0, fontWeight: 300 }}>{cleanText(school.location)}</p>
+              </div>
+              <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '54px', height: '54px', borderRadius: '14px', background: 'rgba(140,45,53,0.05)', border: '1px solid rgba(140,45,53,0.12)' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#1C0A0C', lineHeight: 1 }}>{sc}%</span>
+                <span style={{ fontSize: '7px', fontWeight: 700, color: 'rgba(28,10,12,0.45)', letterSpacing: '0.10em', textTransform: 'uppercase', marginTop: '4px' }}>match</span>
+              </div>
+            </div>
+          </div>
+          <div style={{ height: '1px', background: 'rgba(140,45,53,0.08)', margin: '0 22px' }} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)' }}>
+            {[
+              { label: 'Tuition / yr', value: school.tuition || '—' },
+              { label: 'Admit Rate', value: school.admissionRate || '—' },
+              { label: '10yr Salary', value: school.avgSalary || '—' },
+            ].map((m, i) => (
+              <div key={i} style={{ padding: '12px 0', textAlign: 'center', borderLeft: i > 0 ? '1px solid rgba(140,45,53,0.08)' : undefined }}>
+                <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.42)', margin: '0 0 5px' }}>{m.label}</p>
+                <p style={{ fontSize: '15px', fontWeight: 600, color: '#1C0A0C', margin: 0 }}>{m.value}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ padding: '16px 22px 20px' }}>
+            <div style={{ height: '10px', background: 'rgba(28,10,12,0.06)', borderRadius: '4px', marginBottom: '8px' }} />
+            <div style={{ height: '10px', width: '65%', background: 'rgba(28,10,12,0.04)', borderRadius: '4px' }} />
+          </div>
+        </div>
+
+        {/* Lock overlay */}
+        <div style={{ position: 'absolute', inset: 0, borderRadius: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(245,237,229,0.72)', backdropFilter: 'blur(1px)', gap: '12px' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Lock style={{ width: '18px', height: '18px', color: '#8C2D35' }} />
+          </div>
+          <p style={{ fontSize: '13px', fontWeight: 500, color: '#1C0A0C', margin: 0 }}>Upgrade to Pro to unlock</p>
+          <button
+            onClick={() => router.push('/pricing')}
+            style={{ padding: '8px 22px', borderRadius: '100px', background: '#8C2D35', color: '#F5EDE5', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', transition: 'opacity 0.2s ease' }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+          >
+            See Pro →
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   // ── Card renderer ──────────────────────────────────────────────────────────
   const renderCard = (school: SchoolMatch, idx: number) => {
@@ -1107,7 +1182,11 @@ export default function Dashboard() {
 
         {/* Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(420px,1fr))', gap: '12px' }}>
-          {schools.map((school, idx) => renderCard(school, idx))}
+          {schools.map((school, idx) => {
+            const globalIdx = filteredResults.indexOf(school);
+            const isLocked = userPlan !== 'pro' && globalIdx >= 3;
+            return isLocked ? renderLockedCard(school, idx) : renderCard(school, idx);
+          })}
         </div>
       </div>
     );
@@ -1145,6 +1224,22 @@ export default function Dashboard() {
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.4)')}>
               Edit Profile
             </button>
+            {userPlan === 'pro' ? (
+              <button onClick={handleManageBilling}
+                style={{ fontSize: '13px', fontWeight: 500, color: '#8C2D35', background: 'rgba(140,45,53,0.07)', border: '1px solid rgba(140,45,53,0.20)', cursor: 'pointer', padding: '6px 14px', borderRadius: '8px', fontFamily: 'inherit', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '5px' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(140,45,53,0.12)'; }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(140,45,53,0.07)'; }}>
+                <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#8C2D35', display: 'inline-block' }} />
+                Pro · Manage Billing
+              </button>
+            ) : (
+              <button onClick={() => router.push('/pricing')}
+                style={{ fontSize: '13px', fontWeight: 500, color: '#F5EDE5', background: '#8C2D35', border: 'none', cursor: 'pointer', padding: '6px 16px', borderRadius: '8px', fontFamily: 'inherit', transition: 'opacity 0.2s ease' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
+                Upgrade to Pro
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -1323,7 +1418,10 @@ export default function Dashboard() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(420px,1fr))', gap: '12px' }}>
-                {filteredResults.map((school, idx) => renderCard(school, idx))}
+                {filteredResults.map((school, idx) => {
+                  const isLocked = userPlan !== 'pro' && idx >= 3;
+                  return isLocked ? renderLockedCard(school, idx) : renderCard(school, idx);
+                })}
               </div>
             )}
 

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import { Loader2, Send, Sparkles, Bot, User } from 'lucide-react';
+import { Loader2, Send, Sparkles, Bot, User, Lock } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -30,14 +30,19 @@ export default function AIChat() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const FREE_MSG_LIMIT = 5;
 
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) { router.push('/'); return; }
       const supabase = createClient();
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      if (data) setProfile(data);
+      if (data) {
+        setProfile(data);
+        setUserPlan(data.plan === 'pro' ? 'pro' : 'free');
+      }
     };
     if (!authLoading) loadProfile();
   }, [user, authLoading, router]);
@@ -46,8 +51,11 @@ export default function AIChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  const userMessageCount = messages.filter(m => m.role === 'user').length;
+  const isAtLimit = userPlan !== 'pro' && userMessageCount >= FREE_MSG_LIMIT;
+
   const sendMessage = async () => {
-    if (!input.trim() || loading) return;
+    if (!input.trim() || loading || isAtLimit) return;
     const userMessage: Message = { role: 'user', content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
@@ -139,29 +147,62 @@ export default function AIChat() {
 
         {/* Input Area */}
         <div style={{ borderTop: '1px solid rgba(140,45,53,0.10)', padding: '16px' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <textarea
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask me anything about schools, applications, or your education journey..."
-              rows={2}
-              disabled={loading}
-              style={{ flex: 1, background: 'rgba(245,237,229,0.7)', border: '1px solid rgba(140,45,53,0.14)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#1C0A0C', resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6 }}
-            />
-            <button
-              onClick={sendMessage}
-              disabled={!input.trim() || loading}
-              style={{ padding: '0 24px', borderRadius: '12px', background: !input.trim() || loading ? 'rgba(140,45,53,0.3)' : '#8C2D35', color: '#F5EDE5', border: 'none', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s ease', fontFamily: 'inherit' }}
-            >
-              {loading
-                ? <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
-                : <Send style={{ width: '20px', height: '20px' }} />}
-            </button>
-          </div>
-          <p style={{ fontSize: '11px', color: 'rgba(28,10,12,0.35)', margin: '8px 0 0', textAlign: 'center' }}>
-            AI can make mistakes. It's important you double-check. Press Enter to send, Shift+Enter for new line
-          </p>
+          {isAtLimit ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '12px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(140,45,53,0.08)', border: '1px solid rgba(140,45,53,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Lock style={{ width: '14px', height: '14px', color: '#8C2D35' }} />
+                </div>
+                <p style={{ fontSize: '13px', fontWeight: 500, color: '#1C0A0C', margin: 0 }}>
+                  You've used {FREE_MSG_LIMIT}/{FREE_MSG_LIMIT} free messages
+                </p>
+              </div>
+              <p style={{ fontSize: '12px', fontWeight: 300, color: 'rgba(28,10,12,0.55)', margin: 0, textAlign: 'center' }}>
+                Upgrade to Pro for 5× longer conversations with your AI advisor.
+              </p>
+              <button
+                onClick={() => router.push('/pricing')}
+                style={{ padding: '9px 24px', borderRadius: '100px', background: '#8C2D35', color: '#F5EDE5', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 500, fontFamily: 'inherit', transition: 'opacity 0.2s ease' }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+              >
+                Upgrade to Pro →
+              </button>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Ask me anything about schools, applications, or your education journey..."
+                  rows={2}
+                  disabled={loading}
+                  style={{ flex: 1, background: 'rgba(245,237,229,0.7)', border: '1px solid rgba(140,45,53,0.14)', borderRadius: '12px', padding: '12px 16px', fontSize: '13px', color: '#1C0A0C', resize: 'none', outline: 'none', fontFamily: 'inherit', lineHeight: 1.6 }}
+                />
+                <button
+                  onClick={sendMessage}
+                  disabled={!input.trim() || loading}
+                  style={{ padding: '0 24px', borderRadius: '12px', background: !input.trim() || loading ? 'rgba(140,45,53,0.3)' : '#8C2D35', color: '#F5EDE5', border: 'none', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s ease', fontFamily: 'inherit' }}
+                >
+                  {loading
+                    ? <Loader2 style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
+                    : <Send style={{ width: '20px', height: '20px' }} />}
+                </button>
+              </div>
+              {userPlan !== 'pro' && (
+                <p style={{ fontSize: '11px', color: 'rgba(28,10,12,0.35)', margin: '8px 0 0', textAlign: 'center' }}>
+                  {FREE_MSG_LIMIT - userMessageCount} free message{FREE_MSG_LIMIT - userMessageCount === 1 ? '' : 's'} remaining · <span style={{ color: '#8C2D35', cursor: 'pointer' }} onClick={() => router.push('/pricing')}>Upgrade for unlimited</span>
+                </p>
+              )}
+              {userPlan === 'pro' && (
+                <p style={{ fontSize: '11px', color: 'rgba(28,10,12,0.35)', margin: '8px 0 0', textAlign: 'center' }}>
+                  AI can make mistakes. Double-check important information. Press Enter to send, Shift+Enter for new line
+                </p>
+              )}
+            </>
+          )}
         </div>
       </div>
 
