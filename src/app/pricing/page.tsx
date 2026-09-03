@@ -60,13 +60,15 @@ export default function PricingPage() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
-      } else {
+      } else if (res.status === 401) {
         // Not logged in — save intent and show auth modal
         sessionStorage.setItem('rv_pending_price_id', priceId || '');
         setAuthModalOpen(true);
+      } else {
+        alert('Something went wrong starting checkout. Please try again.');
       }
     } catch {
-      setAuthModalOpen(true);
+      alert('Could not connect to checkout. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
