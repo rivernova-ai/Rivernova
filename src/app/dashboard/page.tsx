@@ -1188,7 +1188,7 @@ export default function Dashboard() {
         {/* Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(420px,1fr))', gap: '12px' }}>
           {schools.map((school, idx) => {
-            const globalIdx = schoolRankMap.get(school.name.toLowerCase()) ?? 999;
+            const globalIdx = schoolRankMap.get(school.name.toLowerCase())!;
             const isLocked = userPlan !== 'pro' && globalIdx >= 3;
             return isLocked ? renderLockedCard(school, idx) : renderCard(school, idx);
           })}
