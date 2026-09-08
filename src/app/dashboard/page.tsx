@@ -602,6 +602,11 @@ export default function Dashboard() {
     { id: 'international' as const, label: 'International', icon: Globe },
   ];
 
+  const schoolRankMap = useMemo(
+    () => new Map(filteredResults.map((s, i) => [s.name.toLowerCase(), i])),
+    [filteredResults],
+  );
+
   if (loading || checking) return (
     <div style={{ background: '#F5EDE5', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#8C2D35' }} />
@@ -1159,11 +1164,6 @@ export default function Dashboard() {
       </div>
     );
   };
-
-  const schoolRankMap = useMemo(
-    () => new Map(filteredResults.map((s, i) => [s.name.toLowerCase(), i])),
-    [filteredResults],
-  );
 
   // ── Tier section renderer ──────────────────────────────────────────────────
   const renderTierSection = (tier: 'safety' | 'target' | 'reach') => {
