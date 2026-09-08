@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useAuth } from '@/lib/auth';
 import { matchScoreToTier } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
@@ -1160,6 +1160,11 @@ export default function Dashboard() {
     );
   };
 
+  const schoolRankMap = useMemo(
+    () => new Map(filteredResults.map((s, i) => [s.name.toLowerCase(), i])),
+    [filteredResults],
+  );
+
   // ── Tier section renderer ──────────────────────────────────────────────────
   const renderTierSection = (tier: 'safety' | 'target' | 'reach') => {
     const schools = filteredResults.filter(s => s.tier === tier);
@@ -1183,7 +1188,7 @@ export default function Dashboard() {
         {/* Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(420px,1fr))', gap: '12px' }}>
           {schools.map((school, idx) => {
-            const globalIdx = filteredResults.indexOf(school);
+            const globalIdx = schoolRankMap.get(school.name.toLowerCase()) ?? 999;
             const isLocked = userPlan !== 'pro' && globalIdx >= 3;
             return isLocked ? renderLockedCard(school, idx) : renderCard(school, idx);
           })}
