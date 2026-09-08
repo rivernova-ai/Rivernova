@@ -1186,7 +1186,7 @@ export default function Dashboard() {
         </div>
 
         {/* Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(420px,1fr))', gap: '12px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(420px,100%),1fr))', gap: '12px' }}>
           {schools.map((school, idx) => {
             const globalIdx = schoolRankMap.get(school.name.toLowerCase())!;
             const isLocked = userPlan !== 'pro' && globalIdx >= 3;
@@ -1201,6 +1201,13 @@ export default function Dashboard() {
 
   return (
     <div style={{ background: '#F5EDE5', minHeight: '100vh' }}>
+      <style>{`
+        @media (max-width: 640px) {
+          .rv-nav-mode-label { display: none !important; }
+          .rv-nav-edit-btn { display: none !important; }
+          .rv-nav-gap { gap: 6px !important; }
+        }
+      `}</style>
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 40% at 50% -5%, rgba(140,45,53,0.07) 0%, transparent 60%)', zIndex: 0 }} />
 
       {/* Nav */}
@@ -1209,7 +1216,7 @@ export default function Dashboard() {
           <h1 style={{ fontSize: '17px', fontWeight: 600, color: '#1C0A0C', letterSpacing: '-0.01em', margin: 0 }}>
             {profile.full_name || 'Dashboard'}
           </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="rv-nav-gap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '12px', background: 'rgba(140,45,53,0.10)' }}>
               {modes.map(m => {
                 const I = m.icon;
@@ -1218,12 +1225,12 @@ export default function Dashboard() {
                   <button key={m.id} onClick={() => handleModeChange(m.id)}
                     style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', fontSize: '13px', fontWeight: 500, background: active ? 'rgba(140,45,53,0.15)' : 'transparent', color: active ? '#1C0A0C' : 'rgba(28,10,12,0.4)', border: 'none', cursor: 'pointer', transition: 'all 0.2s ease', fontFamily: 'inherit' }}>
                     <I style={{ width: '14px', height: '14px' }} />
-                    <span>{m.label}</span>
+                    <span className="rv-nav-mode-label">{m.label}</span>
                   </button>
                 );
               })}
             </div>
-            <button onClick={() => router.push('/dashboard/edit-profile')}
+            <button className="rv-nav-edit-btn" onClick={() => router.push('/dashboard/edit-profile')}
               style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(28,10,12,0.4)', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px', borderRadius: '8px', transition: 'color 0.2s ease', fontFamily: 'inherit' }}
               onMouseEnter={e => (e.currentTarget.style.color = '#1C0A0C')}
               onMouseLeave={e => (e.currentTarget.style.color = 'rgba(28,10,12,0.4)')}>
@@ -1302,9 +1309,9 @@ export default function Dashboard() {
               })}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
               {[{ value: '15K+', label: 'Programs' }, { value: '20', label: 'Schools' }, { value: '0%', label: 'Commission' }, { value: 'Live', label: 'Data' }].map((s, i, arr) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                   <div style={{ textAlign: 'center' }}>
                     <p style={{ fontSize: '28px', fontWeight: 300, color: '#1C0A0C', margin: 0, letterSpacing: '-0.02em' }}>{s.value}</p>
                     <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(28,10,12,0.28)', margin: '6px 0 0' }}>{s.label}</p>
@@ -1422,7 +1429,7 @@ export default function Dashboard() {
                 {renderTierSection('reach')}
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(420px,1fr))', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(min(420px,100%),1fr))', gap: '12px' }}>
                 {filteredResults.map((school, idx) => {
                   const isLocked = userPlan !== 'pro' && idx >= 3;
                   return isLocked ? renderLockedCard(school, idx) : renderCard(school, idx);

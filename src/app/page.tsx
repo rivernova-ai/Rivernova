@@ -19,12 +19,12 @@ export default function Home() {
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(140,45,53,0.08) 0%, transparent 60%)' }} />
 
       {/* ── HERO ── */}
-      <section className="relative pt-20 pb-24 md:pt-32 md:pb-40 px-6 flex flex-col items-center text-center z-10">
-        <div className="max-w-[980px] mx-auto flex flex-col items-center space-y-10">
+      <section className="relative pt-20 pb-16 md:pt-32 md:pb-40 px-4 sm:px-6 flex flex-col items-center text-center z-10">
+        <div className="max-w-[980px] mx-auto flex flex-col items-center space-y-8 sm:space-y-10">
 
           {/* Headline */}
-          <div className="space-y-5">
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-semibold tracking-tighter leading-[0.92]" style={{ color: '#1C0A0C' }}>
+          <div className="space-y-4 sm:space-y-5">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-semibold tracking-tighter leading-[0.92]" style={{ color: '#1C0A0C' }}>
               Education consulting<br />
               <span style={{ background: 'linear-gradient(135deg,#8C2D35,#C04E5A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                 is broken.
@@ -92,7 +92,7 @@ export default function Home() {
       <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(140,45,53,0.15),transparent)' }} />
 
       {/* ── THE PROBLEM ── */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
+      <section className="py-16 md:py-32 px-4 sm:px-6 relative z-10">
         <div className="max-w-[1200px] mx-auto">
           <div className="mb-20">
             <p className="text-sm font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(28,10,12,0.3)' }}>The Problem</p>
@@ -145,7 +145,7 @@ export default function Home() {
       <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(140,45,53,0.15),transparent)' }} />
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="py-32 md:py-40 px-6 relative z-10">
+      <section id="how-it-works" className="py-16 md:py-32 px-4 sm:px-6 relative z-10">
         <div className="max-w-[1200px] mx-auto">
           <div className="mb-20">
             <p className="text-sm font-black uppercase tracking-[0.25em] mb-5" style={{ color: 'rgba(28,10,12,0.3)' }}>How It Works</p>
@@ -184,7 +184,7 @@ export default function Home() {
       <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(140,45,53,0.15),transparent)' }} />
 
       {/* ── PRODUCT PREVIEW ── */}
-      <section className="py-32 md:py-40 px-6 relative z-10">
+      <section className="py-16 md:py-32 px-4 sm:px-6 relative z-10">
         <div className="max-w-[1200px] mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
@@ -284,12 +284,12 @@ export default function Home() {
       <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(140,45,53,0.15),transparent)' }} />
 
       {/* ── FINAL CTA ── */}
-      <section className="py-32 md:py-48 px-6 relative z-10">
+      <section className="py-16 md:py-32 px-4 sm:px-6 relative z-10">
         <div className="max-w-[800px] mx-auto text-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-3xl pointer-events-none blur-3xl" style={{ background: 'radial-gradient(ellipse, rgba(140,45,53,0.1) 0%, transparent 70%)' }} />
-            <div className="space-y-8">
-              <h2 className="text-5xl md:text-7xl font-semibold tracking-tight leading-[0.92]" style={{ color: '#1C0A0C' }}>
+            <div className="space-y-6 sm:space-y-8">
+              <h2 className="text-4xl sm:text-5xl md:text-7xl font-semibold tracking-tight leading-[0.92]" style={{ color: '#1C0A0C' }}>
                 Your family deserves<br />
                 <span style={{ background: 'linear-gradient(135deg,#8C2D35,#C04E5A)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
                   honest advice.
@@ -325,9 +325,9 @@ export default function Home() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="py-14 px-6 relative z-10" style={{ borderTop: '1px solid rgba(140,45,53,0.12)' }}>
+      <footer className="py-14 px-4 sm:px-6 relative z-10" style={{ borderTop: '1px solid rgba(140,45,53,0.12)' }}>
         <div className="max-w-[1200px] mx-auto">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
+          <div className="grid md:grid-cols-4 gap-8 md:gap-12 mb-12">
             <div>
               <p className="text-sm font-semibold mb-3" style={{ color: '#1C0A0C' }}>Rivernova</p>
               <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(28,10,12,0.4)' }}>
