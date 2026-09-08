@@ -17,10 +17,9 @@ import { Loader2 } from 'lucide-react';
 interface AuthModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  next?: string;
 }
 
-export function AuthModal({ open, onOpenChange, next }: AuthModalProps) {
+export function AuthModal({ open, onOpenChange }: AuthModalProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const { signInWithGoogle, signInWithOtp } = useAuth();
@@ -44,7 +43,7 @@ export function AuthModal({ open, onOpenChange, next }: AuthModalProps) {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      await signInWithGoogle(next);
+      await signInWithGoogle();
     } catch (err) {
       console.error(err);
       alert('Failed to initialize Google login.');

@@ -369,7 +369,7 @@ export default function PricingPage() {
         </div>
       </footer>
 
-      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} next="/pricing" />
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
       <CookieConsent />
     </main>
   );
