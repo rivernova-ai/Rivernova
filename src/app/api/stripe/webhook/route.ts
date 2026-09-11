@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+// Service role client — bypasses RLS so webhooks can update any profile
+function getAdminSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -25,78 +33,90 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = getAdminSupabase();
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session;
-    const userId = session.metadata?.supabase_user_id;
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const userId = session.metadata?.supabase_user_id;
 
-    if (!userId || !session.subscription) {
-      return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
-    }
+      if (!userId || !session.subscription) {
+        console.warn('[stripe webhook] checkout.session.completed missing userId or subscription', { userId, subscription: session.subscription });
+        return NextResponse.json({ error: 'Missing metadata' }, { status: 400 });
+      }
 
-    // Fetch the subscription to get interval and expiry
-    const subscription = await stripe.subscriptions.retrieve(
-      session.subscription as string
-    ) as unknown as Stripe.Subscription;
+      const subscription = await stripe.subscriptions.retrieve(
+        session.subscription as string
+      );
 
-    const priceInterval = subscription.items.data[0]?.plan?.interval ?? 'month';
-    const expiresAt = new Date((subscription as unknown as { current_period_end: number }).current_period_end * 1000).toISOString();
+      const priceInterval = subscription.items.data[0]?.plan?.interval ?? 'month';
+      const periodEnd = (subscription as unknown as { current_period_end?: number }).current_period_end;
+      const expiresAt = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 
-    await supabase
-      .from('profiles')
-      .update({
-        plan: 'pro',
-        stripe_subscription_id: subscription.id,
-        plan_interval: priceInterval,
-        plan_expires_at: expiresAt,
-      })
-      .eq('id', userId);
-
-    console.log(`[stripe webhook] upgraded user ${userId} to pro (${priceInterval})`);
-  }
-
-  if (event.type === 'customer.subscription.deleted') {
-    const subscription = event.data.object as Stripe.Subscription;
-    const customerId = subscription.customer as string;
-
-    // Find user by stripe_customer_id
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('stripe_customer_id', customerId)
-      .single();
-
-    if (profile) {
-      await supabase
+      const { error } = await supabase
         .from('profiles')
         .update({
-          plan: 'free',
-          stripe_subscription_id: null,
-          plan_interval: null,
-          plan_expires_at: null,
+          plan: 'pro',
+          stripe_subscription_id: subscription.id,
+          plan_interval: priceInterval,
+          plan_expires_at: expiresAt,
         })
-        .eq('id', profile.id);
+        .eq('id', userId);
 
-      console.log(`[stripe webhook] downgraded user ${profile.id} to free`);
+      if (error) {
+        console.error('[stripe webhook] failed to update profile', error);
+        return NextResponse.json({ error: 'DB update failed' }, { status: 500 });
+      }
+
+      console.log(`[stripe webhook] upgraded user ${userId} to pro (${priceInterval})`);
     }
-  }
 
-  if (event.type === 'invoice.payment_succeeded') {
-    // Renewal — extend expiry date
-    const invoice = event.data.object as Stripe.Invoice & { subscription?: string };
-    const subscriptionId = invoice.subscription;
-
-    if (subscriptionId) {
-      const subscription = await stripe.subscriptions.retrieve(subscriptionId) as unknown as Stripe.Subscription & { current_period_end: number };
-      const expiresAt = new Date(subscription.current_period_end * 1000).toISOString();
+    if (event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription;
       const customerId = subscription.customer as string;
 
-      await supabase
+      const { data: profile } = await supabase
         .from('profiles')
-        .update({ plan_expires_at: expiresAt })
-        .eq('stripe_customer_id', customerId);
+        .select('id')
+        .eq('stripe_customer_id', customerId)
+        .single();
+
+      if (profile) {
+        await supabase
+          .from('profiles')
+          .update({
+            plan: 'free',
+            stripe_subscription_id: null,
+            plan_interval: null,
+            plan_expires_at: null,
+          })
+          .eq('id', profile.id);
+
+        console.log(`[stripe webhook] downgraded user ${profile.id} to free`);
+      }
     }
+
+    if (event.type === 'invoice.payment_succeeded') {
+      const invoice = event.data.object as Stripe.Invoice & { subscription?: string };
+      const subscriptionId = invoice.subscription;
+
+      if (subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const periodEnd = (subscription as unknown as { current_period_end?: number }).current_period_end;
+        const expiresAt = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+        const customerId = subscription.customer as string;
+
+        if (expiresAt) {
+          await supabase
+            .from('profiles')
+            .update({ plan_expires_at: expiresAt })
+            .eq('stripe_customer_id', customerId);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[stripe webhook] unhandled error', err);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });
