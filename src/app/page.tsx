@@ -317,7 +317,7 @@ export default function Home() {
               </div>
 
               <p className="text-sm font-light" style={{ color: 'rgba(28,10,12,0.35)' }}>
-                No credit card required · Cancel anytime · $0.00 commission · Always
+                3 schools free, always · Upgrade anytime · $0.00 commission
               </p>
             </div>
           </div>
