@@ -8,7 +8,7 @@ import {
   Loader2, Search, MapPin, Award, Calendar,
   Heart, ArrowRight, Plus, Check, Globe, Home,
   ShieldCheck, Sparkles, ChevronRight, ChevronDown, ChevronUp, AlertTriangle,
-  Activity, Clock, Lock,
+  Activity, Clock, Lock, Menu, X, LogOut,
 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import MatchFilters, { FilterOptions } from '@/components/matches/MatchFilters';
@@ -124,12 +124,13 @@ const DEFAULT_FILTERS: FilterOptions = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [searching, setSearching] = useState(false);
   const [searchStep, setSearchStep] = useState(0);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [results, setResults] = useState<SchoolMatch[]>([]);
   const [filteredResults, setFilteredResults] = useState<SchoolMatch[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
@@ -146,6 +147,7 @@ export default function Dashboard() {
   const [trackerStripOpen, setTrackerStripOpen] = useState(true);
   const stepIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getDeadlineInfo = (deadline: string) => {
     if (!deadline) return null;
@@ -287,12 +289,16 @@ export default function Dashboard() {
     if (!profile) return;
     setSearching(true);
     setSearchStep(0);
+    setSearchError(null);
     setResults([]);
     setFilteredResults([]);
 
     stepIntervalRef.current = setInterval(() => {
       setSearchStep(prev => Math.min(prev + 1, SEARCH_STEPS.length - 1));
     }, 3500);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 90_000);
 
     try {
       const a = profile.academic_background || {};
@@ -302,6 +308,7 @@ export default function Dashboard() {
       const sp = profile.school_preferences || {};
 
       const res = await fetch('/api/search-schools', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -447,8 +454,12 @@ export default function Dashboard() {
         );
       }
     } catch (e: any) {
-      alert(e.message || 'Failed to search');
+      const msg = e?.name === 'AbortError'
+        ? 'Match generation timed out. Please try again — it usually completes in under 60 seconds.'
+        : (e.message || 'Failed to search. Please try again.');
+      setSearchError(msg);
     } finally {
+      clearTimeout(timeoutId);
       if (stepIntervalRef.current) clearInterval(stepIntervalRef.current);
       setSearching(false);
     }
@@ -1205,8 +1216,11 @@ export default function Dashboard() {
         @media (max-width: 640px) {
           .rv-nav-mode-label { display: none !important; }
           .rv-nav-edit-btn { display: none !important; }
+          .rv-nav-upgrade-btn { display: none !important; }
           .rv-nav-gap { gap: 6px !important; }
+          .rv-nav-menu-btn { display: flex !important; }
         }
+        .rv-nav-menu-btn { display: none; }
       `}</style>
       <div className="fixed inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse 80% 40% at 50% -5%, rgba(140,45,53,0.07) 0%, transparent 60%)', zIndex: 0 }} />
 
@@ -1238,6 +1252,7 @@ export default function Dashboard() {
             </button>
             {userPlan === 'pro' ? (
               <button onClick={handleManageBilling}
+                className="rv-nav-upgrade-btn"
                 style={{ fontSize: '13px', fontWeight: 500, color: '#8C2D35', background: 'rgba(140,45,53,0.07)', border: '1px solid rgba(140,45,53,0.20)', cursor: 'pointer', padding: '6px 14px', borderRadius: '8px', fontFamily: 'inherit', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '5px' }}
                 onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(140,45,53,0.12)'; }}
                 onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = 'rgba(140,45,53,0.07)'; }}>
@@ -1246,14 +1261,39 @@ export default function Dashboard() {
               </button>
             ) : (
               <button onClick={() => router.push('/pricing')}
+                className="rv-nav-upgrade-btn"
                 style={{ fontSize: '13px', fontWeight: 500, color: '#F5EDE5', background: '#8C2D35', border: 'none', cursor: 'pointer', padding: '6px 16px', borderRadius: '8px', fontFamily: 'inherit', transition: 'opacity 0.2s ease' }}
                 onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
                 onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
                 Upgrade to Pro
               </button>
             )}
+            {/* Mobile menu button */}
+            <button
+              className="rv-nav-menu-btn"
+              onClick={() => setMobileMenuOpen(o => !o)}
+              style={{ alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '9px', background: 'rgba(140,45,53,0.07)', border: '1px solid rgba(140,45,53,0.14)', cursor: 'pointer', color: '#8C2D35', fontFamily: 'inherit' }}>
+              {mobileMenuOpen ? <X style={{ width: '16px', height: '16px' }} /> : <Menu style={{ width: '16px', height: '16px' }} />}
+            </button>
           </div>
         </div>
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <div style={{ borderTop: '1px solid rgba(140,45,53,0.10)', background: 'rgba(245,237,229,0.97)', padding: '8px 16px 12px' }}>
+            {[
+              { label: 'Home', onClick: () => { router.push('/'); setMobileMenuOpen(false); } },
+              { label: 'Pricing', onClick: () => { router.push('/pricing'); setMobileMenuOpen(false); } },
+              { label: 'Edit Profile', onClick: () => { router.push('/dashboard/edit-profile'); setMobileMenuOpen(false); } },
+              ...(userPlan === 'pro' ? [{ label: 'Manage Billing', onClick: () => { handleManageBilling(); setMobileMenuOpen(false); } }] : []),
+              { label: 'Sign Out', onClick: async () => { await signOut(); router.push('/'); }, isDestructive: true },
+            ].map((item, i) => (
+              <button key={i} onClick={item.onClick}
+                style={{ display: 'block', width: '100%', textAlign: 'left', padding: '11px 8px', fontSize: '14px', fontWeight: 500, color: (item as any).isDestructive ? '#DC2626' : '#1C0A0C', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', borderRadius: '8px' }}>
+                {item.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px 24px', position: 'relative', zIndex: 1 }}>
@@ -1321,15 +1361,23 @@ export default function Dashboard() {
               ))}
             </div>
 
-            <button
-              onClick={searchSchools}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', padding: '0 36px', height: '56px', borderRadius: '100px', background: '#8C2D35', color: '#F5EDE5', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 500, letterSpacing: '-0.01em', boxShadow: '0 0 40px rgba(140,45,53,0.25), 0 4px 24px rgba(0,0,0,0.12)', transition: 'all 0.3s ease', fontFamily: 'inherit' }}
-              onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1.03)'; el.style.boxShadow = '0 0 60px rgba(140,45,53,0.35), 0 8px 32px rgba(0,0,0,0.18)'; }}
-              onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1)'; el.style.boxShadow = '0 0 40px rgba(140,45,53,0.25), 0 4px 24px rgba(0,0,0,0.12)'; }}>
-              <Search style={{ width: '18px', height: '18px', opacity: 0.85 }} />
-              Analyze & Match
-              <ArrowRight style={{ width: '16px', height: '16px' }} />
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              {searchError && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '14px 18px', borderRadius: '14px', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.22)', maxWidth: '480px', width: '100%' }}>
+                  <AlertTriangle style={{ width: '16px', height: '16px', color: '#DC2626', flexShrink: 0, marginTop: '1px' }} />
+                  <p style={{ fontSize: '13px', color: '#1C0A0C', margin: 0, lineHeight: 1.5 }}>{searchError}</p>
+                </div>
+              )}
+              <button
+                onClick={searchSchools}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', padding: '0 36px', height: '56px', borderRadius: '100px', background: '#8C2D35', color: '#F5EDE5', border: 'none', cursor: 'pointer', fontSize: '15px', fontWeight: 500, letterSpacing: '-0.01em', boxShadow: '0 0 40px rgba(140,45,53,0.25), 0 4px 24px rgba(0,0,0,0.12)', transition: 'all 0.3s ease', fontFamily: 'inherit' }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1.03)'; el.style.boxShadow = '0 0 60px rgba(140,45,53,0.35), 0 8px 32px rgba(0,0,0,0.18)'; }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = 'scale(1)'; el.style.boxShadow = '0 0 40px rgba(140,45,53,0.25), 0 4px 24px rgba(0,0,0,0.12)'; }}>
+                <Search style={{ width: '18px', height: '18px', opacity: 0.85 }} />
+                {searchError ? 'Try Again' : 'Analyze & Match'}
+                <ArrowRight style={{ width: '16px', height: '16px' }} />
+              </button>
+            </div>
           </div>
         )}
 

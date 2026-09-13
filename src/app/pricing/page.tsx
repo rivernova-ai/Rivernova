@@ -21,6 +21,27 @@ const PRO_FEATURES = [
   'School deep dive pages',
 ];
 
+function FaqItem({ question, answer, last }: { question: string; answer: string; last: boolean }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{ borderBottom: last ? 'none' : '1px solid rgba(140,45,53,0.12)' }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between gap-4 text-left transition-colors"
+        style={{ padding: '20px 24px', background: open ? 'rgba(140,45,53,0.03)' : 'transparent' }}
+      >
+        <span className="text-base font-medium" style={{ color: '#1C0A0C' }}>{question}</span>
+        <span className="flex-shrink-0 text-lg font-light" style={{ color: 'rgba(28,10,12,0.4)', lineHeight: 1 }}>{open ? '−' : '+'}</span>
+      </button>
+      {open && (
+        <div style={{ padding: '0 24px 20px' }}>
+          <p className="text-sm font-light leading-relaxed" style={{ color: 'rgba(28,10,12,0.55)' }}>{answer}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PricingPage() {
   const { user } = useAuth();
   const [billing, setBilling] = useState<'monthly' | 'yearly'>('yearly');
@@ -312,7 +333,7 @@ export default function PricingPage() {
                   style={{ height: '60px', background: '#8C2D35', color: '#F5EDE5', boxShadow: '0 0 40px rgba(140,45,53,0.4)' }}
                 >
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.12),transparent)' }} />
-                  <span className="relative">Start Free — $19.99/mo after</span>
+                  <span className="relative">Get 3 Free Matches</span>
                   <ArrowRight className="relative w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>
@@ -323,6 +344,43 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── FAQ ── */}
+      <section className="py-24 px-6 relative z-10">
+        <div className="max-w-[680px] mx-auto">
+          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight mb-12" style={{ color: '#1C0A0C' }}>
+            Frequently asked questions
+          </h2>
+          <div className="space-y-0" style={{ border: '1px solid rgba(140,45,53,0.12)', borderRadius: '20px', overflow: 'hidden' }}>
+            {[
+              {
+                q: 'Is the free plan actually free — no credit card?',
+                a: 'Yes, fully free. No credit card required. You get 3 AI-matched schools and a limited AI advisor immediately after signing up.',
+              },
+              {
+                q: 'How is Rivernova different from a traditional consultant?',
+                a: 'Traditional consultants earn up to $5,000 per student in undisclosed commissions from schools. Rivernova earns zero from schools — our only revenue is your subscription, so our incentives are aligned with you.',
+              },
+              {
+                q: 'Can I cancel my Pro subscription at any time?',
+                a: 'Yes. Cancel anytime from your dashboard in one click — no forms, no phone calls. Your Pro access continues until the end of the current billing period.',
+              },
+              {
+                q: 'How accurate are the match scores?',
+                a: 'Match scores are based on your GPA, budget, major, location preferences, and historical admissions data from College Scorecard and NCES. They reflect statistical fit, not guaranteed outcomes.',
+              },
+              {
+                q: 'Does Rivernova work for international students?',
+                a: 'Yes. We support both US domestic and international student profiles. International mode includes visa considerations, English proficiency scores, and country-specific financial guidance.',
+              },
+            ].map((item, i, arr) => (
+              <FaqItem key={i} question={item.q} answer={item.a} last={i === arr.length - 1} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(140,45,53,0.15),transparent)' }} />
 
       {/* ── FOOTER ── */}
       <footer className="py-14 px-6 relative z-10" style={{ borderTop: '1px solid rgba(140,45,53,0.12)' }}>

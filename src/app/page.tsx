@@ -12,7 +12,7 @@ export default function Home() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   return (
-    <main className="min-h-screen relative flex flex-col" style={{ background: '#F5EDE5' }}>
+    <main className="min-h-screen relative flex flex-col overflow-x-hidden" style={{ background: '#F5EDE5' }}>
       <Navbar />
 
       {/* Ambient glow */}
@@ -311,7 +311,7 @@ export default function Home() {
                   }}
                 >
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: 'linear-gradient(135deg,rgba(255,255,255,0.12),transparent)' }} />
-                  <span className="relative">Start Free — {PRICING_DISPLAY} after</span>
+                  <span className="relative">Get 3 Free Matches</span>
                   <ArrowRight className="relative w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                 </button>
               </div>

@@ -6,6 +6,7 @@ import { normalizeQualification } from '@/lib/qualificationNormalizer';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // Repair common AI JSON issues: trailing commas, truncated output
 function repairJSON(raw: string): any {

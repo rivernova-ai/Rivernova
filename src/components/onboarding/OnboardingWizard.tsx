@@ -347,6 +347,7 @@ export function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [modeSelected, setModeSelected] = useState(false);
 
   const [data, setData] = useState<OnboardingData>({
     firstName: '',
@@ -407,6 +408,10 @@ export function OnboardingWizard() {
   const validateStep = (step: number): boolean => {
     const errs: Record<string, string> = {};
 
+    if (step === 1) {
+      if (!modeSelected) errs.mode = 'Please select a profile type to continue.';
+    }
+
     if (step === 2) {
       if (!data.firstName.trim()) errs.firstName = 'Please enter your first name.';
       if (data.mode !== 'domestic') {
@@ -421,6 +426,14 @@ export function OnboardingWizard() {
       if (!data.currentEducation) errs.currentEducation = 'Please select your education level.';
       if (!data.major.trim()) errs.major = 'Please enter your intended major.';
       if (data.mode === 'domestic' && !data.gpa.trim()) errs.gpa = 'Please enter your GPA.';
+      if (data.satScore) {
+        const sat = Number(data.satScore);
+        if (isNaN(sat) || sat < 400 || sat > 1600) errs.satScore = 'SAT score must be between 400 and 1600.';
+      }
+      if (data.actScore) {
+        const act = Number(data.actScore);
+        if (isNaN(act) || act < 1 || act > 36) errs.actScore = 'ACT score must be between 1 and 36.';
+      }
     }
 
     if (step === 4) {
@@ -546,14 +559,15 @@ export function OnboardingWizard() {
             <h2 className="text-2xl font-bold tracking-tight" style={{ color: '#1C0A0C' }}>What describes you best?</h2>
             <p className="text-sm font-light mt-1" style={{ color: 'rgba(28,10,12,0.5)' }}>This shapes your entire intelligence profile and unlocks the right tools.</p>
           </div>
+          {errors.mode && <p className="text-xs font-medium" style={{ color: '#DC2626' }}>{errors.mode}</p>}
           <div className="space-y-3">
             {MODES.map(m => {
-              const isSelected = data.mode === m.value;
+              const isSelected = data.mode === m.value && modeSelected;
               return (
                 <button
                   key={m.value}
                   type="button"
-                  onClick={() => upd('mode', m.value)}
+                  onClick={() => { upd('mode', m.value); setModeSelected(true); }}
                   className="w-full p-5 rounded-2xl text-left transition-all duration-200 active:scale-[0.99]"
                   style={isSelected
                     ? { background: m.selectedBg, border: `1px solid ${m.accentBorder}`, boxShadow: `0 0 20px ${m.accentColor}18` }
@@ -720,10 +734,10 @@ export function OnboardingWizard() {
                 <TextInput value={data.gpa} onChange={v => upd('gpa', v)} placeholder="e.g., 3.8 out of 4.0" type="number" />
               </Field>
               <div className="grid grid-cols-2 gap-4">
-                <Field label="SAT Score">
+                <Field label="SAT Score" error={errors.satScore}>
                   <TextInput value={data.satScore} onChange={v => upd('satScore', v)} placeholder="400 – 1600" type="number" />
                 </Field>
-                <Field label="ACT Score">
+                <Field label="ACT Score" error={errors.actScore}>
                   <TextInput value={data.actScore} onChange={v => upd('actScore', v)} placeholder="1 – 36" type="number" />
                 </Field>
               </div>
