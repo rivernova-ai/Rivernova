@@ -56,6 +56,12 @@ privacy or agreements before the pilot starts.
 5. Open http://localhost:3000
 
 ## Founder
+solo founder. Built everything. 
+Roman: Born & Raised in Myanmar.
+Came to the U.S. alone at 19
+Nationally represented Myanmar at I-SWEEEP at 14 years old
+Currently SJSU data science student
+
 
 ---
 
