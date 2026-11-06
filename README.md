@@ -1,29 +1,42 @@
 # Rivernova
-
-> The AI that schools cannot pay to recommend you.
-
-Zero-commission AI college counselor. Students get personalized 
-university matches in 60 seconds based purely on their profile — 
-GPA, budget, citizenship, career goals. Every recommendation shows 
-$0.00 received from that institution. Verified permanently.
-
-**Live product:** https://rivernova.vercel.app
-
----
+The consultant alternative for college lists.
+>.**Live product:** https://rivernova.vercel.app
 
 ## The Problem
-
-Traditional education consultants charge $4,000–$12,000 on average 
-while secretly earning $1,000–$5,000 per student from the schools 
-they recommend. 6.9 million international students are exploited 
-by this system annually.
+Students and families pay thousands to ed-consultants in the U.S.
+In the rest of the world, many consultants are paid commissions by the schools they recommend. 
+College/Advisors/Admissions are overloaded and spend time on basic research students could do themselves. 
 
 ## The Solution
+For the b2c side(students): 
+1.Students input grades, intended major or field, budget, location, and goals.
+2. A school search/match list sorted into reach, target, and likely, with a short reason for each
 
-Rivernova matches students to universities with zero commission 
-conflicts. The school matcher is the wedge. The real business is 
-the trust-based student intent data layer sold to universities, 
-cities, and governments.
+Features include: School Comparison, Strategic AI advisor/chatbot(recommenation), visual charts included.
+
+**##For B2B(pilot or potential enterprise/universities):**
+Our goal is to ensure the workflows are easier for advisors(counselors)/ admissions to create
+a proper tool that makes sure their workflow becomes much easier rather than a brand new
+system they have to log into separately.
+Features may include:
+1.intelligent overlay rather than a brand-new system they have to log into separately.
+2. An AI Impaction & Alternate Pathway Router. If a student falls just short of the
+threshold for Computer Science, the tool should instantly calculate and suggest open,
+highly compatible alternative pathways (e.g., Software Engineering or Data Science)
+tailored to that student's specific local background.
+3. Automate massive chunk of an admissions counselor's time is eaten up by manual
+data entry and repetitive follow-up communications to students regarding missing
+documents, transcripts, or status updates
+4. Provide Visual Charts/Analytical Tool: A predictive modeling tool that shows
+committees real-time enrollment forecasts based on historical feeder school trends,
+local student geographic data, and current application velocity.
+
+**#Data & Privacy**
+1.Students can delete their data at any time.
+2. Rivernova does not sell student data.
+3. Most importantly: We will review and follow FERPA laws plan alongside SJSU's
+privacy or agreements before the pilot starts.
+
 
 ## Tech Stack
 
@@ -44,11 +57,6 @@ cities, and governments.
 
 ## Founder
 
-Built solo by Roman — international student from Myanmar 
-at San Jose State University. Represented Myanmar nationally at 
-I-SWEEEP 2017 (international science olympiad, 65+ countries, 
-age 14). Self-taught programmer.
-
 ---
 
-*Applying to YC Summer 2026 and a16z Speedrun.*
+
